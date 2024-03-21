@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Saira:wght@200;300;400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.ant-btn-primary {
+  background-color: rgb(22 119 255);
+}
+
+* ::-webkit-scrollbar {
+  width: 6px;
+  height: 4px;
+}
+
+* ::-webkit-scrollbar-thumb {
+  background-color: #8a8a8a;
+  border-radius: 999px;
+}
+
+* ::-webkit-scrollbar-track {
+  background-color: #e0e0e0;
+}
+
+*,
+*::after,
+* ::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  font-family: 'Saira', sans-serif;
+}
+
+li {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
