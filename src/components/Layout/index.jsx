@@ -3,6 +3,7 @@ import { Avatar, Button, Layout, Menu, Space, Tooltip, Typography } from 'antd';
 import Cookies from 'js-cookie';
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
+import userAvatar from '../../assets/img/user.png';
 
 function LoginSuccess(props) {
   const { Title } = Typography;
@@ -38,13 +39,14 @@ function LoginSuccess(props) {
     getItem('Quản lý người dùng', `/manager/user`),
     getItem('Quản lí lớp', `/manager/class`),
     getItem('Quản lí môn học', `/manager/subject`),
+    getItem('Quản lí đề tài thực tập', `/manager/intern`),
     getItem('Phân công giảng dạy', `/manager/teaching`),
     getItem('Phân công coi và chấm thi', `/manager/exam`),
   ];
 
   return (
     <div className="p-1 bg-white">
-      <Layout className="min-h-[98vh]">
+      <Layout className="h-[98vh]">
         <Sider style={{ borderRadius: '6px' }} width={250}>
           <div className="py-3 px-6 flex justify-center items-center border-b-2 border-stone-50">
             <Title style={{ color: '#fff', marginBottom: 0, width: 150 }} level={4}>
@@ -64,7 +66,7 @@ function LoginSuccess(props) {
         <Layout className="site-layout ml-2">
           <Header theme="dark" className="rounded-md flex justify-between items-center p-8 ">
             <Title style={{ color: '#fff', marginBottom: 0, textTransform: 'uppercase' }} level={2}>
-              Bộ môn khoa học máy tính
+              Bộ môn {userData?.department?.name}
             </Title>
             <Space size={24}>
               <Tooltip title="Thông tin cá nhân">
@@ -73,7 +75,9 @@ function LoginSuccess(props) {
                   shape="circle"
                   size={40}
                   onClick={handleClickAvatar}
-                  src={<img src={userData?.avatar} alt={'avatar'} />}
+                  src={
+                    <img src={userData?.avatar ? userData?.avatar : userAvatar} alt={'avatar'} />
+                  }
                 />
               </Tooltip>
               <Tooltip title="Đăng xuất">

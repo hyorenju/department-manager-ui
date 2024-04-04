@@ -26,7 +26,7 @@ function LoginPage(props) {
         //   notificationSuccess('Đăng nhập thành công');
         //   navigate(`/user`);
         // } else
-        if (res.data.roleId === 'MANAGER') {
+        if (res.data.roleId === 'MANAGER' || res.data.roleId === 'LECTURER') {
           sessionStorage.setItem('user_info', JSON.stringify(res.data));
           notificationSuccess('Đăng nhập thành công');
           navigate(`/manager`);

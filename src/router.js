@@ -1,6 +1,8 @@
 import LoginPage from './pages/LoginPage';
-import LoginSuccess from './pages/LoginSuccess';
+import Layout from './components/Layout';
 import { NotFound } from './components/NotFound';
+import ManageUser from './pages/ManageUser';
+import ManageClass from './pages/ManageClass';
 
 const { createBrowserRouter } = require('react-router-dom');
 
@@ -12,9 +14,20 @@ export const router = createBrowserRouter([
   },
   {
     path: '/manager',
-    element: <LoginSuccess />,
+    element: <Layout />,
     errorElement: <NotFound />,
-    children: [{}],
+    children: [
+      {
+        path: 'user',
+        element: <ManageUser />,
+        errorElement: <NotFound />,
+      },
+      {
+        path: 'class',
+        element: <ManageClass />,
+        errorElement: <NotFound />,
+      },
+    ],
   },
   {
     path: '/user',

@@ -1,6 +1,6 @@
 import { Result } from 'antd';
 import React from 'react';
-import { ButtonCustom } from '../Button';
+import { ButtonCustom } from '../ButtonCustom';
 import { useNavigate } from 'react-router-dom';
 
 export function NotFound(props) {
