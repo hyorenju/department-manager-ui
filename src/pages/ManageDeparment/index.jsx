@@ -22,20 +22,21 @@ import {
 import Highlighter from 'react-highlight-words';
 import React, { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { deleteClass, getClassList, getFacultySelection } from '../../api/axios';
+import { deleteDepartment, getDepartmentList, getFacultySelection } from '../../api/axios';
 import { ButtonCustom } from '../../components/ButtonCustom';
-import { ModalFormClass } from './components/ModalFormClass';
+import { ModalFormDepartment } from './components/ModalFormDepartment';
 import { useMutation } from '@tanstack/react-query';
 import { excelApi } from '../../api/excelApi';
 import { notificationError, notificationSuccess } from '../../components/Notification';
 import { messageErrorToSever } from '../../components/Message';
 
-function ManageClass() {
+function ManageDepartment() {
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
-  const [openModalFormClass, setOpenModalFormClass] = useState(false);
-  const [classData, setClassData] = useState({});
-  const [valueSearchClass, setValueSearchClass] = useState('');
+  const [openModalFormDepartment, setOpenModalFormDepartment] = useState(false);
+  const [departmentData, setDepartmentData] = useState({});
+  const [valueSearchDepartment, setValueSearchDepartment] = useState('');
+  const [keyword, setKeyword] = useState();
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [size, setSize] = useState(10);
@@ -44,25 +45,23 @@ function ManageClass() {
   const [facultySelection, setFacultySelection] = useState([]);
   const [facultyId, setFacultyId] = useState('');
 
-  // handle delete class
-  const handleConfirmDeleteClass = (id) => {
+  // handle delete department
+  const handleConfirmDeleteDepartment = (id) => {
     setLoadingTable(true);
-    deleteClass(id)
+    deleteDepartment(id)
       .then((res) => {
         if (res.data?.success === true) {
           notificationSuccess('Xóa thành công');
-          handleGetClassList();
+          handleGetDepartmentList();
         } else notificationError(res.data?.error?.message);
       })
       .finally(() => setLoadingTable(false));
   };
 
-  // handle get class list
-  const debunceValue = useDebounce(valueSearchClass, 750);
-  const keyword = debunceValue[0];
-  const handleGetClassList = () => {
+  // handle get department list
+  const handleGetDepartmentList = () => {
     setLoadingTable(true);
-    getClassList({ page: page, size: size, keyword: keyword, facultyId: facultyId })
+    getDepartmentList({ page: page, size: size, keyword: keyword, facultyId: facultyId })
       .then((res) => {
         if (res.data?.success === true) {
           setDataSource(res.data?.data?.items);
@@ -74,13 +73,13 @@ function ManageClass() {
   };
 
   const handleClickEdit = (record) => {
-    setClassData(record);
+    setDepartmentData(record);
     setFormCreate(false);
-    setOpenModalFormClass(true);
+    setOpenModalFormDepartment(true);
   };
 
   useEffect(() => {
-    return handleGetClassList();
+    return handleGetDepartmentList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, size, keyword, facultyId]);
 
@@ -94,36 +93,19 @@ function ManageClass() {
     });
   }, []);
 
-  // Export class list to excel
-  const exportClassToExcel = useMutation({
-    mutationKey: ['exportClassList'],
-    mutationFn: () =>
-      excelApi.exportClassList({
-        keyword: keyword,
-        facultyId: facultyId,
-      }),
-    onSuccess: (res) => {
-      if (res && res.success === true) {
-        window.open(res.data);
-        notificationSuccess('Đã xuất file excel thành công hãy kiểm tra trong máy của bạn nhé');
-      } else {
-        messageErrorToSever(res, 'Có lỗi trong quá trình lưu file');
-      }
-    },
-  });
-
   const columns = [
     {
-      title: 'Mã lớp',
+      title: 'Mã bộ môn',
       dataIndex: 'id',
       align: 'left',
       fixed: 'left',
       width: '5%',
     },
     {
-      title: 'Tên lớp',
+      title: 'Tên bộ môn',
       dataIndex: 'name',
       align: 'left',
+      fixed: 'left',
       width: '9%',
     },
     {
@@ -155,35 +137,6 @@ function ManageClass() {
           <SearchOutlined className={`${facultyId ? 'text-blue-500' : undefined} text-base`} />
         </Tooltip>
       ),
-    },
-    {
-      title: 'Giáo viên chủ nhiệm',
-      dataIndex: 'hrTeacher',
-      align: 'left',
-      width: '8%',
-    },
-    {
-      title: 'Lớp trưởng',
-      dataIndex: 'monitor',
-      align: 'left',
-      width: '8%',
-    },
-    {
-      title: 'Sđt lớp trưởng',
-      dataIndex: 'monitorPhone',
-      align: 'left',
-      width: '5%',
-    },
-    {
-      title: 'Email lớp trưởng',
-      dataIndex: 'monitorEmail',
-      align: 'left',
-      width: '8%',
-    },
-    {
-      title: 'Ghi chú',
-      dataIndex: 'note',
-      align: 'left',
     },
     {
       title: 'Ngày tạo',
@@ -237,11 +190,11 @@ function ManageClass() {
             size="small"
           />
           <Popconfirm
-            title="Bạn có chắc chắn muốn xóa lớp này?"
+            title="Bạn có chắc chắn muốn xóa bộ môn này?"
             icon={<DeleteOutlined />}
             okText="Xóa"
             okType="danger"
-            onConfirm={() => handleConfirmDeleteClass(record.id)}
+            onConfirm={() => handleConfirmDeleteDepartment(record.id)}
           >
             <Button
               className="flex justify-center items-center text-md shadow-md"
@@ -261,45 +214,46 @@ function ManageClass() {
     <div className="h-[98vh]">
       <div className="flex justify-between mb-3">
         <div className="flex">
-          <Tooltip className="flex" title="Tìm kiếm lớp">
+          <Tooltip className="flex" title="Tìm kiếm bộ môn">
             <Input
               prefix={<SearchOutlined className="opacity-60 mr-1" />}
               placeholder="Nhập từ khóa"
               className="shadow-sm w-[230px]"
-              onChange={(e) => setValueSearchClass(e.target.value)}
-              value={valueSearchClass}
+              onChange={(e) => setValueSearchDepartment(e.target.value)}
+              value={valueSearchDepartment}
+              onPressEnter={() => setKeyword(valueSearchDepartment)}
             />
           </Tooltip>
           <p className="my-auto ml-2">Tổng số kết quả: {total}</p>
         </div>
-        <Title level={3} className="uppercase absolute left-[55%]">
-          Danh sách lớp
+        <Title level={3} className="uppercase absolute left-[50%]">
+          Danh sách bộ môn
         </Title>
         <Space>
           <Button
             icon={<PlusOutlined />}
             onClick={() => {
-              setOpenModalFormClass(true);
+              setOpenModalFormDepartment(true);
               setFormCreate(true);
             }}
             className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
           >
-            Thêm lớp
+            Thêm bộ môn
           </Button>
         </Space>
       </div>
-      <ModalFormClass
+      <ModalFormDepartment
         isCreate={formCreate}
         onSuccess={() => {
-          handleGetClassList();
-          setOpenModalFormClass(false);
+          handleGetDepartmentList();
+          setOpenModalFormDepartment(false);
         }}
-        classData={classData}
-        openForm={openModalFormClass}
+        departmentData={departmentData}
+        openForm={openModalFormDepartment}
         onChangeClickOpen={(open) => {
           if (!open) {
-            setClassData({});
-            setOpenModalFormClass(false);
+            setDepartmentData({});
+            setOpenModalFormDepartment(false);
           }
         }}
       />
@@ -307,7 +261,7 @@ function ManageClass() {
         <Table
           scroll={{
             y: 5000,
-            x: 2600,
+            x: 1600,
           }}
           rowKey="id"
           loading={loadingTable}
@@ -326,21 +280,9 @@ function ManageClass() {
             // showSizeChanger: true,
           }}
         />
-        {dataSource.length > 0 && (
-          <div className="absolute bottom-5 left-0">
-            <ButtonCustom
-              title="Xuất danh sách lớp"
-              loading={exportClassToExcel.isPending}
-              handleClick={() => {
-                exportClassToExcel.mutate();
-              }}
-              icon={<DownloadOutlined />}
-            />
-          </div>
-        )}
       </div>
     </div>
   );
 }
 
-export default ManageClass;
+export default ManageDepartment;

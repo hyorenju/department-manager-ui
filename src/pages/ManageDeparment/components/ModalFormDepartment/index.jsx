@@ -1,12 +1,18 @@
 import { ModalForm, ProForm, ProFormSelect, ProFormText } from '@ant-design/pro-components';
 import { notification, message } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { createClass, updateClass, getFacultySelection } from '../../../../api/axios';
+import { createDepartment, updateDepartment, getFacultySelection } from '../../../../api/axios';
 import { notificationSuccess } from '../../../../components/Notification';
 
-export function ModalFormClass({ isCreate, openForm, onChangeClickOpen, classData, onSuccess }) {
-  const handleCreateClass = (values) => {
-    createClass(values).then((res) => {
+export function ModalFormDepartment({
+  isCreate,
+  openForm,
+  onChangeClickOpen,
+  departmentData,
+  onSuccess,
+}) {
+  const handleCreateDepartment = (values) => {
+    createDepartment(values).then((res) => {
       if (res.data?.success === true) {
         onSuccess();
         notificationSuccess('Tạo thành công');
@@ -21,8 +27,8 @@ export function ModalFormClass({ isCreate, openForm, onChangeClickOpen, classDat
     });
   };
 
-  const handleUpdateClass = (id, values) => {
-    updateClass(id, values).then((res) => {
+  const handleUpdateDepartment = (id, values) => {
+    updateDepartment(id, values).then((res) => {
       if (res.data?.success === true) {
         onSuccess();
         notification.success({
@@ -57,21 +63,21 @@ export function ModalFormClass({ isCreate, openForm, onChangeClickOpen, classDat
   return (
     <div>
       <ModalForm
-        width={1100}
-        title={classData.id ? 'Sửa thông tin lớp' : 'Thêm lớp'}
-        initialValues={classData}
+        width={800}
+        title={departmentData.id ? 'Sửa thông tin bộ môn' : 'Thêm bộ môn'}
+        initialValues={departmentData}
         modalProps={{
           maskClosable: false,
           destroyOnClose: true,
-          okText: classData.id ? 'Lưu' : 'Tạo',
+          okText: departmentData.id ? 'Lưu' : 'Tạo',
           cancelText: 'Hủy',
         }}
         open={openForm}
         onFinish={(values) => {
-          if (classData.id) {
-            handleUpdateClass(classData.id, values);
+          if (departmentData.id) {
+            handleUpdateDepartment(departmentData.id, values);
           } else {
-            handleCreateClass(values);
+            handleCreateDepartment(values);
           }
         }}
         onOpenChange={onChangeClickOpen}
@@ -83,17 +89,19 @@ export function ModalFormClass({ isCreate, openForm, onChangeClickOpen, classDat
             ]}
             width="md"
             name="id"
-            label="Mã lớp"
-            placeholder="Nhập mã lớp"
+            label="Mã bộ môn"
+            placeholder="Nhập mã bộ môn"
             disabled={isCreate ? false : true}
           />
           <ProFormText
             rules={[{ required: true, message: 'Không được để trống' }]}
             width="md"
             name="name"
-            label="Tên lớp"
-            placeholder="Nhập tên lớp"
+            label="Tên bộ môn"
+            placeholder="Nhập tên bộ môn"
           />
+        </ProForm.Group>
+        <ProForm.Group>
           <ProFormSelect
             width="md"
             rules={[{ required: true, message: 'Không được để trống' }]}
@@ -101,51 +109,6 @@ export function ModalFormClass({ isCreate, openForm, onChangeClickOpen, classDat
             label="Chọn khoa"
             placeholder="Chọn khoa"
             options={facultySelection}
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText
-            rules={[
-              isCreate ? { required: false } : { required: true, message: 'Không được để trống' },
-            ]}
-            width="md"
-            name="monitor"
-            label="Lớp trưởng"
-            placeholder="Nhập thông tin lớp trưởng"
-          />
-          <ProFormText
-            rules={[
-              isCreate ? { required: false } : { required: true, message: 'Không được để trống' },
-            ]}
-            width="md"
-            name="monitorPhone"
-            label="Sđt lớp trưởng"
-            placeholder="Nhập sđt lớp trưởng"
-          />
-          <ProFormText
-            rules={[{ required: false }]}
-            width="md"
-            name="monitorEmail"
-            label="Email lớp trưởng"
-            placeholder="Nhập email lớp trưởng"
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormText
-            width="md"
-            rules={[
-              isCreate ? { required: false } : { required: true, message: 'Không được để trống' },
-            ]}
-            name="hrTeacher"
-            label="Giáo viên chủ nhiệm"
-            placeholder="Nhập thông tin GVCN"
-          />
-          <ProFormText
-            rules={[{ required: false }]}
-            width="xl"
-            name="note"
-            label="Ghi chú"
-            placeholder="Nhập ghi chú"
           />
         </ProForm.Group>
       </ModalForm>

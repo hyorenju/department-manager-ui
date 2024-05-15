@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 
 const instane = axios.create({
   baseURL: 'http://localhost:8080',
+  // baseURL: 'https://90ae-2405-4802-1d5a-1eb0-cc0e-4677-cca1-8a68.ngrok-free.app',
   headers: {
     'ngrok-skip-browser-warning': '1',
   },
@@ -17,7 +18,7 @@ instane.interceptors.request.use(
   },
   (err) => {
     return Promise.reject(err);
-  }
+  },
 );
 
 instane.interceptors.response.use(
@@ -26,6 +27,6 @@ instane.interceptors.response.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 export default instane;

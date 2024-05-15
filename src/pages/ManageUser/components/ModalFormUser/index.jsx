@@ -1,14 +1,15 @@
 import { ModalForm, ProForm, ProFormSelect, ProFormText } from '@ant-design/pro-components';
-import { notification, message } from 'antd';
+import { notification, message, Input } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {
   createUser,
   updateUser,
-  getDegreeSelection,
+  getMasterDataSelection,
   getFacultySelection,
   getDepartmentSelection,
   getRoleSelection,
 } from '../../../../api/axios';
+import { notificationError, notificationSuccess } from '../../../../components/Notification';
 
 export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData, onSuccess }) {
   const handleCreateUser = (values) => {
@@ -18,7 +19,7 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
         notification.success({
           message: 'Thành công',
           description: 'Tạo thành công',
-          duration: 2,
+          duration: 3,
         });
       } else if (res.data?.error?.code === 2) {
         // eslint-disable-next-line no-lone-blocks
@@ -26,11 +27,7 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
           res.data?.error?.errorDetailList.forEach((e) => message.error(e.message));
         }
       } else if (res.data?.error?.code === 500) {
-        notification.error({
-          message: 'Tạo thất bại',
-          description: res.data?.error?.message,
-          duration: 2,
-        });
+        notificationError(res.data?.error?.message);
       }
     });
   };
@@ -42,7 +39,7 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
         notification.success({
           message: 'Thành công',
           description: 'Sửa thành công',
-          duration: 2,
+          duration: 3,
         });
       } else if (res.data?.error?.code === 2) {
         // eslint-disable-next-line no-lone-blocks
@@ -50,20 +47,15 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
           res.data?.error?.errorDetailList?.forEach((e) => message.error(e.message));
         }
       } else if (res.data?.error?.code === 500) {
-        notification.error({
-          message: 'Cập nhật thất bại',
-          description: res.data?.error?.message,
-          duration: 2,
-        });
+        notificationError(res.data?.error?.message);
       }
     });
   };
 
-  const type = 'USER_DEGREE';
   const [degreeSelection, setDegreeSelection] = useState([]);
   useEffect(() => {
     if (openForm) {
-      getDegreeSelection({ type: type }).then((res) => {
+      getMasterDataSelection({ type: 'USER_DEGREE' }).then((res) => {
         if (res.data?.success) {
           const newArr = [];
           res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
@@ -87,20 +79,24 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
   }, [openForm]);
 
   const [departmentSelection, setDepartmentSelection] = useState([]);
-  const handleGetDepartmentSelection = (value) => {
-    // value will contain the selected faculty ID
-    const facultyId = value;
-
-    // If a faculty is selected, fetch departments for that faculty
-    if (facultyId) {
-      getDepartmentSelection({ facultyId }).then((res) => {
+  useEffect(() => {
+    if (openForm) {
+      getDepartmentSelection({}).then((res) => {
         if (res.data?.success) {
-          const newDepartmentSelection = [];
-          res.data?.data?.items?.map((item) =>
-            newDepartmentSelection.push({ label: item?.name, value: item?.id }),
-          );
-          // Update state with the new department options
-          setDepartmentSelection(newDepartmentSelection);
+          const newArr = [];
+          res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+          setDepartmentSelection(newArr);
+        }
+      });
+    }
+  }, [openForm]);
+  const handleGetDepartmentSelection = (value) => {
+    if (value) {
+      getDepartmentSelection({ facultyId: value }).then((res) => {
+        if (res.data?.success) {
+          const newArr = [];
+          res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+          setDepartmentSelection(newArr);
         }
       });
     }
@@ -143,11 +139,14 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
       >
         <ProForm.Group>
           <ProFormText
-            rules={[{ required: true, message: 'Không được để trống' }]}
+            rules={[
+              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
             width="md"
             name="id"
             label="Mã người dùng"
             placeholder="Nhập mã người dùng"
+            disabled={isCreate ? false : true}
           />
           <ProFormText
             rules={[{ required: true, message: 'Không được để trống' }]}
@@ -166,6 +165,10 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
         </ProForm.Group>
         <ProForm.Group>
           <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
             width="md"
             rules={[{ required: true, message: 'Không được để trống' }]}
             name={['degree', 'id']}
@@ -178,7 +181,7 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
             width="md"
             name="email"
             label="Email"
-            placeholder="Nhập email"
+            placeholder="example@gmail.com"
           />
           <ProFormText
             rules={[{ required: true, message: 'Không được để trống' }]}
@@ -190,22 +193,50 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
         </ProForm.Group>
         <ProForm.Group>
           <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
             width="md"
-            rules={[{ required: true, message: 'Không được để trống' }]}
+            rules={[
+              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
             name={['department', 'faculty', 'id']}
-            label="Chọn khoa"
+            label="Khoa"
             placeholder="Chọn khoa"
             onChange={handleGetDepartmentSelection}
             options={facultySelection}
+            disabled={isCreate ? false : true}
           />
           <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
             width="md"
-            rules={[{ required: true, message: 'Không được để trống' }]}
+            rules={[
+              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
             name={['department', 'id']}
-            label="Chọn bộ môn"
+            label="Bộ môn"
             placeholder="Chọn bộ môn"
             options={departmentSelection}
+            disabled={isCreate ? false : true}
           />
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            rules={[{ required: true, message: 'Không được để trống' }]}
+            name={['role', 'id']}
+            label="Vai trò"
+            placeholder="Chọn vai trò"
+            options={roleSelection}
+          />
+        </ProForm.Group>
+        <ProForm.Group>
           <ProFormText
             rules={[{ required: false, message: 'Không được để trống' }]}
             width="md"
@@ -215,16 +246,17 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
               isCreate ? "Nếu để trống sẽ mặc định là '123'" : 'Nếu để trống mật khẩu sẽ giữ nguyên'
             }
           />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormSelect
+          {/* <ProFormText
+            rules={[{ required: false, message: 'Không được để trống' }]}
             width="md"
-            rules={[{ required: true, message: 'Không được để trống' }]}
-            name={['role', 'id']}
-            label="Chọn vai trò"
-            placeholder="Chọn vai trò"
-            options={roleSelection}
-          />
+            name="password"
+            label="Mật khẩu"
+            placeholder={
+              isCreate ? "Nếu để trống sẽ mặc định là '123'" : 'Nếu để trống mật khẩu sẽ giữ nguyên'
+            }
+          >
+            <Input.Password />
+          </ProFormText> */}
           <ProFormText
             rules={[{ required: false, message: 'Không được để trống' }]}
             width="xl"

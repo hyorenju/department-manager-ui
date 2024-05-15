@@ -1,4 +1,12 @@
-import { DeleteOutlined, EditOutlined, SearchOutlined, UserAddOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  SearchOutlined,
+  UserAddOutlined,
+  DownloadOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
+import { ProFormSelect } from '@ant-design/pro-components';
 import {
   Button,
   Input,
@@ -9,113 +17,241 @@ import {
   Typography,
   message,
   notification,
+  Select,
 } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { deleteClass, getClassList } from '../../api/axios';
+import {
+  getSubjectList,
+  deleteSubject,
+  getFacultySelection,
+  getDepartmentSelection,
+} from '../../api/axios';
 import { ButtonCustom } from '../../components/ButtonCustom';
-import { ModalFormClass } from './components/ModalFormClass';
+import { ModalFormSubject } from './components/ModalFormSubject';
+import { excelApi } from '../../api/excelApi';
+import { notificationError, notificationSuccess } from '../../components/Notification';
+import { messageErrorToSever } from '../../components/Message';
+import { useMutation } from '@tanstack/react-query';
 
-function ManageClass(props) {
+function ManageSubject() {
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
-  const [openModalFormUser, setOpenModalFormUser] = useState(false);
-  const [classData, setClassData] = useState({});
-  const [valueSearchClass, setValueSearchClass] = useState('');
+  const [openModalFormSubject, setOpenModalFormSubject] = useState(false);
+  const [subjectData, setSubjectData] = useState({});
+  const [valueSearchSubject, setValueSearchSubject] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [size, setSize] = useState(10);
   const [dataSource, setDataSource] = useState([]);
   const [formCreate, setFormCreate] = useState(true);
 
-  // handle delete class
-  const handleConfirmDeleteClass = (id) => {
+  const [searchFacultyId, setSearchFacultyId] = useState('');
+  const [searchDepartmentId, setSearchDepartmentId] = useState('');
+
+  // handle delete subject
+  const handleConfirmDeleteSubject = (id) => {
     setLoadingTable(true);
-    deleteClass(id)
+    deleteSubject(id)
       .then((res) => {
         if (res.data?.success === true) {
-          notification.success({
-            message: 'Thành công',
-            description: 'Xóa thành công',
-            duration: 2,
-          });
-          handleGetClassList();
-        } else return message.error(res.data?.error?.message);
+          notificationSuccess('Xóa thành công');
+          handleGetSubjectList();
+        } else notificationError(res.data?.error?.message);
       })
       .finally(() => setLoadingTable(false));
   };
 
-  // handle get class list
-  const debunceValue = useDebounce(valueSearchClass, 750);
+  // handle get subject list
+  const debunceValue = useDebounce(valueSearchSubject, 750);
   const keyword = debunceValue[0];
-  const handleGetClassList = () => {
+  const handleGetSubjectList = () => {
     setLoadingTable(true);
-    getClassList({ page: page, size: size, keyword: keyword, facultyId: '' })
+    getSubjectList({
+      page: page,
+      size: size,
+      keyword: keyword,
+      departmentId: searchDepartmentId,
+      facultyId: searchFacultyId,
+    })
       .then((res) => {
         if (res.data?.success === true) {
           setDataSource(res.data?.data?.items);
           setTotal(res.data?.data?.total);
           setLoadingTable(false);
-        } else if (res.data?.error?.message === 'Access Denied') {
-          message.warning('Bạn không có quyền truy cập');
-        }
+        } else
+          notification.error({
+            message: 'Lấy danh sách thất bại',
+            description: 'Bạn không có quyền truy cập',
+            duration: 3,
+          });
       })
       .finally(() => setLoadingTable(false));
   };
 
   const handleClickEdit = (record) => {
-    setClassData(record);
+    setSubjectData(record);
     setFormCreate(false);
-    setOpenModalFormUser(true);
+    setOpenModalFormSubject(true);
   };
+
   useEffect(() => {
-    handleGetClassList();
+    return handleGetSubjectList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, size, keyword]);
+  }, [page, size, keyword, searchDepartmentId, searchFacultyId]);
+
+  const [facultySelection, setFacultySelection] = useState([]);
+  useEffect(() => {
+    getFacultySelection().then((res) => {
+      if (res.data?.success) {
+        const newArr = [];
+        res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+        setFacultySelection(newArr);
+      }
+    });
+  }, []);
+
+  const [departmentSelection, setDepartmentSelection] = useState([]);
+  useEffect(() => {
+    getDepartmentSelection({ facultyId: searchFacultyId }).then((res) => {
+      if (res.data?.success) {
+        const newArr = [];
+        res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+        setDepartmentSelection(newArr);
+      }
+    });
+  }, [searchFacultyId]);
+
+  // Export subject list to excel
+  const exportSubjectToExcel = useMutation({
+    mutationKey: ['exportSubjectList'],
+    mutationFn: () =>
+      excelApi.exportSubjectList({
+        keyword: keyword,
+        departmentId: searchDepartmentId,
+        facultyId: searchFacultyId,
+      }),
+    onSuccess: (res) => {
+      if (res && res.success === true) {
+        window.open(res.data);
+        notificationSuccess('Đã xuất file excel thành công hãy kiểm tra trong máy của bạn nhé');
+      } else {
+        messageErrorToSever(res, 'Có lỗi trong quá trình lưu file');
+      }
+    },
+  });
 
   const columns = [
     {
-      title: 'Mã lớp',
+      title: 'Mã môn học',
       dataIndex: 'id',
       align: 'left',
-      fixed: 'left',
-      width: '4%',
+      width: '5%',
     },
     {
-      title: 'Tên lớp',
+      title: 'Tên môn học',
       dataIndex: 'name',
       align: 'left',
-      width: '8%',
+      fixed: 'left',
+      width: '10%',
     },
     {
       title: 'Khoa',
-      dataIndex: ['faculty', 'name'],
+      dataIndex: ['department', 'faculty', 'name'],
       align: 'left',
-      width: '8%',
+      width: '9%',
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[280px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={searchFacultyId}
+            options={facultySelection}
+            placeholder="Chọn khoa"
+            onChange={(searchFacultyId) => setSearchFacultyId(searchFacultyId)}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => setSearchFacultyId(null)}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo khoa">
+          <SearchOutlined
+            className={`${searchFacultyId ? 'text-blue-500' : undefined} text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
-      title: 'Giáo viên chủ nhiệm',
-      dataIndex: 'hrTeacher',
+      title: 'Bộ môn',
+      dataIndex: ['department', 'name'],
       align: 'left',
-      width: '7%',
+      width: '9%',
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[280px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={searchDepartmentId}
+            options={departmentSelection}
+            placeholder="Chọn bộ môn"
+            onChange={(searchDepartmentId) => setSearchDepartmentId(searchDepartmentId)}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => setSearchDepartmentId(null)}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo bộ môn">
+          <SearchOutlined
+            className={`${searchDepartmentId ? 'text-blue-500' : undefined} text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
-      title: 'Lớp trưởng',
-      dataIndex: 'monitor',
-      align: 'left',
-      width: '7%',
-    },
-    {
-      title: 'Sđt lớp trưởng',
-      dataIndex: 'monitorPhone',
+      title: 'Số tín chỉ',
+      dataIndex: 'credits',
       align: 'left',
       width: '4%',
     },
     {
-      title: 'Email lớp trưởng',
-      dataIndex: 'monitorEmail',
+      title: 'File đề cương',
+      render: (record) => (
+        <>
+          <a href={record?.outline} target="_blank" rel="noopener noreferrer">
+            {record?.outline ? 'Bấm để xem' : null}
+          </a>
+        </>
+      ),
       align: 'left',
-      width: '7%',
+      width: '5%',
+    },
+    {
+      title: 'File bài giảng',
+      render: (record) => (
+        <>
+          <a href={record?.lecture} target="_blank" rel="noopener noreferrer">
+            {record?.lecture ? 'Bấm để xem' : null}
+          </a>
+        </>
+      ),
+      align: 'left',
+      width: '5%',
     },
     {
       title: 'Ghi chú',
@@ -126,21 +262,21 @@ function ManageClass(props) {
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       align: 'left',
-      width: '6%',
+      width: '8%',
       //   render: (e, record, idx) => role(record.roleId),
     },
     {
       title: 'Người tạo',
       render: (e, record, index) => (
         <>
-          {console.log(record)}
           <p>
-            {record.createdBy.id} - {record.createdBy.firstName} {record.createdBy.lastName}
+            {record?.createdBy?.id} {record.createdBy ? '-' : null} {record?.createdBy?.firstName}{' '}
+            {record?.createdBy?.lastName}
           </p>
         </>
       ),
       align: 'left',
-      width: '8%',
+      width: '9%',
     },
     {
       title: 'Chỉnh sửa lần cuối',
@@ -150,15 +286,22 @@ function ManageClass(props) {
     },
     {
       title: 'Người sửa',
-      dataIndex: ['modifiedBy', 'id'],
+      render: (e, record, index) => (
+        <>
+          <p>
+            {record?.modifiedBy?.id} {record.modifiedBy ? '-' : null}{' '}
+            {record?.modifiedBy?.firstName} {record?.modifiedBy?.lastName}
+          </p>
+        </>
+      ),
       align: 'left',
-      width: '8%',
+      width: '9%',
     },
     {
       title: 'Tùy chọn',
       align: 'center',
       fixed: 'right',
-      width: '5%',
+      width: '7%',
       render: (e, record, index) => (
         <Button.Group key={index}>
           <ButtonCustom
@@ -168,11 +311,11 @@ function ManageClass(props) {
             size="small"
           />
           <Popconfirm
-            title="Bạn có chắc chắn muốn xóa lớp này ?"
+            title="Bạn có chắc chắn muốn môn học này?"
             icon={<DeleteOutlined />}
             okText="Xóa"
             okType="danger"
-            onConfirm={() => handleConfirmDeleteClass(record.id)}
+            onConfirm={() => handleConfirmDeleteSubject(record.id)}
           >
             <Button
               className="flex justify-center items-center text-md shadow-md"
@@ -191,52 +334,54 @@ function ManageClass(props) {
   return (
     <div className="h-[98vh]">
       <div className="flex justify-between mb-3">
-        <Tooltip title="Tìm kiếm lớp">
-          <Input
-            prefix={<SearchOutlined className="opacity-60 mr-1" />}
-            placeholder="Nhập từ khóa"
-            className="shadow-sm w-[230px]"
-            onChange={(e) => setValueSearchClass(e.target.value)}
-            value={valueSearchClass}
-          />
-        </Tooltip>
-        <Title level={3} className="uppercase absolute left-[50%]">
-          Danh sách lớp
+        <div className="flex">
+          <Tooltip className="flex" title="Tìm kiếm môn học">
+            <Input
+              prefix={<SearchOutlined className="opacity-60 mr-1" />}
+              placeholder="Nhập từ khóa"
+              className="shadow-sm w-[230px]"
+              onChange={(e) => setValueSearchSubject(e.target.value)}
+              value={valueSearchSubject}
+            />
+          </Tooltip>
+          <p className="my-auto ml-2">Tổng số kết quả: {total}</p>
+        </div>
+        <Title level={3} className="uppercase absolute left-[55%]">
+          Danh sách môn học
         </Title>
         <Space>
           <Button
-            icon={<UserAddOutlined />}
+            icon={<PlusOutlined />}
             onClick={() => {
-              setOpenModalFormUser(true);
+              setOpenModalFormSubject(true);
               setFormCreate(true);
             }}
             className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
           >
-            Thêm lớp
+            Thêm môn học
           </Button>
         </Space>
       </div>
-      <ModalFormClass
+      <ModalFormSubject
         isCreate={formCreate}
         onSuccess={() => {
-          handleGetClassList();
-          setOpenModalFormUser(false);
+          handleGetSubjectList();
+          setOpenModalFormSubject(false);
         }}
-        classData={classData}
-        openForm={openModalFormUser}
+        subjectData={subjectData}
+        openForm={openModalFormSubject}
         onChangeClickOpen={(open) => {
           if (!open) {
-            setClassData({});
-            setOpenModalFormUser(false);
+            setSubjectData({});
+            setOpenModalFormSubject(false);
           }
         }}
       />
-
-      {dataSource && (
+      <div className="relative">
         <Table
           scroll={{
             y: 5000,
-            x: 3900,
+            x: 2600,
           }}
           rowKey="id"
           loading={loadingTable}
@@ -255,9 +400,21 @@ function ManageClass(props) {
             // showSizeChanger: true,
           }}
         />
-      )}
+        {dataSource.length > 0 && (
+          <div className="absolute bottom-5 left-0">
+            <ButtonCustom
+              title="Xuất danh sách môn học"
+              loading={exportSubjectToExcel.isPending}
+              handleClick={() => {
+                exportSubjectToExcel.mutate();
+              }}
+              icon={<DownloadOutlined />}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-export default ManageClass;
+export default ManageSubject;

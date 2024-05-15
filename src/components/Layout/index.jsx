@@ -5,11 +5,12 @@ import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import userAvatar from '../../assets/img/user.png';
 
-function LoginSuccess(props) {
+function LoginSuccess() {
   const { Title } = Typography;
   const navigate = useNavigate();
   const { Header, Sider, Content } = Layout;
   const userData = JSON.parse(sessionStorage.getItem('user_info'));
+  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
 
   const handleClickItemMenu = ({ key }) => {
     navigate(key);
@@ -22,6 +23,7 @@ function LoginSuccess(props) {
   const handleClickLogout = () => {
     Cookies.remove('access_token');
     sessionStorage.removeItem('user_info');
+    sessionStorage.removeItem('user_role');
     navigate('/');
   };
 
@@ -35,22 +37,68 @@ function LoginSuccess(props) {
     };
   };
 
-  const items = [
-    getItem('Quản lý người dùng', `/manager/user`),
-    getItem('Quản lí lớp', `/manager/class`),
-    getItem('Quản lí môn học', `/manager/subject`),
-    getItem('Quản lí đề tài thực tập', `/manager/intern`),
-    getItem('Phân công giảng dạy', `/manager/teaching`),
-    getItem('Phân công coi và chấm thi', `/manager/exam`),
-  ];
+  const menu = (roleId) => {
+    switch (roleId) {
+      case 'LECTURER':
+        return [
+          getItem('Quản lý người dùng', `/manage/user`),
+          getItem('Quản lí lớp', `/manage/class`),
+          getItem('Quản lí môn học', `/manage/subject`),
+          getItem('Quản lí đề tài thực tập', `/manage/intern`),
+          getItem('Phân công giảng dạy', `/manage/teaching`),
+          getItem('Phân công kỳ thi', `/manage/exam`),
+        ];
+      case 'MANAGER':
+        return [
+          getItem('Quản lý người dùng', `/manage/user`),
+          getItem('Quản lí lớp', `/manage/class`),
+          getItem('Quản lí môn học', `/manage/subject`),
+          getItem('Quản lí đề tài thực tập', `/manage/intern`),
+          getItem('Phân công giảng dạy', `/manage/teaching`),
+          getItem('Phân công kỳ thi', `/manage/exam`),
+        ];
+      case 'DEPUTY':
+        return [
+          getItem('Quản lý người dùng', `/manage/user`),
+          getItem('Quản lí lớp', `/manage/class`),
+          getItem('Quản lí môn học', `/manage/subject`),
+          getItem('Quản lí đề tài thực tập', `/manage/intern`),
+          getItem('Phân công giảng dạy', `/manage/teaching`),
+          getItem('Phân công kỳ thi', `/manage/exam`),
+        ];
+      case 'DEAN':
+        return [
+          getItem('Quản lý người dùng', `/manage/user`),
+          getItem('Quản lí lớp', `/manage/class`),
+          getItem('Quản lí môn học', `/manage/subject`),
+          getItem('Quản lí đề tài thực tập', `/manage/intern`),
+          getItem('Phân công giảng dạy', `/manage/teaching`),
+          getItem('Phân công kỳ thi', `/manage/exam`),
+          getItem('Danh sách bộ môn', `/manage/department`),
+        ];
+      case 'PRINCIPAL':
+        return [
+          getItem('Quản lý người dùng', `/manage/user`),
+          getItem('Quản lí lớp', `/manage/class`),
+          getItem('Quản lí môn học', `/manage/subject`),
+          getItem('Quản lí đề tài thực tập', `/manage/intern`),
+          getItem('Phân công giảng dạy', `/manage/teaching`),
+          getItem('Phân công kỳ thi', `/manage/exam`),
+          getItem('Danh sách khoa', `/manage/faculty`),
+          getItem('Danh sách bộ môn', `/manage/department`),
+        ];
+      default:
+        return [];
+    }
+  };
 
   return (
     <div className="p-1 bg-white">
       <Layout className="h-[98vh]">
-        <Sider style={{ borderRadius: '6px' }} width={250}>
+        <Sider style={{ borderRadius: '6px' }} width={200}>
           <div className="py-3 px-6 flex justify-center items-center border-b-2 border-stone-50">
-            <Title style={{ color: '#fff', marginBottom: 0, width: 150 }} level={4}>
-              {userData?.lastName ? `${userData?.lastName}` : 'Nhìn cái deso gì'}
+            <Title style={{ color: '#fff', marginBottom: 0, width: '100%' }} level={4}>
+              {userData?.lastName ? `Xin chào ${userData?.lastName}` : 'Xin chào admin'}
             </Title>
           </div>
           <Menu
@@ -60,7 +108,7 @@ function LoginSuccess(props) {
             theme="dark"
             mode="inline"
             defaultSelectedKeys={[window.location.pathname]}
-            items={items}
+            items={menu(roleId)}
           />
         </Sider>
         <Layout className="site-layout ml-2">

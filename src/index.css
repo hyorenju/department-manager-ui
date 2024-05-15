@@ -4,7 +4,41 @@
 @tailwind utilities;
 
 .ant-btn-primary {
-  background-color: rgb(22 119 255);
+  background-color: #0c4a6e;
+}
+
+.ant-btn{
+  border: solid #0c4a6e 2px;
+  margin: 0 auto;
+}
+
+.ant-input-affix-wrapper {
+  border: solid #0c4a6e 2px;
+  color: black;
+}
+
+.ant-input{
+  border: solid #0c4a6e 2px;
+}
+
+.ant-picker{
+  border: solid #0c4a6e 2px;
+
+}
+
+.ant-picker-disabled {
+  outline: solid #0c4a6e 2px;
+  border: none;
+}
+
+.ant-input-affix-wrapper-disabled {
+  outline: solid #0c4a6e 2px;
+  border: none;
+}
+
+.ant-select {
+  outline: solid #0c4a6e 2px;
+  border-radius: 6px;
 }
 
 * ::-webkit-scrollbar {

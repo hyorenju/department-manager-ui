@@ -15,7 +15,7 @@ export function ButtonCustom({
       danger={danger}
       disabled={disabled}
       loading={loading}
-      className="mx-auto bg-white drop-shadow-lg"
+      className="flex justify-center items-center bg-white shadow-lg"
       icon={icon}
       onClick={handleClick}
       type={type}

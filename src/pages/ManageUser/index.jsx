@@ -1,40 +1,52 @@
 import {
   DeleteOutlined,
+  DownloadOutlined,
   EditOutlined,
   SearchOutlined,
-  SwapOutlined,
   UserAddOutlined,
+  PlusOutlined,
+  TableOutlined,
 } from '@ant-design/icons';
-import {
-  Button,
-  Drawer,
-  Input,
-  Popconfirm,
-  Space,
-  Table,
-  Tooltip,
-  Typography,
-  notification,
-} from 'antd';
+import { useMutation } from '@tanstack/react-query';
+import { Button, Drawer, Input, Popconfirm, Select, Space, Table, Tooltip, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { useDebounce } from 'use-debounce';
-import { deleteUser, getUserList } from '../../api/axios';
+import {
+  deleteUser,
+  getAllRole,
+  getDepartmentSelection,
+  getFacultySelection,
+  getMasterDataSelection,
+  getUserList,
+} from '../../api/axios';
+import { excelApi } from '../../api/excelApi';
 import { ButtonCustom } from '../../components/ButtonCustom';
-import DrawerAdminAuther from './components/Drawer';
+import { messageErrorToSever } from '../../components/Message';
+import { notificationError, notificationSuccess } from '../../components/Notification';
 import { ModalFormUser } from './components/ModalFormUser';
+import { TableListDegree } from './page/TableListDegree';
 
-function ManageUser(props) {
+function ManageUser() {
   const { Title } = Typography;
-  const [openDrawer, setOpenDrawer] = useState(false);
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormUser, setOpenModalFormUser] = useState(false);
   const [userData, setUserData] = useState({});
-  const [valueSearchUser, setValueSearchUser] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [size, setSize] = useState(10);
   const [dataSource, setDataSource] = useState([]);
   const [formCreate, setFormCreate] = useState(true);
+  const [openDrawer, setOpenDrawer] = useState(false);
+
+  const [valueSearchId, setValueSearchId] = useState('');
+  const [searchId, setSearchId] = useState('');
+  const [valueSearchFirstName, setValueSearchFirstName] = useState('');
+  const [searchFirstName, setSearchFirstName] = useState('');
+  const [valueSearchLastName, setValueSearchLastName] = useState('');
+  const [searchLastName, setSearchLastName] = useState('');
+  const [searchDegreeId, setSearchDegreeId] = useState('');
+  const [searchFacultyId, setSearchFacultyId] = useState('');
+  const [searchDepartmentId, setSearchDepartmentId] = useState('');
+  const [searchRoleId, setSearchRoleId] = useState('');
 
   // handle delete user
   const handleConfirmDeleteUser = (id) => {
@@ -42,40 +54,36 @@ function ManageUser(props) {
     deleteUser(id)
       .then((res) => {
         if (res.data?.success === true) {
-          notification.success({
-            message: 'Thành công',
-            description: 'Xóa thành công',
-            duration: 2,
-          });
+          notificationSuccess('Xóa thành công');
           handleGetUserList();
-        } else
-          return notification.error({
-            message: 'Xóa thất bại',
-            description: res.data?.error?.message,
-            duration: 2,
-          });
+        } else {
+          notificationError(res.data?.error?.message);
+        }
       })
       .finally(() => setLoadingTable(false));
   };
 
   // handle get user list
-  const debunceValue = useDebounce(valueSearchUser, 750);
-  const keyword = debunceValue[0];
   const handleGetUserList = () => {
     setLoadingTable(true);
-    getUserList({ page: page, size: size, keyword: keyword })
+    getUserList({
+      page: page,
+      size: size,
+      id: searchId,
+      firstName: searchFirstName,
+      lastName: searchLastName,
+      degreeId: searchDegreeId,
+      facultyId: searchFacultyId,
+      departmentId: searchDepartmentId,
+      roleId: searchRoleId,
+    })
       .then((res) => {
         if (res.data?.success === true) {
           setDataSource(res.data?.data?.items);
           setTotal(res.data?.data?.total);
           setLoadingTable(false);
         } else if (res.data?.error?.message === 'Access Denied') {
-          // message.warning('Bạn không có quyền truy cập');
-          notification.error({
-            message: 'Lấy danh sách thất bại',
-            description: 'Bạn không có quyền truy cập',
-            duration: 2,
-          });
+          notificationError('Bạn không có quyền truy cập danh sách này');
         }
       })
       .finally(() => setLoadingTable(false));
@@ -89,70 +97,335 @@ function ManageUser(props) {
   useEffect(() => {
     handleGetUserList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, size, keyword]);
+  }, [
+    page,
+    size,
+    searchId,
+    searchFirstName,
+    searchLastName,
+    searchDegreeId,
+    searchFacultyId,
+    searchDepartmentId,
+    searchRoleId,
+  ]);
+
+  const type = 'USER_DEGREE';
+  const [degreeSelection, setDegreeSelection] = useState([]);
+  useEffect(() => {
+    getMasterDataSelection({ type: type }).then((res) => {
+      if (res.data?.success) {
+        const newArr = [];
+        res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+        setDegreeSelection(newArr);
+      }
+    });
+  }, []);
+
+  const [facultySelection, setFacultySelection] = useState([]);
+  useEffect(() => {
+    getFacultySelection().then((res) => {
+      if (res.data?.success) {
+        const newArr = [];
+        res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+        setFacultySelection(newArr);
+      }
+    });
+  }, []);
+
+  const [departmentSelection, setDepartmentSelection] = useState([]);
+  useEffect(() => {
+    getDepartmentSelection({ facultyId: searchFacultyId }).then((res) => {
+      if (res.data?.success) {
+        const newArr = [];
+        res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+        setDepartmentSelection(newArr);
+      }
+    });
+  }, [searchFacultyId]);
+
+  const [roleSelection, setRoleSelection] = useState([]);
+  useEffect(() => {
+    getAllRole().then((res) => {
+      if (res.data?.success) {
+        const newArr = [];
+        res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+        setRoleSelection(newArr);
+      }
+    });
+  }, []);
+
+  // Export user list to excel
+  const exportUserToExcel = useMutation({
+    mutationKey: ['exportUserList'],
+    mutationFn: () =>
+      excelApi.exportUserList({
+        id: searchId,
+        firstName: searchFirstName,
+        lastName: searchLastName,
+        degreeId: searchDegreeId,
+        facultyId: searchFacultyId,
+        departmentId: searchDepartmentId,
+        roleId: searchRoleId,
+      }),
+    onSuccess: (res) => {
+      if (res && res.success === true) {
+        window.open(res.data);
+        notificationSuccess('Đã xuất file excel thành công hãy kiểm tra trong máy của bạn nhé');
+      } else {
+        messageErrorToSever(res, 'Có lỗi trong quá trình lưu file');
+      }
+    },
+  });
 
   const columns = [
     {
-      title: 'Mã người dùng',
+      title: 'Mã',
       dataIndex: 'id',
       align: 'left',
       fixed: 'left',
       width: '5%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập mã giảng viên'}
+            value={valueSearchId}
+            onChange={(e) => setValueSearchId(e.target.value)}
+            className="w-[180px] mb-3 block"
+            onPressEnter={(e) => {
+              setSearchId(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setSearchId(null);
+                setValueSearchId(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo mã giảng viên">
+          <SearchOutlined
+            className={`${searchId ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
       title: 'Họ đệm',
       dataIndex: 'firstName',
       align: 'left',
-      width: '7%',
+      width: '8%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập họ đệm'}
+            value={valueSearchFirstName}
+            onChange={(e) => setValueSearchFirstName(e.target.value)}
+            className="w-[180px] mb-3 block"
+            onPressEnter={(e) => {
+              setSearchFirstName(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setSearchFirstName(null);
+                setValueSearchFirstName(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo họ đệm">
+          <SearchOutlined
+            className={`${searchFirstName ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
       title: 'Tên',
       dataIndex: 'lastName',
       align: 'left',
-      width: '3%',
-    },
-    {
-      title: 'Trình độ',
-      dataIndex: ['degree', 'name'],
-      align: 'left',
-      width: '3%',
-    },
-    {
-      title: 'Email',
-      dataIndex: 'email',
-      align: 'left',
-      width: '8%',
-    },
-    {
-      title: 'Số điện thoại',
-      dataIndex: 'phoneNumber',
-      align: 'left',
       width: '5%',
-    },
-    {
-      title: 'Bộ môn',
-      dataIndex: ['department', 'name'],
-      align: 'left',
-      width: '7%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập tên'}
+            value={valueSearchLastName}
+            onChange={(e) => setValueSearchLastName(e.target.value)}
+            className="w-[180px] mb-3 block"
+            onPressEnter={(e) => {
+              setSearchLastName(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setSearchLastName(null);
+                setValueSearchLastName(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo tên">
+          <SearchOutlined
+            className={`${searchLastName ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
       title: 'Khoa',
       dataIndex: ['department', 'faculty', 'name'],
       align: 'left',
+      width: '11%',
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[280px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={searchFacultyId}
+            options={facultySelection}
+            placeholder="Chọn khoa"
+            onChange={(searchFacultyId) => setSearchFacultyId(searchFacultyId)}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => setSearchFacultyId(null)}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo khoa">
+          <SearchOutlined
+            className={`${searchFacultyId ? 'text-blue-500' : undefined} text-base`}
+          />
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Bộ môn',
+      dataIndex: ['department', 'name'],
+      align: 'left',
+      width: '9%',
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[280px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={searchDepartmentId}
+            options={departmentSelection}
+            placeholder="Chọn bộ môn"
+            onChange={(searchDepartmentId) => setSearchDepartmentId(searchDepartmentId)}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => setSearchDepartmentId(null)}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo bộ môn">
+          <SearchOutlined
+            className={`${searchDepartmentId ? 'text-blue-500' : undefined} text-base`}
+          />
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Trình độ',
+      dataIndex: ['degree', 'name'],
+      align: 'left',
+      width: '6%',
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[230px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={searchDegreeId}
+            options={degreeSelection}
+            placeholder="Chọn trình độ"
+            onChange={(searchDegreeId) => setSearchDegreeId(searchDegreeId)}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => setSearchDegreeId(null)}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo trình độ">
+          <SearchOutlined className={`${searchDegreeId ? 'text-blue-500' : undefined} text-base`} />
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      align: 'left',
       width: '10%',
     },
     {
-      title: 'Vai trò',
-      dataIndex: ['role', 'id'],
+      title: 'Số điện thoại',
+      dataIndex: 'phoneNumber',
       align: 'left',
-      width: '4%',
-      //   render: (e, record, idx) => role(record.roleId),
+      width: '6%',
     },
     {
-      title: 'Chức vụ',
+      title: 'Vai trò',
       dataIndex: ['role', 'name'],
       align: 'left',
-      width: '8%',
+      width: '10%',
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[230px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={searchRoleId}
+            options={roleSelection}
+            placeholder="Chọn vai trò"
+            onChange={(searchRoleId) => setSearchRoleId(searchRoleId)}
+          />
+          <Space>
+            <ButtonCustom handleClick={() => setSearchRoleId(null)} size="small" title={'Reset'} />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo vai trò">
+          <SearchOutlined className={`${searchRoleId ? 'text-blue-500' : undefined} text-base`} />
+        </Tooltip>
+      ),
     },
     {
       title: 'Ghi chú',
@@ -163,7 +436,7 @@ function ManageUser(props) {
       title: 'Tùy chọn',
       align: 'center',
       fixed: 'right',
-      width: '5%',
+      width: '7.5%',
       render: (e, record, index) => (
         <Button.Group key={index}>
           <ButtonCustom
@@ -173,7 +446,7 @@ function ManageUser(props) {
             size="small"
           />
           <Popconfirm
-            title="Bạn có chắc chắn muốn xóa người dùng này ?"
+            title="Bạn có chắc chắn muốn xóa người dùng này?"
             icon={<DeleteOutlined />}
             okText="Xóa"
             okType="danger"
@@ -196,30 +469,18 @@ function ManageUser(props) {
   return (
     <div className="h-[98vh]">
       <div className="flex justify-between mb-3">
-        <Tooltip title="Tìm kiếm người dùng">
-          <Input
-            prefix={<SearchOutlined className="opacity-60 mr-1" />}
-            placeholder="Nhập từ khóa"
-            className="shadow-sm w-[230px]"
-            onChange={(e) => setValueSearchUser(e.target.value)}
-            value={valueSearchUser}
-          />
-        </Tooltip>
-        <Title level={3} className="uppercase absolute left-[45%]">
+        <p className="my-auto">Tổng số kết quả: {total}</p>
+        <Title level={3} className="uppercase absolute left-[40%]">
           Danh sách người dùng
         </Title>
         <Space>
+          <ButtonCustom
+            title="Danh sách trình độ"
+            handleClick={() => setOpenDrawer(true)}
+            icon={<TableOutlined />}
+          />
           <Button
-            icon={<SwapOutlined />}
-            onClick={() => {
-              setOpenDrawer(true);
-            }}
-            className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
-          >
-            Phân quyền
-          </Button>
-          <Button
-            icon={<UserAddOutlined />}
+            icon={<PlusOutlined />}
             onClick={() => {
               setOpenModalFormUser(true);
               setFormCreate(true);
@@ -246,11 +507,11 @@ function ManageUser(props) {
         }}
       />
 
-      {dataSource && (
+      <div className="relative">
         <Table
           scroll={{
             y: 5000,
-            x: 3600,
+            x: 2100,
           }}
           rowKey="id"
           loading={loadingTable}
@@ -266,12 +527,31 @@ function ManageUser(props) {
             size: size,
             total: total,
             current: page,
-            // showSizeChanger: true,
+            //   showSizeChanger: true,
           }}
         />
-      )}
-      <Drawer placement="right" open={openDrawer} onClose={() => setOpenDrawer(false)} width={1300}>
-        <DrawerAdminAuther />
+        {dataSource.length > 0 && (
+          <div className="absolute bottom-5 left-0">
+            <ButtonCustom
+              title="Xuất danh sách giảng viên"
+              loading={exportUserToExcel.isPending}
+              handleClick={() => {
+                exportUserToExcel.mutate();
+              }}
+              icon={<DownloadOutlined />}
+            />
+          </div>
+        )}
+      </div>
+      <Drawer
+        extra={<h1 className="ml-[-100%] font-medium text-xl">Danh sách trình độ</h1>}
+        placement="right"
+        open={openDrawer}
+        width={600}
+        maskClosable={false}
+        onClose={() => setOpenDrawer(false)}
+      >
+        <TableListDegree open={openDrawer} />
       </Drawer>
     </div>
   );

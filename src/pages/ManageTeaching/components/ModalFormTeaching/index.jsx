@@ -1,0 +1,359 @@
+import {
+  ModalForm,
+  ProForm,
+  ProFormText,
+  ProFormUploadButton,
+  ProFormSelect,
+} from '@ant-design/pro-components';
+import { message, notification, Select } from 'antd';
+import React, { useEffect, useState } from 'react';
+import {
+  createIntern,
+  updateIntern,
+  uploadFile,
+  getMasterDataSelection,
+  getUserSelection,
+  getSubjectSelection,
+  getFacultySelection,
+  getDepartmentSelection,
+} from '../../../../api/axios';
+import { useMutation } from '@tanstack/react-query';
+import { notificationSuccess, notificationError } from '../../../../components/Notification';
+import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
+
+export function ModalFormTeaching({
+  isCreate,
+  openForm,
+  onChangeClickOpen,
+  teachingData,
+  onSuccess,
+}) {
+  const [facultyId, setFacultyId] = useState(null);
+  const [departmentId, setDepartmentId] = useState(null);
+  const [componentFile, setComponentFile] = useState('');
+  const [summaryFile, setSummaryFile] = useState('');
+
+  const handleCreateIntern = (values) => {
+    createIntern(values).then((res) => {
+      if (res.data?.success === true) {
+        onSuccess();
+        notification.success({
+          message: 'Thành công',
+          description: 'Tạo thành công',
+          duration: 3,
+        });
+      } else if (res.data?.error?.code === 2) {
+        // eslint-disable-next-line no-lone-blocks
+        {
+          res.data?.error?.errorDetailList?.forEach((e) => message.error(e.message));
+        }
+      } else if (res.data?.error?.code === 500) {
+        message.error(res.data?.error?.message);
+      }
+    });
+  };
+
+  const handleUpdateIntern = (id, values) => {
+    updateIntern(id, values).then((res) => {
+      if (res.data?.success === true) {
+        onSuccess();
+        notification.success({
+          message: 'Thành công',
+          description: 'Sửa thành công',
+          duration: 3,
+        });
+      } else if (res.data?.error?.code === 2) {
+        // eslint-disable-next-line no-lone-blocks
+        {
+          res.data?.error?.errorDetailList?.forEach((e) => message.error(e.message));
+        }
+      } else if (res.data?.error?.code === 500) {
+        message.error(res.data?.error?.message);
+      }
+    });
+  };
+
+  const [facultySelection, setFacultySelection] = useState([]);
+  useEffect(() => {
+    if (openForm) {
+      getFacultySelection().then((res) => {
+        if (res.data?.success) {
+          const newArr = [];
+          res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+          setFacultySelection(newArr);
+        }
+      });
+    }
+  }, [openForm]);
+
+  const [departmentSelection, setDepartmentSelection] = useState([]);
+  useEffect(() => {
+    if (openForm) {
+      getDepartmentSelection({ facultyId }).then((res) => {
+        if (res.data?.success) {
+          const newArr = [];
+          res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+          setDepartmentSelection(newArr);
+        }
+      });
+    }
+  }, [openForm, facultyId]);
+
+  const [subjectSelection, setSubjectSelection] = useState([]);
+  useEffect(() => {
+    if (openForm) {
+      getSubjectSelection({ facultyId, departmentId }).then((res) => {
+        if (res.data?.success) {
+          const newArr = [];
+          res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+          setSubjectSelection(newArr);
+        }
+      });
+    }
+  }, [openForm, facultyId, departmentId]);
+
+  const [schoolYearSelection, setSchoolYearSelection] = useState([]);
+  useEffect(() => {
+    if (openForm) {
+      getMasterDataSelection({ type: 'SCHOOL_YEAR' }).then((res) => {
+        if (res.data?.success) {
+          const newArr = [];
+          res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+          setSchoolYearSelection(newArr);
+        }
+      });
+    }
+  }, [openForm]);
+
+  const [userSelection, setUserSelection] = useState([]);
+  useEffect(() => {
+    if (openForm) {
+      getUserSelection({ departmentId, facultyId }).then((res) => {
+        if (res.data?.success) {
+          const newArr = [];
+          res.data?.data?.items?.map((item) =>
+            newArr.push({
+              label: `${item?.id} - ${item?.firstName} ${item?.lastName}`,
+              value: item?.id,
+            }),
+          );
+          setUserSelection(newArr);
+        }
+      });
+    }
+  }, [openForm, facultyId, departmentId]);
+
+  const handleUploadComponentFile = useMutation({
+    mutationKey: ['uploadFile'],
+    mutationFn: async (file) => {
+      const formData = new FormData();
+      formData.append('file', file.file);
+      return await uploadFile(formData);
+    },
+    onSuccess: (res) => {
+      if (res.data?.success === true) {
+        setComponentFile(res.data?.data);
+        notificationSuccess('Upload thành công');
+      }
+    },
+  });
+
+  const handleUploadSummaryFile = useMutation({
+    mutationKey: ['uploadFile'],
+    mutationFn: async (file) => {
+      const formData = new FormData();
+      formData.append('file', file.file);
+      return await uploadFile(formData);
+    },
+    onSuccess: (res) => {
+      if (res.data?.success === true) {
+        setSummaryFile(res.data?.data);
+        notificationSuccess('Upload thành công');
+      }
+    },
+  });
+
+  return (
+    <div>
+      <ModalForm
+        width={1100}
+        title={teachingData.id ? 'Sửa thông tin đề tài thực tập' : 'Thêm đề tài thực tập'}
+        initialValues={teachingData}
+        modalProps={{
+          maskClosable: false,
+          destroyOnClose: true,
+          okText: teachingData.id ? 'Lưu' : 'Tạo',
+          cancelText: 'Hủy',
+        }}
+        open={openForm}
+        onFinish={(values) => {
+          if (teachingData.id) {
+            handleUpdateIntern(teachingData.id, values);
+          } else {
+            handleCreateIntern(values);
+          }
+        }}
+        onOpenChange={onChangeClickOpen}
+      >
+        <ProForm.Group>
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            name={['subject', 'department', 'faculty', 'name']}
+            label="Khoa"
+            placeholder="Chọn khoa"
+            options={facultySelection}
+            onChange={(value) => setFacultyId(value)}
+          />
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            name={['subject', 'department', 'name']}
+            label="Bộ môn"
+            placeholder="Chọn bộ môn"
+            options={departmentSelection}
+            onChange={(value) => setDepartmentId(value)}
+          />
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            rules={[
+              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
+            name={['subject', 'id']}
+            label="Môn giảng dạy"
+            placeholder="Chọn môn giảng dạy"
+            options={subjectSelection}
+            disabled={isCreate ? false : true}
+          />
+        </ProForm.Group>
+
+        <ProForm.Group>
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            rules={[
+              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
+            name={['schoolYear', 'id']}
+            label="Năm học"
+            placeholder="Chọn năm học"
+            options={schoolYearSelection}
+            disabled={isCreate ? false : true}
+          />
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            rules={[
+              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
+            name="term"
+            label="Học kỳ"
+            placeholder="Chọn học kỳ"
+            options={[
+              { label: 1, value: 1 },
+              { label: 2, value: 2 },
+              { label: 3, value: 3 },
+            ]}
+            disabled={isCreate ? false : true}
+          />
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            rules={[{ required: true, message: 'Không được để trống' }]}
+            name={['teacher', 'id']}
+            label="Giáo viên giảng dạy"
+            placeholder="Chọn giáo viên giảng dạy"
+            options={userSelection}
+          />
+        </ProForm.Group>
+
+        <ProForm.Group>
+          <ProFormText
+            rules={[
+              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
+            width="md"
+            name="classId"
+            label="Mã lớp"
+            placeholder="Nhập mã lớp"
+            disabled={isCreate ? false : true}
+          />
+          <ProFormText
+            rules={[
+              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
+            width="md"
+            name="teachingGroup"
+            label="Nhóm môn học"
+            placeholder="Nhập nhóm môn học"
+            disabled={isCreate ? false : true}
+          />
+          <ProFormText width="md" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
+        </ProForm.Group>
+
+        <ProForm.Group>
+          <ProFormUploadButton
+            title="Bấm để tải"
+            name="componentFile"
+            label="Tải file thành phần"
+            max={1}
+            fieldProps={{
+              name: 'file',
+              customRequest: (file) => handleUploadComponentFile.mutate(file),
+            }}
+            transform={() => {
+              return { componentFile: componentFile };
+            }}
+            fileList={[]}
+            icon={handleUploadComponentFile.isPending ? <LoadingOutlined /> : <UploadOutlined />}
+            disabled={handleUploadComponentFile.isPending ? true : false}
+          />
+          <ProFormUploadButton
+            title="Bấm để tải"
+            name="summaryFile"
+            label="Tải file tổng kết"
+            max={1}
+            fieldProps={{
+              name: 'file',
+              customRequest: (file) => handleUploadSummaryFile.mutate(file),
+            }}
+            transform={() => {
+              return { summaryFile: summaryFile };
+            }}
+            fileList={[]}
+            icon={handleUploadSummaryFile.isPending ? <LoadingOutlined /> : <UploadOutlined />}
+            disabled={handleUploadSummaryFile.isPending ? true : false}
+          />
+        </ProForm.Group>
+
+        <ProForm.Group>
+          <p style={{ width: '800px', color: 'gray', fontStyle: 'italic' }}>
+            (*) Sau khi chọn file để upload, vui lòng đợi cho đến khi thông báo hiển thị.
+          </p>
+          <p style={{ width: '800px', color: 'gray', fontStyle: 'italic' }}>
+            Chúng tôi sẽ cho bạn biết việc tải tệp lên có thành công hay không.
+          </p>
+        </ProForm.Group>
+      </ModalForm>
+    </div>
+  );
+}
