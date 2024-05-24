@@ -1,17 +1,24 @@
 import { ModalForm, ProForm, ProFormSelect, ProFormText } from '@ant-design/pro-components';
-import { notification, message, Input } from 'antd';
+import { notification, message, Input, Button, Popconfirm } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {
   createUser,
   updateUser,
+  transferRole,
   getMasterDataSelection,
   getFacultySelection,
   getDepartmentSelection,
   getRoleSelection,
 } from '../../../../api/axios';
 import { notificationError, notificationSuccess } from '../../../../components/Notification';
+import { ButtonCustom } from '../../../../components/ButtonCustom';
+import { DeleteOutlined, SyncOutlined } from '@ant-design/icons';
+import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 
 export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData, onSuccess }) {
+  const navigate = useNavigate();
+
   const handleCreateUser = (values) => {
     createUser(values).then((res) => {
       if (res.data?.success === true) {
@@ -50,6 +57,26 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
         notificationError(res.data?.error?.message);
       }
     });
+  };
+
+  const handleTransferRole = (id) => {
+    transferRole(id).then((res) => {
+      if (res.data?.success === true) {
+        notification.success({
+          message: 'Thành công',
+          description: 'Chuyển vai trò thành công',
+          duration: 3,
+        });
+        handleLogout();
+      } else notificationError(res.data?.error?.message);
+    });
+  };
+
+  const handleLogout = () => {
+    Cookies.remove('access_token');
+    sessionStorage.removeItem('user_info');
+    sessionStorage.removeItem('user_role');
+    navigate('/');
   };
 
   const [degreeSelection, setDegreeSelection] = useState([]);
@@ -237,15 +264,6 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
           />
         </ProForm.Group>
         <ProForm.Group>
-          <ProFormText
-            rules={[{ required: false, message: 'Không được để trống' }]}
-            width="md"
-            name="password"
-            label="Mật khẩu"
-            placeholder={
-              isCreate ? "Nếu để trống sẽ mặc định là '123'" : 'Nếu để trống mật khẩu sẽ giữ nguyên'
-            }
-          />
           {/* <ProFormText
             rules={[{ required: false, message: 'Không được để trống' }]}
             width="md"
@@ -254,9 +272,15 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
             placeholder={
               isCreate ? "Nếu để trống sẽ mặc định là '123'" : 'Nếu để trống mật khẩu sẽ giữ nguyên'
             }
-          >
-            <Input.Password />
-          </ProFormText> */}
+          /> */}
+          <ProFormText.Password
+            width="md"
+            name="password"
+            label="Mật khẩu"
+            placeholder={
+              isCreate ? "Nếu để trống sẽ mặc định là '123'" : 'Nếu để trống mật khẩu sẽ giữ nguyên'
+            }
+          />
           <ProFormText
             rules={[{ required: false, message: 'Không được để trống' }]}
             width="xl"
@@ -265,6 +289,25 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
             placeholder="Nhập ghi chú"
           />
         </ProForm.Group>
+        {!isCreate && (
+          <Popconfirm
+            title={
+              <>
+                <p>Bạn có chắc chắn muốn chuyển vai trò của mình cho người dùng này?</p>
+                <p>Tài khoản của bạn sẽ bị giáng xuống vai trò thấp nhất.</p>
+              </>
+            }
+            okText="Chắc chắn"
+            okType="danger"
+            onConfirm={() => {
+              handleTransferRole(userData?.id);
+            }}
+          >
+            <Button className="absolute right-40 bottom-5" icon={<SyncOutlined />} danger>
+              Chuyển vai trò
+            </Button>
+          </Popconfirm>
+        )}
       </ModalForm>
     </div>
   );

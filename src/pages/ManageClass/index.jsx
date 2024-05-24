@@ -31,6 +31,7 @@ import { notificationError, notificationSuccess } from '../../components/Notific
 import { messageErrorToSever } from '../../components/Message';
 
 function ManageClass() {
+  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormClass, setOpenModalFormClass] = useState(false);
@@ -224,68 +225,72 @@ function ManageClass() {
       width: '9%',
     },
     {
-      title: 'Tùy chọn',
+      title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
       align: 'center',
       fixed: 'right',
-      width: '6%',
-      render: (e, record, index) => (
-        <Button.Group key={index}>
-          <ButtonCustom
-            title={'Sửa'}
-            icon={<EditOutlined />}
-            handleClick={() => handleClickEdit(record)}
-            size="small"
-          />
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa lớp này?"
-            icon={<DeleteOutlined />}
-            okText="Xóa"
-            okType="danger"
-            onConfirm={() => handleConfirmDeleteClass(record.id)}
-          >
-            <Button
-              className="flex justify-center items-center text-md shadow-md"
-              icon={<DeleteOutlined />}
+      width: roleId !== 'LECTURER' ? '6%' : '0',
+      render:
+        roleId !== 'LECTURER' &&
+        ((e, record, index) => (
+          <Button.Group key={index}>
+            <ButtonCustom
+              title={'Sửa'}
+              icon={<EditOutlined />}
+              handleClick={() => handleClickEdit(record)}
               size="small"
-              danger
+            />
+            <Popconfirm
+              title="Bạn có chắc chắn muốn xóa lớp này?"
+              icon={<DeleteOutlined />}
+              okText="Xóa"
+              okType="danger"
+              onConfirm={() => handleConfirmDeleteClass(record.id)}
             >
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Button.Group>
-      ),
+              <Button
+                className="flex justify-center items-center text-md shadow-md"
+                icon={<DeleteOutlined />}
+                size="small"
+                danger
+              >
+                Xóa
+              </Button>
+            </Popconfirm>
+          </Button.Group>
+        )),
     },
   ];
 
   return (
-    <div className="h-[98vh]">
-      <div className="flex justify-between mb-3">
+    <div>
+      <Title level={3} className="uppercase text-center" style={{ marginBottom: 0 }}>
+        Danh sách lớp
+      </Title>
+      <div className="flex justify-between mb-2">
         <div className="flex">
           <Tooltip className="flex" title="Tìm kiếm lớp">
             <Input
               prefix={<SearchOutlined className="opacity-60 mr-1" />}
               placeholder="Nhập từ khóa"
-              className="shadow-sm w-[230px]"
+              className="shadow-sm w-[230px] h-9 my-auto"
               onChange={(e) => setValueSearchClass(e.target.value)}
               value={valueSearchClass}
             />
           </Tooltip>
           <p className="my-auto ml-2">Tổng số kết quả: {total}</p>
         </div>
-        <Title level={3} className="uppercase absolute left-[55%]">
-          Danh sách lớp
-        </Title>
         <Space>
-          <Button
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setOpenModalFormClass(true);
-              setFormCreate(true);
-            }}
-            className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
-          >
-            Thêm lớp
-          </Button>
+          {roleId !== 'LECTURER' && (
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setOpenModalFormClass(true);
+                setFormCreate(true);
+              }}
+              className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+            >
+              Thêm lớp
+            </Button>
+          )}
         </Space>
       </div>
       <ModalFormClass
@@ -306,7 +311,7 @@ function ManageClass() {
       <div className="relative">
         <Table
           scroll={{
-            y: 5000,
+            y: '64vh',
             x: 2600,
           }}
           rowKey="id"

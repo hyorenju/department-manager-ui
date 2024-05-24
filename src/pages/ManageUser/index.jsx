@@ -23,9 +23,10 @@ import { ButtonCustom } from '../../components/ButtonCustom';
 import { messageErrorToSever } from '../../components/Message';
 import { notificationError, notificationSuccess } from '../../components/Notification';
 import { ModalFormUser } from './components/ModalFormUser';
-import { TableListDegree } from './page/TableListDegree';
+import { ManageDegree } from './pages/ManageDegree';
 
 function ManageUser() {
+  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormUser, setOpenModalFormUser] = useState(false);
@@ -433,62 +434,70 @@ function ManageUser() {
       align: 'left',
     },
     {
-      title: 'Tùy chọn',
+      title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
+      // title: 'Tùy chọn',
       align: 'center',
       fixed: 'right',
-      width: '7.5%',
-      render: (e, record, index) => (
-        <Button.Group key={index}>
-          <ButtonCustom
-            title={'Sửa'}
-            icon={<EditOutlined />}
-            handleClick={() => handleClickEdit(record)}
-            size="small"
-          />
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa người dùng này?"
-            icon={<DeleteOutlined />}
-            okText="Xóa"
-            okType="danger"
-            onConfirm={() => handleConfirmDeleteUser(record.id)}
-          >
-            <Button
-              className="flex justify-center items-center text-md shadow-md"
-              icon={<DeleteOutlined />}
+      width: roleId !== 'LECTURER' ? '7.5%' : '0',
+      // width: '7.5%',
+      render:
+        roleId !== 'LECTURER' &&
+        ((e, record, index) => (
+          <Button.Group key={index}>
+            <ButtonCustom
+              title={'Sửa'}
+              icon={<EditOutlined />}
+              handleClick={() => handleClickEdit(record)}
               size="small"
-              danger
+            />
+            <Popconfirm
+              title="Bạn có chắc chắn muốn xóa người dùng này?"
+              icon={<DeleteOutlined />}
+              okText="Xóa"
+              okType="danger"
+              onConfirm={() => handleConfirmDeleteUser(record.id)}
             >
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Button.Group>
-      ),
+              <Button
+                className="flex justify-center items-center text-md shadow-md"
+                icon={<DeleteOutlined />}
+                size="small"
+                danger
+              >
+                Xóa
+              </Button>
+            </Popconfirm>
+          </Button.Group>
+        )),
     },
   ];
 
   return (
-    <div className="h-[98vh]">
-      <div className="flex justify-between mb-3">
+    <div>
+      <Title level={3} className="uppercase text-center" style={{ marginBottom: 0 }}>
+        Danh sách người dùng
+      </Title>
+      <div className="flex justify-between mb-2">
         <p className="my-auto">Tổng số kết quả: {total}</p>
-        <Title level={3} className="uppercase absolute left-[40%]">
-          Danh sách người dùng
-        </Title>
         <Space>
-          <ButtonCustom
-            title="Danh sách trình độ"
-            handleClick={() => setOpenDrawer(true)}
-            icon={<TableOutlined />}
-          />
-          <Button
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setOpenModalFormUser(true);
-              setFormCreate(true);
-            }}
-            className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
-          >
-            Thêm người dùng
-          </Button>
+          {roleId !== 'LECTURER' && (
+            <>
+              <ButtonCustom
+                title="Danh sách trình độ"
+                handleClick={() => setOpenDrawer(true)}
+                icon={<TableOutlined />}
+              />
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setOpenModalFormUser(true);
+                  setFormCreate(true);
+                }}
+                className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+              >
+                Thêm người dùng
+              </Button>
+            </>
+          )}
         </Space>
       </div>
       <ModalFormUser
@@ -510,7 +519,7 @@ function ManageUser() {
       <div className="relative">
         <Table
           scroll={{
-            y: 5000,
+            y: '64vh',
             x: 2100,
           }}
           rowKey="id"
@@ -533,7 +542,7 @@ function ManageUser() {
         {dataSource.length > 0 && (
           <div className="absolute bottom-5 left-0">
             <ButtonCustom
-              title="Xuất danh sách giảng viên"
+              title="Xuất danh sách người dùng"
               loading={exportUserToExcel.isPending}
               handleClick={() => {
                 exportUserToExcel.mutate();
@@ -551,7 +560,7 @@ function ManageUser() {
         maskClosable={false}
         onClose={() => setOpenDrawer(false)}
       >
-        <TableListDegree open={openDrawer} />
+        <ManageDegree open={openDrawer} />
       </Drawer>
     </div>
   );

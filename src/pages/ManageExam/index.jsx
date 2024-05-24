@@ -6,6 +6,9 @@ import {
   UploadOutlined,
   PlusOutlined,
   DownloadOutlined,
+  QuestionCircleOutlined,
+  MenuOutlined,
+  TableOutlined,
 } from '@ant-design/icons';
 import { ProFormSelect } from '@ant-design/pro-components';
 import {
@@ -22,6 +25,9 @@ import {
   Form,
   DatePicker,
   Upload,
+  Divider,
+  Collapse,
+  Drawer,
 } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {
@@ -39,8 +45,11 @@ import { notificationError, notificationSuccess } from '../../components/Notific
 import { messageErrorToSever } from '../../components/Message';
 import { useMutation } from '@tanstack/react-query';
 import { ModalErrorImportExam } from './components/ModalErrorImportExam';
+import dayjs from 'dayjs';
+import { ManageExamForm } from './pages/ManageExamForm';
 
 function ManageExam() {
+  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormExam, setOpenModalFormExam] = useState(false);
@@ -51,6 +60,7 @@ function ManageExam() {
   const [dataSource, setDataSource] = useState([]);
   const [formCreate, setFormCreate] = useState(true);
   const [openModalError, setOpenModalError] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState(false);
 
   const [facultyId, setFacultyId] = useState();
   const [departmentId, setDepartmentId] = useState();
@@ -394,7 +404,7 @@ function ManageExam() {
       dataIndex: ['subject', 'name'],
       align: 'left',
       fixed: 'left',
-      width: '5%',
+      width: '4%',
       filterDropdown: () => (
         <div className="p-3">
           <Input
@@ -427,7 +437,7 @@ function ManageExam() {
       ),
     },
     {
-      title: 'Loại bài thi',
+      title: 'Hình thức',
       dataIndex: ['form', 'name'],
       align: 'left',
       width: '3%',
@@ -440,7 +450,7 @@ function ManageExam() {
             }
             value={formId}
             options={examFormSelection}
-            placeholder="Chọn loại hình"
+            placeholder="Chọn hình thức"
             onChange={(formId) => setFormId(formId)}
           />
           <Space>
@@ -455,8 +465,18 @@ function ManageExam() {
       ),
     },
     {
+      title: 'Mã đề',
+      dataIndex: 'examCode',
+      align: 'left',
+      width: '1.2%',
+    },
+    {
       title: 'Ngày thi',
-      dataIndex: 'testDay',
+      render: (e, record, index) => (
+        <>
+          <p>{dayjs(record?.testDay).format('DD/MM/YYYY')}</p>
+        </>
+      ),
       align: 'left',
       width: '2%',
       filterDropdown: () => (
@@ -464,7 +484,7 @@ function ManageExam() {
           <Form.Item>
             <DatePicker
               placeholder="Chọn ngày thi"
-              format={'DD/MM/YYYY'}
+              format={'MM/DD/YYYY'}
               onChange={(value) =>
                 value != null
                   ? setTestDay(`${value.$D}/${value.$M + 1}/${value.$y}`)
@@ -484,7 +504,7 @@ function ManageExam() {
       title: 'Phòng thi',
       dataIndex: 'testRoom',
       align: 'left',
-      width: '1.5%',
+      width: '2.0%',
     },
     {
       title: 'Tiết BĐ',
@@ -784,64 +804,80 @@ function ManageExam() {
       align: 'left',
     },
     {
-      title: 'Tùy chọn',
+      title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
       align: 'center',
       fixed: 'right',
-      width: '3.5%',
-      render: (e, record, index) => (
-        <Button.Group key={index}>
-          <ButtonCustom
-            title={'Sửa'}
-            icon={<EditOutlined />}
-            handleClick={() => handleClickEdit(record)}
-            size="small"
-          />
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa phân công này?"
-            icon={<DeleteOutlined />}
-            okText="Xóa"
-            okType="danger"
-            onConfirm={() => handleConfirmDeleteExam(record.id)}
-          >
-            <Button
-              className="flex justify-center items-center text-md shadow-md"
-              icon={<DeleteOutlined />}
+      width: roleId !== 'LECTURER' ? '3.5%' : '0',
+      render:
+        roleId !== 'LECTURER' &&
+        ((e, record, index) => (
+          <Button.Group key={index}>
+            <ButtonCustom
+              title={'Sửa'}
+              icon={<EditOutlined />}
+              handleClick={() => handleClickEdit(record)}
               size="small"
-              danger
+            />
+            <Popconfirm
+              title="Bạn có chắc chắn muốn xóa phân công này?"
+              icon={<DeleteOutlined />}
+              okText="Xóa"
+              okType="danger"
+              onConfirm={() => handleConfirmDeleteExam(record.id)}
             >
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Button.Group>
-      ),
+              <Button
+                className="flex justify-center items-center text-md shadow-md"
+                icon={<DeleteOutlined />}
+                size="small"
+                danger
+              >
+                Xóa
+              </Button>
+            </Popconfirm>
+          </Button.Group>
+        )),
     },
   ];
 
   return (
-    <div className="h-[98vh]">
-      <div className="flex justify-between mb-3">
+    <div>
+      <Title level={3} className="uppercase text-center" style={{ marginBottom: 4 }}>
+        Danh sách phân công kỳ thi
+      </Title>
+      <div className="flex justify-between mb-2">
         <p className="my-auto">Tổng số kết quả: {total}</p>
-        <Title level={3} className="uppercase absolute left-[37%]">
-          Danh sách phân công kỳ thi
-        </Title>
         <Space>
-          <Upload {...props}>
-            <ButtonCustom
-              title="Thêm danh sách phân công"
-              icon={<UploadOutlined />}
-              loading={importExamList.isPending}
-            />
-          </Upload>
-          <Button
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setOpenModalFormExam(true);
-              setFormCreate(true);
-            }}
-            className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
-          >
-            Thêm phân công
-          </Button>
+          {roleId !== 'LECTURER' && (
+            <>
+              <QuestionCircleOutlined
+                title="Bấm để xem file mẫu import"
+                className="hover:cursor-pointer hover:text-primary"
+                onClick={() => setOpenModalError(true)}
+              />
+              <Upload {...props}>
+                <ButtonCustom
+                  title="Thêm danh sách phân công"
+                  icon={<UploadOutlined />}
+                  loading={importExamList.isPending}
+                />
+              </Upload>
+              <ButtonCustom
+                title="Danh sách hình thức thi"
+                handleClick={() => setOpenDrawer(true)}
+                icon={<TableOutlined />}
+              />
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setOpenModalFormExam(true);
+                  setFormCreate(true);
+                }}
+                className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+              >
+                Thêm phân công
+              </Button>
+            </>
+          )}
         </Space>
       </div>
       <ModalFormExam
@@ -863,7 +899,7 @@ function ManageExam() {
       <div className="relative">
         <Table
           scroll={{
-            y: 5000,
+            y: '64vh',
             x: 6400,
           }}
           rowKey="id"
@@ -898,6 +934,17 @@ function ManageExam() {
         )}
       </div>
       <ModalErrorImportExam open={openModalError} setOpen={(open) => setOpenModalError(open)} />
+
+      <Drawer
+        extra={<h1 className="ml-[-100%] font-medium text-xl">Danh sách hình thức thi</h1>}
+        placement="right"
+        open={openDrawer}
+        width={600}
+        maskClosable={false}
+        onClose={() => setOpenDrawer(false)}
+      >
+        <ManageExamForm open={openDrawer} />
+      </Drawer>
     </div>
   );
 }

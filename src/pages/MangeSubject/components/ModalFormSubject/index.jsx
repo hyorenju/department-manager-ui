@@ -1,6 +1,6 @@
 import { ModalForm, ProForm, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
 import { message, notification, Select, Spin } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createSubject, updateSubject, uploadFile } from '../../../../api/axios';
 import { useMutation } from '@tanstack/react-query';
 import { notificationSuccess, notificationError } from '../../../../components/Notification';
@@ -15,6 +15,8 @@ export function ModalFormSubject({
 }) {
   const [outline, setOutline] = useState('');
   const [lecture, setLecture] = useState('');
+  const [outlineList, setOutlineList] = useState([]);
+  const [lectureList, setLectureList] = useState([]);
 
   const handleCreateSubject = (values) => {
     createSubject(values).then((res) => {
@@ -61,6 +63,7 @@ export function ModalFormSubject({
     mutationFn: async (file) => {
       const formData = new FormData();
       formData.append('file', file.file);
+      setOutlineList(new Array(file.file));
       return await uploadFile(formData);
     },
     onSuccess: (res) => {
@@ -76,6 +79,7 @@ export function ModalFormSubject({
     mutationFn: async (file) => {
       const formData = new FormData();
       formData.append('file', file.file);
+      setLectureList(new Array(file.file));
       return await uploadFile(formData);
     },
     onSuccess: (res) => {
@@ -85,6 +89,11 @@ export function ModalFormSubject({
       }
     },
   });
+
+  useEffect(() => {
+    setOutlineList([]);
+    setLectureList([]);
+  }, [openForm]);
 
   return (
     <div>
@@ -152,11 +161,15 @@ export function ModalFormSubject({
             fieldProps={{
               name: 'file',
               customRequest: (file) => handleUploadOutline.mutate(file),
+              onRemove: () => {
+                setOutline('');
+                setOutlineList([]);
+              },
             }}
             transform={() => {
               return { outline: outline };
             }}
-            fileList={[]}
+            fileList={outlineList}
             icon={handleUploadOutline.isPending ? <LoadingOutlined /> : <UploadOutlined />}
             disabled={handleUploadOutline.isPending ? true : false}
           />
@@ -168,22 +181,18 @@ export function ModalFormSubject({
             fieldProps={{
               name: 'file',
               customRequest: (file) => handleUploadLecture.mutate(file),
+              onRemove: () => {
+                setLecture('');
+                setLectureList([]);
+              },
             }}
             transform={() => {
               return { lecture: lecture };
             }}
-            fileList={[]}
+            fileList={lectureList}
             icon={handleUploadLecture.isPending ? <LoadingOutlined /> : <UploadOutlined />}
             disabled={handleUploadLecture.isPending ? true : false}
           />
-        </ProForm.Group>
-        <ProForm.Group>
-          <p style={{ color: 'gray', fontStyle: 'italic' }}>
-            (*) Sau khi chọn file để upload, vui lòng đợi cho đến khi thông báo hiển thị.
-          </p>
-          <p style={{ color: 'gray', fontStyle: 'italic' }}>
-            Chúng tôi sẽ cho bạn biết việc tải tệp lên có thành công hay không.
-          </p>
         </ProForm.Group>
       </ModalForm>
     </div>

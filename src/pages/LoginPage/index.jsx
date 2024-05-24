@@ -24,14 +24,14 @@ function LoginPage() {
       if (res && res.success === true && res.data) {
         Cookies.set('access_token', res.data.jwt);
         if (
-          res.data.roleId === 'PRINCIPAL' ||
-          res.data.roleId === 'DEAN' ||
-          res.data.roleId === 'MANAGER' ||
-          res.data.roleId === 'LECTURER' ||
-          res.data.roleId === 'DEPUTY'
+          res.data.role?.id === 'PRINCIPAL' ||
+          res.data.role?.id === 'DEAN' ||
+          res.data.role?.id === 'MANAGER' ||
+          res.data.role?.id === 'LECTURER' ||
+          res.data.role?.id === 'DEPUTY'
         ) {
           sessionStorage.setItem('user_info', JSON.stringify(res.data));
-          sessionStorage.setItem('user_role', JSON.stringify(res.data?.roleId));
+          sessionStorage.setItem('user_role', JSON.stringify(res.data?.role?.id));
           notificationSuccess('Đăng nhập thành công');
           navigate(`/manage`);
         }

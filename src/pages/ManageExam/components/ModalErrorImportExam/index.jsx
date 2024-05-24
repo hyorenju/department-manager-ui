@@ -12,7 +12,9 @@ export const ModalErrorImportExam = ({ open, setOpen }) => {
         width={750}
         maskClosable={false}
         title={
-          <h1 className="text-sky-900 text-2xl font-bold">Lỗi import tệp excel phân công kỳ thi</h1>
+          <h1 className="text-sky-900 text-2xl font-bold">
+            Hướng dẫn import tệp excel phân công kỳ thi
+          </h1>
         }
         open={open}
         onCancel={handleClickOk}
@@ -26,7 +28,8 @@ export const ModalErrorImportExam = ({ open, setOpen }) => {
       >
         <p className="text-sky-900 italic font-semibold mb-4">
           Vui lòng trình bày tệp excel như ảnh dưới đây trước khi tiến hành import. Nếu đã trình bày
-          đúng format, vui lòng kiểm tra tệp lỗi mà chúng tôi đã gửi để kiểm tra chi tiết lỗi.
+          đúng format mà vẫn thất bại, vui lòng xem tệp lỗi mà chúng tôi đã gửi để kiểm tra chi tiết
+          lỗi.
         </p>
         <Image src={img} alt="Mẫu file kỳ thi" className="w-full h-full object-cover" />
       </Modal>

@@ -6,7 +6,7 @@ import {
   ProFormSelect,
   ProFormDatePicker,
 } from '@ant-design/pro-components';
-import { message, notification, Select } from 'antd';
+import { DatePicker, Form, message, notification, Select } from 'antd';
 import React, { useState, useEffect } from 'react';
 import {
   createExam,
@@ -20,6 +20,7 @@ import {
 } from '../../../../api/axios';
 import { useMutation } from '@tanstack/react-query';
 import { notificationSuccess, notificationError } from '../../../../components/Notification';
+import dayjs from 'dayjs';
 
 export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData, onSuccess }) {
   const [facultyId, setFacultyId] = useState(null);
@@ -291,30 +292,19 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             placeholder="Nhập phòng thi"
           />
         </ProForm.Group>
-
         <ProForm.Group>
-          {/* <ProFormText
-            rules={[
-              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
-            width="md"
-            name="testDay"
-            label="Ngày thi"
-            placeholder="dd/MM/yyyy"
-            disabled={isCreate ? false : true}
-          /> */}
           <ProFormDatePicker
             rules={[
               isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
             ]}
             width="md"
             placeholder="Chọn ngày thi"
-            name={'testDay'}
+            name="testDay"
+            label="Ngày thi"
+            disabled={isCreate ? false : true}
             fieldProps={{
               format: 'DD/MM/YYYY',
             }}
-            label="Ngày thi"
-            disabled={isCreate ? false : true}
           />
           <ProFormText
             rules={[
@@ -392,7 +382,16 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             options={examFormSelection}
             disabled={isCreate ? true : false}
           />
-          <ProFormText width="md" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
+          <ProFormText
+            rules={[
+              isCreate ? { required: false } : { required: true, message: 'Không được để trống' },
+            ]}
+            width="md"
+            name="examCode"
+            label="Mã đề thi"
+            placeholder="Nhập mã đề thi"
+            disabled={isCreate ? true : false}
+          />
         </ProForm.Group>
         <ProForm.Group>
           <ProFormSelect
@@ -566,6 +565,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             options={userSelection}
             disabled={isCreate ? true : false}
           />
+        </ProForm.Group>
+        <ProForm.Group>
+          <ProFormText width="1050px" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
         </ProForm.Group>
       </ModalForm>
     </div>

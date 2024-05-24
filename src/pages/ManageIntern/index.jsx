@@ -5,6 +5,7 @@ import {
   UserAddOutlined,
   DownloadOutlined,
   PlusOutlined,
+  TableOutlined,
 } from '@ant-design/icons';
 import { ProFormSelect } from '@ant-design/pro-components';
 import {
@@ -18,6 +19,7 @@ import {
   message,
   notification,
   Select,
+  Drawer,
 } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
@@ -35,8 +37,10 @@ import { messageErrorToSever } from '../../components/Message';
 import { ButtonCustom } from '../../components/ButtonCustom';
 import { ModalFormIntern } from './components/ModalFormIntern';
 import { useMutation } from '@tanstack/react-query';
+import { ManageInternType } from './pages/ManageInternType';
 
 function ManageIntern() {
+  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormIntern, setOpenModalFormIntern] = useState(false);
@@ -46,6 +50,7 @@ function ManageIntern() {
   const [size, setSize] = useState(10);
   const [dataSource, setDataSource] = useState([]);
   const [formCreate, setFormCreate] = useState(true);
+  const [openDrawer, setOpenDrawer] = useState(false);
 
   const [valueSearchName, setValueSearchName] = useState();
   const [searchName, setSearchName] = useState();
@@ -319,7 +324,7 @@ function ManageIntern() {
               },
             ]}
             placeholder="Chọn học kỳ"
-            onChange={(term) => setFacultyId(term)}
+            onChange={(term) => setTerm(term)}
           />
           <Space>
             <ButtonCustom handleClick={() => setTerm(null)} size="small" title={'Reset'} />
@@ -436,8 +441,8 @@ function ManageIntern() {
       title: 'File đề cương',
       render: (record) => (
         <>
-          <a href={record?.outline} target="_blank" rel="noopener noreferrer">
-            {record?.outline ? 'Bấm để xem' : null}
+          <a href={record?.outlineFile} target="_blank" rel="noopener noreferrer">
+            {record?.outlineFile ? 'Bấm để xem' : null}
           </a>
         </>
       ),
@@ -511,57 +516,68 @@ function ManageIntern() {
       align: 'left',
     },
     {
-      title: 'Tùy chọn',
+      title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
       align: 'center',
       fixed: 'right',
-      width: '7%',
-      render: (e, record, index) => (
-        <Button.Group key={index}>
-          <ButtonCustom
-            title={'Sửa'}
-            icon={<EditOutlined />}
-            handleClick={() => handleClickEdit(record)}
-            size="small"
-          />
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa đề tài này?"
-            icon={<DeleteOutlined />}
-            okText="Xóa"
-            okType="danger"
-            onConfirm={() => handleConfirmDeleteIntern(record.id)}
-          >
-            <Button
-              className="flex justify-center items-center text-md shadow-md"
-              icon={<DeleteOutlined />}
+      width: roleId !== 'LECTURER' ? '7%' : '0',
+      render:
+        roleId !== 'LECTURER' &&
+        ((e, record, index) => (
+          <Button.Group key={index}>
+            <ButtonCustom
+              title={'Sửa'}
+              icon={<EditOutlined />}
+              handleClick={() => handleClickEdit(record)}
               size="small"
-              danger
+            />
+            <Popconfirm
+              title="Bạn có chắc chắn muốn xóa đề tài này?"
+              icon={<DeleteOutlined />}
+              okText="Xóa"
+              okType="danger"
+              onConfirm={() => handleConfirmDeleteIntern(record.id)}
             >
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Button.Group>
-      ),
+              <Button
+                className="flex justify-center items-center text-md shadow-md"
+                icon={<DeleteOutlined />}
+                size="small"
+                danger
+              >
+                Xóa
+              </Button>
+            </Popconfirm>
+          </Button.Group>
+        )),
     },
   ];
 
   return (
-    <div className="h-[98vh]">
-      <div className="flex justify-between mb-3">
+    <div>
+      <Title level={3} className="uppercase text-center" style={{ marginBottom: 0 }}>
+        Danh sách đề tài thực tập
+      </Title>
+      <div className="flex justify-between mb-2">
         <p className="my-auto">Tổng số kết quả: {total}</p>
-        <Title level={3} className="uppercase absolute left-[45%]">
-          Danh sách đề tài thực tập
-        </Title>
         <Space>
-          <Button
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setOpenModalFormIntern(true);
-              setFormCreate(true);
-            }}
-            className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
-          >
-            Thêm đề tài thực tập
-          </Button>
+          {roleId !== 'LECTURER' && (
+            <>
+              <ButtonCustom
+                title="Loại đề tài"
+                handleClick={() => setOpenDrawer(true)}
+                icon={<TableOutlined />}
+              />
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setOpenModalFormIntern(true);
+                  setFormCreate(true);
+                }}
+                className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+              >
+                Thêm đề tài thực tập
+              </Button>
+            </>
+          )}
         </Space>
       </div>
       <ModalFormIntern
@@ -582,7 +598,7 @@ function ManageIntern() {
       <div className="relative">
         <Table
           scroll={{
-            y: 5000,
+            y: '64vh',
             x: 2200,
           }}
           rowKey="id"
@@ -616,6 +632,17 @@ function ManageIntern() {
           </div>
         )}
       </div>
+
+      <Drawer
+        extra={<h1 className="ml-[-100%] font-medium text-xl">Danh sách loại đề tài</h1>}
+        placement="right"
+        open={openDrawer}
+        width={600}
+        maskClosable={false}
+        onClose={() => setOpenDrawer(false)}
+      >
+        <ManageInternType open={openDrawer} />
+      </Drawer>
     </div>
   );
 }

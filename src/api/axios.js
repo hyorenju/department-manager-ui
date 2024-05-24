@@ -30,6 +30,18 @@ export const deleteUser = (id) => {
   return axios.post(`/user/delete/${id}`);
 };
 
+export const transferRole = (id) => {
+  return axios.post(`/user/transfer/${id}`);
+};
+
+export const updateProfile = (values) => {
+  return axios.post(`/user/update-profile`, values);
+};
+
+export const changePassword = (values) => {
+  return axios.post(`/user/change-password`, values);
+};
+
 //Master data
 export const getMasterDataSelection = (values) => {
   return axios.post(`/master-data/list`, values);

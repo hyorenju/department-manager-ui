@@ -6,38 +6,38 @@ import { ModalForm, ProForm, ProFormText } from '@ant-design/pro-components';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Space } from 'antd';
 
-export function ModalFormDegree({ open, onChangeClickOpen, degreeData, onSuccess }) {
+export function ModalFormInternType({ open, onChangeClickOpen, internTypeData, onSuccess }) {
   const queryClient = useQueryClient();
 
-  // handle create degree
-  const handleCreateDegree = useMutation({
-    mutationKey: ['createDegree'],
+  // handle create intern type
+  const handleCreateInternType = useMutation({
+    mutationKey: ['createInternType'],
     mutationFn: async (values) => createMasterData(values),
     onSuccess: (res) => {
       if (res && res.data?.success === true) {
         onSuccess();
         queryClient.invalidateQueries({
-          queryKey: ['degreeList'],
+          queryKey: ['internList'],
         });
-        notificationSuccess('Tạo trình độ thành công');
+        notificationSuccess('Tạo thành công');
         onChangeClickOpen(false);
-      } else messageErrorToSever(res.data, 'Tạo trình độ thất bại');
+      } else messageErrorToSever(res.data, 'Tạo thất bại');
     },
   });
 
-  // handle update degree
-  const handleUpdateDegree = useMutation({
-    mutationKey: ['updateDegree'],
-    mutationFn: async (values) => updateMasterData(degreeData.id, values),
+  // handle update intern type
+  const handleUpdateInternType = useMutation({
+    mutationKey: ['updateInternType'],
+    mutationFn: async (values) => updateMasterData(internTypeData.id, values),
     onSuccess: (res) => {
       if (res && res.data?.success === true) {
         onSuccess();
         queryClient.invalidateQueries({
-          queryKey: ['degreeList'],
+          queryKey: ['internList'],
         });
-        notificationSuccess('Cập nhật trình độ thành công');
+        notificationSuccess('Cập nhật thành công');
         onChangeClickOpen(false);
-      } else messageErrorToSever(res, 'Cập nhật trình độ thất bại');
+      } else messageErrorToSever(res, 'Cập nhật thất bại');
     },
   });
 
@@ -45,10 +45,10 @@ export function ModalFormDegree({ open, onChangeClickOpen, degreeData, onSuccess
     <div>
       <ModalForm
         width={350}
-        title={degreeData.id ? 'Cập nhật thông tin trình độ' : 'Thêm trình độ'}
+        title={internTypeData.id ? 'Cập nhật thông tin loại đề tài' : 'Thêm loại đề tài'}
         initialValues={{
-          name: degreeData.id ? degreeData.name : null,
-          type: degreeData.id ? degreeData.type : 'USER_DEGREE',
+          name: internTypeData.id ? internTypeData.name : null,
+          type: internTypeData.id ? internTypeData.type : 'INTERN_TYPE',
         }}
         modalProps={{
           maskClosable: false,
@@ -60,9 +60,11 @@ export function ModalFormDegree({ open, onChangeClickOpen, degreeData, onSuccess
               <ButtonCustom
                 type="primary"
                 handleClick={() => props.submit()}
-                title={degreeData.id ? 'Cập nhật' : 'Tạo mới'}
+                title={internTypeData.id ? 'Cập nhật' : 'Tạo mới'}
                 loading={
-                  degreeData.id ? handleUpdateDegree.isLoading : handleCreateDegree.isLoading
+                  internTypeData.id
+                    ? handleUpdateInternType.isLoading
+                    : handleCreateInternType.isLoading
                 }
               />
               <ButtonCustom title="Hủy" handleClick={() => onChangeClickOpen(false)} />
@@ -71,10 +73,10 @@ export function ModalFormDegree({ open, onChangeClickOpen, degreeData, onSuccess
         }}
         open={open}
         onFinish={(values) => {
-          if (degreeData.id) {
-            handleUpdateDegree.mutate(values);
+          if (internTypeData.id) {
+            handleUpdateInternType.mutate(values);
           } else {
-            handleCreateDegree.mutate(values);
+            handleCreateInternType.mutate(values);
           }
         }}
         onOpenChange={onChangeClickOpen}
@@ -84,8 +86,8 @@ export function ModalFormDegree({ open, onChangeClickOpen, degreeData, onSuccess
             rules={[{ required: true, message: 'Không được để trống' }]}
             width="sm"
             name="name"
-            label="Trình độ"
-            placeholder="Nhập trình độ"
+            label="Loại đề tài"
+            placeholder="Nhập loại đề tài"
           />
           <ProFormText name="type" hidden />
         </ProForm.Group>

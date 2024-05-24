@@ -172,12 +172,12 @@ function ManageFaculty() {
   ];
 
   return (
-    <div className="h-[98vh]">
-      <div className="flex justify-between mb-3">
+    <div>
+      <Title level={3} className="uppercase text-center" style={{ marginBottom: 0 }}>
+        Danh sách khoa
+      </Title>
+      <div className="flex justify-between mb-2">
         <p className="my-auto ml-2">Tổng số kết quả: {total}</p>
-        <Title level={3} className="uppercase absolute left-[55%]">
-          Danh sách khoa
-        </Title>
         <Space>
           <Button
             icon={<PlusOutlined />}
@@ -209,7 +209,7 @@ function ManageFaculty() {
       <div className="relative">
         <Table
           scroll={{
-            y: 5000,
+            y: '64vh',
             x: 1400,
           }}
           rowKey="id"

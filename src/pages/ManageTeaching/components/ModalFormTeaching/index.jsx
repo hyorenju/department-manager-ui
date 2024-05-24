@@ -8,8 +8,8 @@ import {
 import { message, notification, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {
-  createIntern,
-  updateIntern,
+  createTeaching,
+  updateTeaching,
   uploadFile,
   getMasterDataSelection,
   getUserSelection,
@@ -20,6 +20,7 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import { notificationSuccess, notificationError } from '../../../../components/Notification';
 import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
+import { messageErrorToSever } from '../../../../components/Message';
 
 export function ModalFormTeaching({
   isCreate,
@@ -28,13 +29,16 @@ export function ModalFormTeaching({
   teachingData,
   onSuccess,
 }) {
+  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
   const [facultyId, setFacultyId] = useState(null);
   const [departmentId, setDepartmentId] = useState(null);
-  const [componentFile, setComponentFile] = useState('');
-  const [summaryFile, setSummaryFile] = useState('');
+  const [component, setComponent] = useState('');
+  const [summary, setSummary] = useState('');
+  const [componentList, setComponentList] = useState([]);
+  const [summaryList, setSummaryList] = useState([]);
 
-  const handleCreateIntern = (values) => {
-    createIntern(values).then((res) => {
+  const handleCreateTeachingcreateTeaching = (values) => {
+    createTeaching(values).then((res) => {
       if (res.data?.success === true) {
         onSuccess();
         notification.success({
@@ -42,19 +46,14 @@ export function ModalFormTeaching({
           description: 'Tạo thành công',
           duration: 3,
         });
-      } else if (res.data?.error?.code === 2) {
-        // eslint-disable-next-line no-lone-blocks
-        {
-          res.data?.error?.errorDetailList?.forEach((e) => message.error(e.message));
-        }
-      } else if (res.data?.error?.code === 500) {
-        message.error(res.data?.error?.message);
+      } else {
+        notificationError(res.data?.error?.message);
       }
     });
   };
 
-  const handleUpdateIntern = (id, values) => {
-    updateIntern(id, values).then((res) => {
+  const handleUpdateTeachingupdateTeaching = (id, values) => {
+    updateTeaching(id, values).then((res) => {
       if (res.data?.success === true) {
         onSuccess();
         notification.success({
@@ -62,13 +61,8 @@ export function ModalFormTeaching({
           description: 'Sửa thành công',
           duration: 3,
         });
-      } else if (res.data?.error?.code === 2) {
-        // eslint-disable-next-line no-lone-blocks
-        {
-          res.data?.error?.errorDetailList?.forEach((e) => message.error(e.message));
-        }
-      } else if (res.data?.error?.code === 500) {
-        message.error(res.data?.error?.message);
+      } else {
+        notificationError(res.data?.error?.message);
       }
     });
   };
@@ -143,31 +137,33 @@ export function ModalFormTeaching({
     }
   }, [openForm, facultyId, departmentId]);
 
-  const handleUploadComponentFile = useMutation({
+  const handleUploadComponent = useMutation({
     mutationKey: ['uploadFile'],
     mutationFn: async (file) => {
       const formData = new FormData();
       formData.append('file', file.file);
+      setComponentList(new Array(file.file));
       return await uploadFile(formData);
     },
     onSuccess: (res) => {
       if (res.data?.success === true) {
-        setComponentFile(res.data?.data);
+        setComponent(res.data?.data);
         notificationSuccess('Upload thành công');
       }
     },
   });
 
-  const handleUploadSummaryFile = useMutation({
+  const handleUploadSummary = useMutation({
     mutationKey: ['uploadFile'],
     mutationFn: async (file) => {
       const formData = new FormData();
       formData.append('file', file.file);
+      setSummaryList(new Array(file.file));
       return await uploadFile(formData);
     },
     onSuccess: (res) => {
       if (res.data?.success === true) {
-        setSummaryFile(res.data?.data);
+        setSummary(res.data?.data);
         notificationSuccess('Upload thành công');
       }
     },
@@ -177,7 +173,7 @@ export function ModalFormTeaching({
     <div>
       <ModalForm
         width={1100}
-        title={teachingData.id ? 'Sửa thông tin đề tài thực tập' : 'Thêm đề tài thực tập'}
+        title={teachingData.id ? 'Sửa phân công' : 'Thêm phân công'}
         initialValues={teachingData}
         modalProps={{
           maskClosable: false,
@@ -188,9 +184,9 @@ export function ModalFormTeaching({
         open={openForm}
         onFinish={(values) => {
           if (teachingData.id) {
-            handleUpdateIntern(teachingData.id, values);
+            handleUpdateTeachingupdateTeaching(teachingData.id, values);
           } else {
-            handleCreateIntern(values);
+            handleCreateTeachingcreateTeaching(values);
           }
         }}
         onOpenChange={onChangeClickOpen}
@@ -278,7 +274,10 @@ export function ModalFormTeaching({
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[{ required: true, message: 'Không được để trống' }]}
+            rules={
+              roleId === 'LECTURER' ? null : [{ required: true, message: 'Không được để trống' }]
+            }
+            disabled={roleId === 'LECTURER' ? true : false}
             name={['teacher', 'id']}
             label="Giáo viên giảng dạy"
             placeholder="Chọn giáo viên giảng dạy"
@@ -313,45 +312,44 @@ export function ModalFormTeaching({
         <ProForm.Group>
           <ProFormUploadButton
             title="Bấm để tải"
-            name="componentFile"
+            name="component"
             label="Tải file thành phần"
             max={1}
             fieldProps={{
               name: 'file',
-              customRequest: (file) => handleUploadComponentFile.mutate(file),
+              customRequest: (file) => handleUploadComponent.mutate(file),
+              onRemove: () => {
+                setComponent('');
+                setComponentList([]);
+              },
             }}
             transform={() => {
-              return { componentFile: componentFile };
+              return { componentFile: component };
             }}
-            fileList={[]}
-            icon={handleUploadComponentFile.isPending ? <LoadingOutlined /> : <UploadOutlined />}
-            disabled={handleUploadComponentFile.isPending ? true : false}
+            fileList={componentList}
+            icon={handleUploadComponent.isPending ? <LoadingOutlined /> : <UploadOutlined />}
+            disabled={handleUploadComponent.isPending ? true : false}
           />
           <ProFormUploadButton
             title="Bấm để tải"
-            name="summaryFile"
+            name="summary"
             label="Tải file tổng kết"
             max={1}
             fieldProps={{
               name: 'file',
-              customRequest: (file) => handleUploadSummaryFile.mutate(file),
+              customRequest: (file) => handleUploadSummary.mutate(file),
+              onRemove: () => {
+                setSummary('');
+                setSummaryList([]);
+              },
             }}
             transform={() => {
-              return { summaryFile: summaryFile };
+              return { summaryFile: summary };
             }}
-            fileList={[]}
-            icon={handleUploadSummaryFile.isPending ? <LoadingOutlined /> : <UploadOutlined />}
-            disabled={handleUploadSummaryFile.isPending ? true : false}
+            fileList={summaryList}
+            icon={handleUploadSummary.isPending ? <LoadingOutlined /> : <UploadOutlined />}
+            disabled={handleUploadSummary.isPending ? true : false}
           />
-        </ProForm.Group>
-
-        <ProForm.Group>
-          <p style={{ width: '800px', color: 'gray', fontStyle: 'italic' }}>
-            (*) Sau khi chọn file để upload, vui lòng đợi cho đến khi thông báo hiển thị.
-          </p>
-          <p style={{ width: '800px', color: 'gray', fontStyle: 'italic' }}>
-            Chúng tôi sẽ cho bạn biết việc tải tệp lên có thành công hay không.
-          </p>
         </ProForm.Group>
       </ModalForm>
     </div>

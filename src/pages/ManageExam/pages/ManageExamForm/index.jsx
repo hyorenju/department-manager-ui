@@ -5,32 +5,25 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Popconfirm, Space, Table } from 'antd';
 import { useEffect, useState } from 'react';
 import { getMasterDataSelection, deleteMasterData } from '../../../../api/axios';
-import { ModalFormDegree } from '../components/ModalFormDegree';
+import { ModalFormExamForm } from '../components/ModalFormExamForm';
 
-export function TableListDegree() {
+export function ManageExamForm() {
   const [loadingTable, setLoadingTable] = useState(false);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(10);
   const [total, setTotal] = useState();
   const [openModal, setOpenModal] = useState(false);
-  const [degreeData, setDegreeData] = useState({});
-  const [degreeList, setDegreeList] = useState([]);
+  const [examFormData, setExamFormData] = useState({});
+  const [examFormList, setExamFormList] = useState([]);
 
-  // const { data, isFetching } = useQuery({
-  //   staleTime: 60 * 5000,
-  //   cacheTime: 5 * 60 * 5000,
-  //   queryKey: ['degreeList'],
-  //   queryFn: async () => await getMasterDataSelection({ type: 'USER_DEGREE' }),
-  // });
-
-  const handleGetDegreeList = () => {
+  const handleGetExamFormList = () => {
     setLoadingTable(true);
-    getMasterDataSelection({ type: 'USER_DEGREE' })
+    getMasterDataSelection({ type: 'EXAM_FORM' })
       .then((res) => {
         if (res.data?.success === true) {
           // const newArr = [];
           // res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
-          setDegreeList(res.data?.data?.items);
+          setExamFormList(res.data?.data?.items);
           setTotal(res.data?.data?.total);
         } else if (res && res.success === false) {
           notificationError(res?.error.message);
@@ -39,32 +32,16 @@ export function TableListDegree() {
       .finally(() => setLoadingTable(false));
   };
   useEffect(() => {
-    handleGetDegreeList();
+    handleGetExamFormList();
   }, []);
 
-  // const deleteDegree = useMutation({
-  //   mutationKey: ['deleteDegree'],
-  //   mutationFn: async (id) => await deleteMasterData(id),
-  //   onSuccess: async (res) => {
-  //     if (res && res.success === true) {
-  //       await queryClient.invalidateQueries({
-  //         queryKey: ['degreeList'],
-  //         exact: true,
-  //       });
-  //       notificationSuccess('Xóa thành công');
-  //     } else if (res && res.success === false) {
-  //       notificationError(res?.error.message);
-  //     }
-  //   },
-  // });
-
-  const deleteDegree = (id) => {
+  const deleteExamForm = (id) => {
     setLoadingTable(true);
     deleteMasterData(id)
       .then((res) => {
         if (res.data?.success === true) {
           notificationSuccess('Xóa thành công');
-          handleGetDegreeList();
+          handleGetExamFormList();
         } else {
           notificationError(res.data?.error?.message);
         }
@@ -74,29 +51,9 @@ export function TableListDegree() {
 
   const columns = [
     {
-      title: 'Trình độ',
+      title: 'Hình thức',
       dataIndex: 'name',
     },
-    // {
-    //   title: 'Hành động',
-    //   render: (record) => (
-    //     <Space>
-    //       <ButtonCustom
-    //         title="Chỉnh sửa"
-    //         handleClick={(record) => {
-    //           setOpenModal(true);
-    //           setDegreeData(record);
-    //         }}
-    //       />
-    //       <ButtonCustom
-    //         title="Xóa"
-    //         type="primary"
-    //         danger
-    //         handleClick={() => deleteDegree.mutate(record.id)}
-    //       />
-    //     </Space>
-    //   ),
-    // },
     {
       title: 'Tùy chọn',
       align: 'center',
@@ -109,16 +66,16 @@ export function TableListDegree() {
             icon={<EditOutlined />}
             handleClick={() => {
               setOpenModal(true);
-              setDegreeData(record);
+              setExamFormData(record);
             }}
             size="small"
           />
           <Popconfirm
-            title="Bạn có chắc chắn muốn xóa người dùng này?"
+            title="Bạn có chắc chắn muốn xóa hình thức này?"
             icon={<DeleteOutlined />}
             okText="Xóa"
             okType="danger"
-            onConfirm={() => deleteDegree(record.id)}
+            onConfirm={() => deleteExamForm(record.id)}
           >
             <Button
               className="flex justify-center items-center text-md shadow-md"
@@ -140,7 +97,7 @@ export function TableListDegree() {
           <p className="my-auto">Tổng số kết quả: {total}</p>
           <Space className="mb-2">
             <ButtonCustom
-              title="Thêm trình độ"
+              title="Thêm hình thức thi"
               icon={<PlusOutlined />}
               handleClick={() => {
                 setOpenModal(true);
@@ -153,7 +110,7 @@ export function TableListDegree() {
           className="w-[80%] mx-auto"
           rowKey={'name'}
           columns={columns}
-          dataSource={degreeList}
+          dataSource={examFormList}
           pagination={{
             onChange: (page, size) => {
               setPage(page);
@@ -167,16 +124,16 @@ export function TableListDegree() {
             // showSizeChanger: true,
           }}
         />
-        <ModalFormDegree
+        <ModalFormExamForm
           onSuccess={() => {
-            handleGetDegreeList();
+            handleGetExamFormList();
             setOpenModal(false);
           }}
-          degreeData={degreeData}
+          examFormData={examFormData}
           open={openModal}
           onChangeClickOpen={(open) => {
             if (!open) {
-              setDegreeData({});
+              setExamFormData({});
               setOpenModal(false);
             }
           }}

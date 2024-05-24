@@ -35,6 +35,7 @@ import { messageErrorToSever } from '../../components/Message';
 import { useMutation } from '@tanstack/react-query';
 
 function ManageSubject() {
+  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormSubject, setOpenModalFormSubject] = useState(false);
@@ -298,68 +299,72 @@ function ManageSubject() {
       width: '9%',
     },
     {
-      title: 'Tùy chọn',
+      title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
       align: 'center',
       fixed: 'right',
-      width: '7%',
-      render: (e, record, index) => (
-        <Button.Group key={index}>
-          <ButtonCustom
-            title={'Sửa'}
-            icon={<EditOutlined />}
-            handleClick={() => handleClickEdit(record)}
-            size="small"
-          />
-          <Popconfirm
-            title="Bạn có chắc chắn muốn môn học này?"
-            icon={<DeleteOutlined />}
-            okText="Xóa"
-            okType="danger"
-            onConfirm={() => handleConfirmDeleteSubject(record.id)}
-          >
-            <Button
-              className="flex justify-center items-center text-md shadow-md"
-              icon={<DeleteOutlined />}
+      width: roleId !== 'LECTURER' ? '7%' : '0',
+      render:
+        roleId !== 'LECTURER' &&
+        ((e, record, index) => (
+          <Button.Group key={index}>
+            <ButtonCustom
+              title={'Sửa'}
+              icon={<EditOutlined />}
+              handleClick={() => handleClickEdit(record)}
               size="small"
-              danger
+            />
+            <Popconfirm
+              title="Bạn có chắc chắn muốn môn học này?"
+              icon={<DeleteOutlined />}
+              okText="Xóa"
+              okType="danger"
+              onConfirm={() => handleConfirmDeleteSubject(record.id)}
             >
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Button.Group>
-      ),
+              <Button
+                className="flex justify-center items-center text-md shadow-md"
+                icon={<DeleteOutlined />}
+                size="small"
+                danger
+              >
+                Xóa
+              </Button>
+            </Popconfirm>
+          </Button.Group>
+        )),
     },
   ];
 
   return (
-    <div className="h-[98vh]">
-      <div className="flex justify-between mb-3">
+    <div>
+      <Title level={3} className="uppercase text-center" style={{ marginBottom: 0 }}>
+        Danh sách môn học
+      </Title>
+      <div className="flex justify-between mb-2">
         <div className="flex">
           <Tooltip className="flex" title="Tìm kiếm môn học">
             <Input
               prefix={<SearchOutlined className="opacity-60 mr-1" />}
               placeholder="Nhập từ khóa"
-              className="shadow-sm w-[230px]"
+              className="shadow-sm w-[230px] h-9 my-auto"
               onChange={(e) => setValueSearchSubject(e.target.value)}
               value={valueSearchSubject}
             />
           </Tooltip>
           <p className="my-auto ml-2">Tổng số kết quả: {total}</p>
         </div>
-        <Title level={3} className="uppercase absolute left-[55%]">
-          Danh sách môn học
-        </Title>
         <Space>
-          <Button
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setOpenModalFormSubject(true);
-              setFormCreate(true);
-            }}
-            className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
-          >
-            Thêm môn học
-          </Button>
+          {roleId !== 'LECTURER' && (
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setOpenModalFormSubject(true);
+                setFormCreate(true);
+              }}
+              className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+            >
+              Thêm môn học
+            </Button>
+          )}
         </Space>
       </div>
       <ModalFormSubject
@@ -380,7 +385,7 @@ function ManageSubject() {
       <div className="relative">
         <Table
           scroll={{
-            y: 5000,
+            y: '64vh',
             x: 2600,
           }}
           rowKey="id"

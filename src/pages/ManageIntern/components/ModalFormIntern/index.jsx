@@ -34,9 +34,12 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
   const [formCreate, setFormCreate] = useState(true);
   const [openModalFormStudent, setOpenModalFormStudent] = useState(false);
   const [studentData, setStudentData] = useState();
-  const [outlineFile, setOutlineFile] = useState('');
-  const [progressFile, setProgressFile] = useState('');
-  const [finalFile, setFinalFile] = useState('');
+  const [outline, setOutline] = useState('');
+  const [progress, setProgress] = useState('');
+  const [final, setFinal] = useState('');
+  const [outlineList, setOutlineList] = useState([]);
+  const [progressList, setProgressList] = useState([]);
+  const [finalList, setFinalList] = useState([]);
 
   const handleCreateIntern = (values) => {
     createIntern(values).then((res) => {
@@ -108,6 +111,9 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
     if (openForm && internData.id) {
       handleGetStudentList();
     }
+    setOutlineList([]);
+    setProgressList([]);
+    setFinalList([]);
   }, [openForm]);
 
   const handleGetStudentList = () => {
@@ -121,46 +127,50 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
       .finally(() => setLoadingTable(false));
   };
 
-  const handleUploadOutlineFile = useMutation({
+  const handleUploadOutline = useMutation({
     mutationKey: ['uploadFile'],
     mutationFn: async (file) => {
       const formData = new FormData();
       formData.append('file', file.file);
+      setOutlineList(new Array(file.file));
       return await uploadFile(formData);
     },
     onSuccess: (res) => {
       if (res.data?.success === true) {
-        setOutlineFile(res.data?.data);
+        setOutline(res.data?.data);
+        console.log(res.data?.data);
         notificationSuccess('Upload thành công');
       }
     },
   });
 
-  const handleUploadProgressFile = useMutation({
+  const handleUploadProgress = useMutation({
     mutationKey: ['uploadFile'],
     mutationFn: async (file) => {
       const formData = new FormData();
       formData.append('file', file.file);
+      setProgressList(new Array(file.file));
       return await uploadFile(formData);
     },
     onSuccess: (res) => {
       if (res.data?.success === true) {
-        setProgressFile(res.data?.data);
+        setProgress(res.data?.data);
         notificationSuccess('Upload thành công');
       }
     },
   });
 
-  const handleUploadFinalFile = useMutation({
+  const handleUploadFinal = useMutation({
     mutationKey: ['uploadFile'],
     mutationFn: async (file) => {
       const formData = new FormData();
       formData.append('file', file.file);
+      setFinalList(new Array(file.file));
       return await uploadFile(formData);
     },
     onSuccess: (res) => {
       if (res.data?.success === true) {
-        setFinalFile(res.data?.data);
+        setFinal(res.data?.data);
         notificationSuccess('Upload thành công');
       }
     },
@@ -229,7 +239,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
             size="small"
           />
           <Popconfirm
-            title="Bạn có chắc chắn muốn xóa bộ môn này?"
+            title="Bạn có chắc chắn muốn xóa sinh viên này?"
             icon={<DeleteOutlined />}
             okText="Xóa"
             okType="danger"
@@ -252,7 +262,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
   return (
     <div>
       <ModalForm
-        width={1100}
+        width={internData.id ? 1100 : 700}
         title={internData.id ? 'Sửa thông tin đề tài thực tập' : 'Thêm đề tài thực tập'}
         initialValues={internData}
         modalProps={{
@@ -318,7 +328,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
             rules={[{ required: true, message: 'Không được để trống' }]}
             name="term"
             label="Học kỳ"
-            placeholder="Chọn học kỳ"
+            placeholder="Chọn HK"
             options={[
               { label: 1, value: 1 },
               { label: 2, value: 2 },
@@ -328,73 +338,70 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
         </ProForm.Group>
 
         <ProForm.Group>
+          <ProFormText width="xl" name="name" label="Ghi chú" placeholder="Nhập ghi chú" />
+        </ProForm.Group>
+
+        <ProForm.Group>
           <ProFormUploadButton
             title="Bấm để tải"
-            name="outlineFile"
-            label="Tải file giáo trình"
+            name="outline"
+            label="Tải file đề cương"
             max={1}
             fieldProps={{
               name: 'file',
-              customRequest: (file) => handleUploadOutlineFile.mutate(file),
+              customRequest: (file) => handleUploadOutline.mutate(file),
+              onRemove: () => {
+                setOutline('');
+                setOutlineList([]);
+              },
             }}
             transform={() => {
-              return { outlineFile: outlineFile };
+              return { outlineFile: outline };
             }}
-            fileList={[]}
-            icon={handleUploadOutlineFile.isPending ? <LoadingOutlined /> : <UploadOutlined />}
-            disabled={handleUploadOutlineFile.isPending ? true : false}
+            fileList={outlineList}
+            icon={handleUploadOutline.isPending ? <LoadingOutlined /> : <UploadOutlined />}
+            disabled={handleUploadOutline.isPending ? true : false}
           />
           <ProFormUploadButton
             title="Bấm để tải"
-            name="progressFile"
+            name="progress"
             label="Tải file tiến độ"
             max={1}
             fieldProps={{
               name: 'file',
-              customRequest: (file) => handleUploadProgressFile.mutate(file),
+              customRequest: (file) => handleUploadProgress.mutate(file),
+              onRemove: () => {
+                setProgress('');
+                setProgressList([]);
+              },
             }}
             transform={() => {
-              return { progressFile: progressFile };
+              return { progressFile: progress };
             }}
-            fileList={[]}
-            icon={handleUploadProgressFile.isPending ? <LoadingOutlined /> : <UploadOutlined />}
-            disabled={handleUploadProgressFile.isPending ? true : false}
+            fileList={progressList}
+            icon={handleUploadProgress.isPending ? <LoadingOutlined /> : <UploadOutlined />}
+            disabled={handleUploadProgress.isPending ? true : false}
           />
           <ProFormUploadButton
             title="Bấm để tải"
-            name="finalFile"
+            name="final"
             label="Tải file tổng kết"
             max={1}
             fieldProps={{
               name: 'file',
-              customRequest: (file) => handleUploadFinalFile.mutate(file),
+              customRequest: (file) => handleUploadFinal.mutate(file),
+              onRemove: () => {
+                setFinal('');
+                setFinalList([]);
+              },
             }}
             transform={() => {
-              return { finalFile: finalFile };
+              return { finalFile: final };
             }}
-            fileList={[]}
-            icon={handleUploadFinalFile.isPending ? <LoadingOutlined /> : <UploadOutlined />}
-            disabled={handleUploadFinalFile.isPending ? true : false}
+            fileList={finalList}
+            icon={handleUploadFinal.isPending ? <LoadingOutlined /> : <UploadOutlined />}
+            disabled={handleUploadFinal.isPending ? true : false}
           />
-        </ProForm.Group>
-
-        <ProForm.Group>
-          <p style={{ width: '700px', color: 'gray', fontStyle: 'italic' }}>
-            (*) Sau khi chọn file để upload, vui lòng đợi cho đến khi thông báo hiển thị.
-          </p>
-          <p style={{ width: '700px', color: 'gray', fontStyle: 'italic' }}>
-            Chúng tôi sẽ cho bạn biết việc tải tệp lên có thành công hay không.
-          </p>
-          <Button
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setOpenModalFormStudent(true);
-              setFormCreate(true);
-            }}
-            className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
-          >
-            Thêm sinh viên vào đề tài
-          </Button>
         </ProForm.Group>
         <ModalFormStudent
           isCreate={formCreate}
@@ -414,6 +421,18 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
         />
         {!isCreate && (
           <div className="relative mt-3">
+            {!isCreate && (
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setOpenModalFormStudent(true);
+                  setFormCreate(true);
+                }}
+                className="absolute right-0 top-[-40px] flex items-center text-md font-medium shadow-md bg-slate-100"
+              >
+                Thêm sinh viên vào đề tài
+              </Button>
+            )}
             <Table
               scroll={{
                 y: 5000,

@@ -6,6 +6,7 @@ import {
   DownloadOutlined,
   UploadOutlined,
   PlusOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
 import { Button, Input, Popconfirm, Select, Space, Table, Tooltip, Typography, Upload } from 'antd';
 import React, { useEffect, useState } from 'react';
@@ -27,6 +28,7 @@ import { useMutation } from '@tanstack/react-query';
 import { ModalErrorImportTeaching, ModalShowError } from './components/ModalErrorImportTeaching';
 
 function ManageTeaching() {
+  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormTeaching, setOpenModalFormTeaching] = useState(false);
@@ -44,7 +46,9 @@ function ManageTeaching() {
   const [facultyId, setFacultyId] = useState();
   const [departmentId, setDepartmentId] = useState();
   const [searchSubjectName, setSearchSubjectName] = useState();
+  const [searchSubjectId, setSearchSubjectId] = useState();
   const [subjectName, setSubjectName] = useState();
+  const [subjectId, setSubjectId] = useState();
   const [teacherId, setTeacherId] = useState();
   // const [searchFacultyId, setSearchFacultyId] = useState('');
 
@@ -73,6 +77,7 @@ function ManageTeaching() {
       term: term,
       facultyId: facultyId,
       departmentId: departmentId,
+      subjectId: subjectId,
       subjectName: subjectName,
       status: status,
     })
@@ -97,7 +102,7 @@ function ManageTeaching() {
   useEffect(() => {
     handleGetTeachingList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, size, schoolYearId, term, facultyId, departmentId, subjectName, status]);
+  }, [page, size, schoolYearId, term, facultyId, departmentId, subjectId, subjectName, status]);
 
   const [schoolYearSelection, setSchoolYearSelection] = useState([]);
   useEffect(() => {
@@ -347,7 +352,43 @@ function ManageTeaching() {
       ),
     },
     {
-      title: 'Môn giảng dạy',
+      title: 'Mã môn',
+      dataIndex: ['subject', 'id'],
+      align: 'left',
+      width: '4%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập mã môn học'}
+            value={searchSubjectId}
+            onChange={(e) => setSearchSubjectId(e.target.value)}
+            className="w-[170px] mb-3 block"
+            onPressEnter={(e) => {
+              setSubjectId(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setSubjectId(null);
+                setSearchSubjectId(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo mã môn học">
+          <SearchOutlined
+            className={`${subjectId ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Tên môn giảng dạy',
       dataIndex: ['subject', 'name'],
       align: 'left',
       fixed: 'left',
@@ -376,7 +417,7 @@ function ManageTeaching() {
         </div>
       ),
       filterIcon: () => (
-        <Tooltip title="Tìm kiếm theo tên môn thi">
+        <Tooltip title="Tìm kiếm theo tên môn giảng dạy">
           <SearchOutlined
             className={`${subjectName ? 'text-blue-500' : undefined} text-md p-1 text-base`}
           />
@@ -535,64 +576,77 @@ function ManageTeaching() {
       align: 'left',
     },
     {
+      // title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
       title: 'Tùy chọn',
       align: 'center',
       fixed: 'right',
+      // width: roleId !== 'LECTURER' ? '5%' : '0',
       width: '5%',
-      render: (e, record, index) => (
-        <Button.Group key={index}>
-          <ButtonCustom
-            title={'Sửa'}
-            icon={<EditOutlined />}
-            handleClick={() => handleClickEdit(record)}
-            size="small"
-          />
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa phân công này?"
-            icon={<DeleteOutlined />}
-            okText="Xóa"
-            okType="danger"
-            onConfirm={() => handleConfirmDeleteTeaching(record.id)}
-          >
-            <Button
-              className="flex justify-center items-center text-md shadow-md"
-              icon={<DeleteOutlined />}
+      render:
+        // roleId !== 'LECTURER' &&
+        (e, record, index) => (
+          <Button.Group key={index}>
+            <ButtonCustom
+              title={'Sửa'}
+              icon={<EditOutlined />}
+              handleClick={() => handleClickEdit(record)}
               size="small"
-              danger
+            />
+            <Popconfirm
+              title="Bạn có chắc chắn muốn xóa phân công này?"
+              icon={<DeleteOutlined />}
+              okText="Xóa"
+              okType="danger"
+              onConfirm={() => handleConfirmDeleteTeaching(record.id)}
             >
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Button.Group>
-      ),
+              <Button
+                className="flex justify-center items-center text-md shadow-md"
+                icon={<DeleteOutlined />}
+                size="small"
+                danger
+              >
+                Xóa
+              </Button>
+            </Popconfirm>
+          </Button.Group>
+        ),
     },
   ];
 
   return (
-    <div className="h-[98vh]">
-      <div className="flex justify-between mb-3">
+    <div>
+      <Title level={3} className="uppercase text-center" style={{ marginBottom: 4 }}>
+        Danh sách phân công giảng dạy
+      </Title>
+      <div className="flex justify-between mb-2">
         <p className="my-auto">Tổng số kết quả: {total}</p>
-        <Title level={3} className="uppercase absolute left-[35%]">
-          Danh sách phân công giảng dạy
-        </Title>
         <Space>
-          <Upload {...props}>
-            <ButtonCustom
-              title="Thêm danh sách phân công"
-              icon={<UploadOutlined />}
-              loading={importTeachingList.isPending}
+          {/* {roleId !== 'LECTURER' && ( */}
+          <>
+            <QuestionCircleOutlined
+              title="Bấm để xem file mẫu import"
+              className="hover:cursor-pointer hover:text-primary"
+              onClick={() => setOpenModalError(true)}
             />
-          </Upload>
-          <Button
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setOpenModalFormTeaching(true);
-              setFormCreate(true);
-            }}
-            className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
-          >
-            Thêm phân công
-          </Button>
+            <Upload {...props}>
+              <ButtonCustom
+                title="Thêm danh sách phân công"
+                icon={<UploadOutlined />}
+                loading={importTeachingList.isPending}
+              />
+            </Upload>
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setOpenModalFormTeaching(true);
+                setFormCreate(true);
+              }}
+              className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+            >
+              Thêm phân công
+            </Button>
+          </>
+          {/* )} */}
         </Space>
       </div>
       <ModalFormTeaching
@@ -614,8 +668,8 @@ function ManageTeaching() {
       <div className="relative">
         <Table
           scroll={{
-            y: 5000,
-            x: 3200,
+            y: '64vh',
+            x: 3400,
           }}
           rowKey="id"
           loading={loadingTable}

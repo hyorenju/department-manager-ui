@@ -211,14 +211,17 @@ function ManageDepartment() {
   ];
 
   return (
-    <div className="h-[98vh]">
-      <div className="flex justify-between mb-3">
+    <div>
+      <Title level={3} className="uppercase text-center" style={{ marginBottom: 0 }}>
+        Danh sách bộ môn
+      </Title>
+      <div className="flex justify-between mb-2">
         <div className="flex">
           <Tooltip className="flex" title="Tìm kiếm bộ môn">
             <Input
               prefix={<SearchOutlined className="opacity-60 mr-1" />}
               placeholder="Nhập từ khóa"
-              className="shadow-sm w-[230px]"
+              className="shadow-sm w-[230px] my-auto h-9"
               onChange={(e) => setValueSearchDepartment(e.target.value)}
               value={valueSearchDepartment}
               onPressEnter={() => setKeyword(valueSearchDepartment)}
@@ -226,9 +229,6 @@ function ManageDepartment() {
           </Tooltip>
           <p className="my-auto ml-2">Tổng số kết quả: {total}</p>
         </div>
-        <Title level={3} className="uppercase absolute left-[50%]">
-          Danh sách bộ môn
-        </Title>
         <Space>
           <Button
             icon={<PlusOutlined />}
@@ -260,7 +260,7 @@ function ManageDepartment() {
       <div className="relative">
         <Table
           scroll={{
-            y: 5000,
+            y: '64vh',
             x: 1600,
           }}
           rowKey="id"
