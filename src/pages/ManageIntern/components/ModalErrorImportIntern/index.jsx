@@ -1,8 +1,8 @@
 import { Image, Modal } from 'antd';
 import React from 'react';
-import img from '../../../../assets/img/import-exam-require.png';
+import img from '../../../../assets/img/import-intern-require.png';
 
-export const ModalErrorImportExam = ({ open, setOpen }) => {
+export const ModalErrorImportIntern = ({ open, setOpen }) => {
   const handleClickOk = () => {
     setOpen(false);
   };
@@ -13,7 +13,7 @@ export const ModalErrorImportExam = ({ open, setOpen }) => {
         maskClosable={true}
         title={
           <h1 className="text-sky-900 text-2xl font-bold">
-            Hướng dẫn import tệp excel phân công kỳ thi
+            Hướng dẫn import tệp excel đề tài thực tập
           </h1>
         }
         open={open}
@@ -31,7 +31,7 @@ export const ModalErrorImportExam = ({ open, setOpen }) => {
           đúng format mà vẫn thất bại, vui lòng xem tệp lỗi mà chúng tôi đã gửi để kiểm tra chi tiết
           lỗi.
         </p>
-        <Image src={img} alt="Mẫu file kỳ thi" className="w-full h-full object-cover" />
+        <Image src={img} alt="Mẫu file đề tài thực tập" className="w-full h-full object-cover" />
       </Modal>
     </>
   );

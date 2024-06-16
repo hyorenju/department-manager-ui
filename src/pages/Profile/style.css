@@ -1,0 +1,30 @@
+.cover-image{
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: black;
+}
+
+.cover-image:hover{
+    cursor: pointer;
+    .camera{
+        display: block;
+    }
+}
+
+.camera{
+    display: none;
+    font-size: 50px;
+}
+
+.avatar-image{
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-image:hover{
+    opacity: 0.5;
+}

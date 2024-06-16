@@ -7,8 +7,24 @@ import {
   UploadOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
+  FileDoneOutlined,
+  SaveOutlined,
+  SwapOutlined,
 } from '@ant-design/icons';
-import { Button, Input, Popconfirm, Select, Space, Table, Tooltip, Typography, Upload } from 'antd';
+import {
+  Button,
+  Input,
+  Popconfirm,
+  Popover,
+  Select,
+  Space,
+  Table,
+  Tooltip,
+  Typography,
+  Upload,
+  message,
+  notification,
+} from 'antd';
 import React, { useEffect, useState } from 'react';
 import {
   deleteTeaching,
@@ -23,6 +39,7 @@ import { ButtonCustom } from '../../components/ButtonCustom';
 import { notificationError, notificationSuccess } from '../../components/Notification';
 import { ModalFormTeaching } from './components/ModalFormTeaching';
 import { excelApi } from '../../api/excelApi';
+import { promiseApi } from '../../api/promiseApi';
 import { messageErrorToSever } from '../../components/Message';
 import { useMutation } from '@tanstack/react-query';
 import { ModalErrorImportTeaching, ModalShowError } from './components/ModalErrorImportTeaching';
@@ -50,7 +67,9 @@ function ManageTeaching() {
   const [subjectName, setSubjectName] = useState();
   const [subjectId, setSubjectId] = useState();
   const [teacherId, setTeacherId] = useState();
+  const [teacherIdToRead, setTeacherIdToRead] = useState(null);
   // const [searchFacultyId, setSearchFacultyId] = useState('');
+  const [isAll, setIsAll] = useState(false);
 
   // handle delete teaching
   const handleConfirmDeleteTeaching = (id) => {
@@ -73,6 +92,7 @@ function ManageTeaching() {
     getTeachingList({
       page: page,
       size: size,
+      isAll: isAll,
       schoolYear: schoolYearId,
       term: term,
       facultyId: facultyId,
@@ -99,10 +119,35 @@ function ManageTeaching() {
     setFormCreate(false);
   };
 
+  const readDataFromDaoTao = useMutation({
+    mutationKey: ['readFromDaoTao'],
+    mutationFn: () => promiseApi.readFromDaoTao(teacherIdToRead),
+    onSuccess: (res) => {
+      if (res.success === true) {
+        notificationSuccess('Đọc thành công, dữ liệu đã được thêm vào hệ thống');
+        setTeacherIdToRead(null);
+        handleGetTeachingList();
+      } else {
+        messageErrorToSever(res, 'Lỗi không xác định');
+      }
+    },
+  });
+
   useEffect(() => {
     handleGetTeachingList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, size, schoolYearId, term, facultyId, departmentId, subjectId, subjectName, status]);
+  }, [
+    page,
+    size,
+    isAll,
+    schoolYearId,
+    term,
+    facultyId,
+    departmentId,
+    subjectId,
+    subjectName,
+    status,
+  ]);
 
   const [schoolYearSelection, setSchoolYearSelection] = useState([]);
   useEffect(() => {
@@ -158,6 +203,7 @@ function ManageTeaching() {
     mutationKey: ['exportTeachingList'],
     mutationFn: () =>
       excelApi.exportTeachingList({
+        isAll: isAll,
         schoolYear: schoolYearId,
         term: term,
         facultyId: facultyId,
@@ -218,29 +264,43 @@ function ManageTeaching() {
     },
   };
 
+  const handleSetIsAll = () => {
+    if (isAll) {
+      setIsAll(false);
+    } else {
+      setIsAll(true);
+    }
+  };
+
   const columns = [
     {
       title: 'Năm học',
       dataIndex: ['schoolYear', 'name'],
       align: 'left',
       width: '3.5%',
-      filterDropdown: () => (
-        <div className="p-3 flex flex-col gap-2 w-[170px]">
-          <Select
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            value={schoolYearId}
-            options={schoolYearSelection}
-            placeholder="Chọn năm học"
-            onChange={(schoolYearId) => setSchoolYearId(schoolYearId)}
-          />
-          <Space>
-            <ButtonCustom handleClick={() => setSchoolYearId(null)} size="small" title={'Reset'} />
-          </Space>
-        </div>
-      ),
+      filterDropdown:
+        isAll &&
+        (() => (
+          <div className="p-3 flex flex-col gap-2 w-[170px]">
+            <Select
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              value={schoolYearId}
+              options={schoolYearSelection}
+              placeholder="Chọn năm học"
+              onChange={(schoolYearId) => setSchoolYearId(schoolYearId)}
+            />
+            <Space>
+              <ButtonCustom
+                handleClick={() => setSchoolYearId(null)}
+                size="small"
+                title={'Reset'}
+              />
+            </Space>
+          </div>
+        )),
       filterIcon: () => (
         <Tooltip title="Tìm kiếm theo năm học">
           <SearchOutlined className={`${schoolYearId ? 'text-blue-500' : undefined} text-base`} />
@@ -252,36 +312,38 @@ function ManageTeaching() {
       dataIndex: 'term',
       align: 'left',
       width: '2%',
-      filterDropdown: () => (
-        <div className="p-3 flex flex-col gap-2 w-[150px]">
-          <Select
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            value={term}
-            options={[
-              {
-                label: 'Học kỳ 1',
-                value: 1,
-              },
-              {
-                label: 'Học kỳ 2',
-                value: 2,
-              },
-              {
-                label: 'Học kỳ 3',
-                value: 3,
-              },
-            ]}
-            placeholder="Chọn học kỳ"
-            onChange={(term) => setTerm(term)}
-          />
-          <Space>
-            <ButtonCustom handleClick={() => setTerm(null)} size="small" title={'Reset'} />
-          </Space>
-        </div>
-      ),
+      filterDropdown:
+        isAll &&
+        (() => (
+          <div className="p-3 flex flex-col gap-2 w-[150px]">
+            <Select
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              value={term}
+              options={[
+                {
+                  label: 'Học kỳ 1',
+                  value: 1,
+                },
+                {
+                  label: 'Học kỳ 2',
+                  value: 2,
+                },
+                {
+                  label: 'Học kỳ 3',
+                  value: 3,
+                },
+              ]}
+              placeholder="Chọn học kỳ"
+              onChange={(term) => setTerm(term)}
+            />
+            <Space>
+              <ButtonCustom handleClick={() => setTerm(null)} size="small" title={'Reset'} />
+            </Space>
+          </div>
+        )),
       filterIcon: () => (
         <Tooltip title="Tìm kiếm theo học kỳ">
           <SearchOutlined className={`${term ? 'text-blue-500' : undefined} text-base`} />
@@ -293,30 +355,32 @@ function ManageTeaching() {
       dataIndex: ['teacher', 'department', 'faculty', 'name'],
       align: 'left',
       width: '8.5%',
-      filterDropdown: () => (
-        <div className="p-3 flex flex-col gap-2 w-[280px]">
-          <Select
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            value={facultyId}
-            options={facultySelection}
-            placeholder="Chọn khoa"
-            onChange={(searchFacultyId) => setFacultyId(searchFacultyId)}
-          />
-          <Space>
-            <ButtonCustom
-              handleClick={() => {
-                setFacultyId(null);
-                // setSearchFacultyId(null);
-              }}
-              size="small"
-              title={'Reset'}
+      filterDropdown:
+        isAll &&
+        (() => (
+          <div className="p-3 flex flex-col gap-2 w-[280px]">
+            <Select
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              value={facultyId}
+              options={facultySelection}
+              placeholder="Chọn khoa"
+              onChange={(searchFacultyId) => setFacultyId(searchFacultyId)}
             />
-          </Space>
-        </div>
-      ),
+            <Space>
+              <ButtonCustom
+                handleClick={() => {
+                  setFacultyId(null);
+                  // setSearchFacultyId(null);
+                }}
+                size="small"
+                title={'Reset'}
+              />
+            </Space>
+          </div>
+        )),
       filterIcon: () => (
         <Tooltip title="Tìm kiếm theo khoa">
           <SearchOutlined className={`${facultyId ? 'text-blue-500' : undefined} text-base`} />
@@ -328,23 +392,29 @@ function ManageTeaching() {
       dataIndex: ['teacher', 'department', 'name'],
       align: 'left',
       width: '7.5%',
-      filterDropdown: () => (
-        <div className="p-3 flex flex-col gap-2 w-[280px]">
-          <Select
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            value={departmentId}
-            options={departmentSelection}
-            placeholder="Chọn bộ môn"
-            onChange={(departmentId) => setDepartmentId(departmentId)}
-          />
-          <Space>
-            <ButtonCustom handleClick={() => setDepartmentId(null)} size="small" title={'Reset'} />
-          </Space>
-        </div>
-      ),
+      filterDropdown:
+        isAll &&
+        (() => (
+          <div className="p-3 flex flex-col gap-2 w-[280px]">
+            <Select
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              value={departmentId}
+              options={departmentSelection}
+              placeholder="Chọn bộ môn"
+              onChange={(departmentId) => setDepartmentId(departmentId)}
+            />
+            <Space>
+              <ButtonCustom
+                handleClick={() => setDepartmentId(null)}
+                size="small"
+                title={'Reset'}
+              />
+            </Space>
+          </div>
+        )),
       filterIcon: () => (
         <Tooltip title="Tìm kiếm theo bộ môn">
           <SearchOutlined className={`${departmentId ? 'text-blue-500' : undefined} text-base`} />
@@ -436,23 +506,25 @@ function ManageTeaching() {
       ),
       align: 'left',
       width: '7%',
-      filterDropdown: () => (
-        <div className="p-3 flex flex-col gap-2 w-[300px]">
-          <Select
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            value={teacherId}
-            options={teacherSelection}
-            placeholder="Tìm giảng viên"
-            onChange={(teacherId) => setTeacherId(teacherId)}
-          />
-          <Space>
-            <ButtonCustom handleClick={() => setTeacherId(null)} size="small" title={'Reset'} />
-          </Space>
-        </div>
-      ),
+      filterDropdown:
+        isAll &&
+        (() => (
+          <div className="p-3 flex flex-col gap-2 w-[300px]">
+            <Select
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              value={teacherId}
+              options={teacherSelection}
+              placeholder="Tìm giảng viên"
+              onChange={(teacherId) => setTeacherId(teacherId)}
+            />
+            <Space>
+              <ButtonCustom handleClick={() => setTeacherId(null)} size="small" title={'Reset'} />
+            </Space>
+          </div>
+        )),
       filterIcon: () => (
         <Tooltip title="Tìm kiếm theo giáo viên">
           <SearchOutlined className={`${teacherId ? 'text-blue-500' : undefined} text-base`} />
@@ -577,14 +649,14 @@ function ManageTeaching() {
     },
     {
       // title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
-      title: 'Tùy chọn',
+      title: isAll & (roleId == 'LECTURER') ? '' : 'Tùy chọn',
       align: 'center',
       fixed: 'right',
       // width: roleId !== 'LECTURER' ? '5%' : '0',
-      width: '5%',
+      width: isAll & (roleId == 'LECTURER') ? '0' : '5%',
       render:
-        // roleId !== 'LECTURER' &&
-        (e, record, index) => (
+        (!isAll || roleId != 'LECTURER') &&
+        ((e, record, index) => (
           <Button.Group key={index}>
             <ButtonCustom
               title={'Sửa'}
@@ -609,7 +681,7 @@ function ManageTeaching() {
               </Button>
             </Popconfirm>
           </Button.Group>
-        ),
+        )),
     },
   ];
 
@@ -619,7 +691,14 @@ function ManageTeaching() {
         Danh sách phân công giảng dạy
       </Title>
       <div className="flex justify-between mb-2">
-        <p className="my-auto">Tổng số kết quả: {total}</p>
+        <div className="flex">
+          <ButtonCustom
+            title={isAll ? 'Chuyển về chế độ xem cá nhân' : 'Chuyển sang chế độ xem tất cả'}
+            handleClick={() => handleSetIsAll()}
+            icon={<SwapOutlined />}
+          />
+          <p className="my-auto ml-3">Tổng số kết quả: {total}</p>
+        </div>
         <Space>
           {/* {roleId !== 'LECTURER' && ( */}
           <>
@@ -635,6 +714,42 @@ function ManageTeaching() {
                 loading={importTeachingList.isPending}
               />
             </Upload>
+            <Popover
+              placement="bottom"
+              content={
+                <div className="flex justify-between w-[300px]">
+                  <Input
+                    title="Mã giảng viên"
+                    placeholder={'Nhập mã giảng viên'}
+                    value={teacherIdToRead}
+                    onChange={(e) => {
+                      setTeacherIdToRead(e.target.value);
+                    }}
+                    className="w-[170px] mb-3 block"
+                  />
+                  <Button
+                    icon={<SaveOutlined />}
+                    style={{ marginRight: 0 }}
+                    onClick={() => {
+                      readDataFromDaoTao.mutate();
+                    }}
+                    loading={readDataFromDaoTao.isPending}
+                    disabled={teacherIdToRead === null}
+                  >
+                    Tìm và lưu
+                  </Button>
+                </div>
+              }
+              trigger={'click'}
+            >
+              <Button
+                icon={<FileDoneOutlined />}
+                className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+              >
+                Đọc từ trang đào tạo
+              </Button>
+            </Popover>
+
             <Button
               icon={<PlusOutlined />}
               onClick={() => {
@@ -685,7 +800,7 @@ function ManageTeaching() {
             size: size,
             total: total,
             current: page,
-            // showSizeChanger: true,
+            showSizeChanger: false,
           }}
         />
 

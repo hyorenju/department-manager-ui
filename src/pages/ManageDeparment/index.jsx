@@ -277,7 +277,7 @@ function ManageDepartment() {
             size: size,
             total: total,
             current: page,
-            // showSizeChanger: true,
+            showSizeChanger: false,
           }}
         />
       </div>

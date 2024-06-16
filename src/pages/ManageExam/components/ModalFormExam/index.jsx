@@ -328,6 +328,53 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
           />
         </ProForm.Group>
         <ProForm.Group>
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            rules={[
+              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
+            name={['proctor1', 'id']}
+            label="Giám thị coi thi 1"
+            placeholder="Chọn giám thị coi thi 1"
+            options={proctorSelection}
+            disabled={isCreate ? true : false}
+          />
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            rules={[
+              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
+            name={['proctor2', 'id']}
+            label="Giám thị coi thi 2"
+            placeholder="Chọn giám thị coi thi 2"
+            options={proctorSelection}
+            disabled={isCreate ? true : false}
+          />
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            rules={[
+              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
+            name={['printer', 'id']}
+            label="Giáo viên in sao đề"
+            placeholder="Chọn giáo viên"
+            options={userSelection}
+            disabled={isCreate ? true : false}
+          />
+        </ProForm.Group>
+        <ProForm.Group>
           <ProFormText
             rules={[
               isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
@@ -377,8 +424,8 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
             ]}
             name={['form', 'id']}
-            label="Loại bài thi"
-            placeholder="Chọn loại bài thi"
+            label="Hình thức thi"
+            placeholder="Chọn hình thức thi"
             options={examFormSelection}
             disabled={isCreate ? true : false}
           />
@@ -422,53 +469,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Giáo viên bốc đề"
             placeholder="Chọn giáo viên bốc đề"
             options={userSelection}
-            disabled={isCreate ? true : false}
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormSelect
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
-            name={['printer', 'id']}
-            label="Giáo viên in sao đề"
-            placeholder="Chọn giáo viên"
-            options={userSelection}
-            disabled={isCreate ? true : false}
-          />
-          <ProFormSelect
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
-            name={['proctor1', 'id']}
-            label="Giám thị coi thi 1"
-            placeholder="Chọn giám thị coi thi 1"
-            options={proctorSelection}
-            disabled={isCreate ? true : false}
-          />
-          <ProFormSelect
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
-            name={['proctor2', 'id']}
-            label="Giám thị coi thi 2"
-            placeholder="Chọn giám thị coi thi 2"
-            options={proctorSelection}
             disabled={isCreate ? true : false}
           />
         </ProForm.Group>

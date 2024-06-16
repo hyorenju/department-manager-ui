@@ -121,7 +121,7 @@ export function ManageExamForm() {
             current: page,
             total: total,
             pageSize: size,
-            // showSizeChanger: true,
+            showSizeChanger: false,
           }}
         />
         <ModalFormExamForm

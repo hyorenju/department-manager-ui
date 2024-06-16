@@ -31,6 +31,16 @@ export const excelApi = {
     }
   },
 
+  importInternList: async (values) => {
+    const url = '/intern/import';
+    try {
+      const res = await instane.post(url, values);
+      return res.data;
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+
   exportInternList: async (values) => {
     const url = '/intern/export';
     try {

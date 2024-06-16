@@ -9,6 +9,7 @@ import ManageExam from './pages/ManageExam';
 import ManageTeaching from './pages/ManageTeaching';
 import ManageFaculty from './pages/ManageFaculty';
 import ManageDepartment from './pages/ManageDeparment';
+import Statistic from './pages/Statistic';
 import { Button } from 'antd';
 import Profile from './pages/Profile';
 
@@ -70,13 +71,18 @@ export const router = createBrowserRouter([
         element: <Profile />,
         errorElement: <NotFound />,
       },
+      {
+        path: 'statistic',
+        element: <Statistic />,
+        errorElement: <NotFound />,
+      },
     ],
   },
   {
     path: '/instruction',
     element: (
       <div>
-        <h2 className="text-rose-600 text-[20px] font-bold uppercase absolute bottom-[60%] right-[60%] translate-x-[50%] translate-y-[50%]">
+        <h2 className="text-rose-600 text-[20px] font-bold uppercase absolute bottom-[65%] right-[60%] translate-x-[50%] translate-y-[50%]">
           Tính năng này đang phát triển
         </h2>
         <a

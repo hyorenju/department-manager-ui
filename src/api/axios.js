@@ -38,6 +38,10 @@ export const updateProfile = (values) => {
   return axios.post(`/user/update-profile`, values);
 };
 
+export const updateAvatar = (values) => {
+  return axios.post(`/user/update-avatar`, values);
+};
+
 export const changePassword = (values) => {
   return axios.post(`/user/change-password`, values);
 };
@@ -150,7 +154,7 @@ export const deleteSubject = (id) => {
 
 //Upload file
 export const uploadFile = (values) => {
-  return axios.post(`/test/upload-file`, values);
+  return axios.post(`/upload-file`, values);
 };
 
 //Intern
@@ -187,6 +191,10 @@ export const deleteTeaching = (id) => {
   return axios.post(`/teaching/delete/${id}`);
 };
 
+export const readFromDaoTao = (id) => {
+  return axios.post(`/teaching/read-from-daotao/${id}`);
+};
+
 //Exam
 export const getExamList = (values) => {
   return axios.post(`/exam/list`, values);
@@ -206,6 +214,10 @@ export const updateExam = (id, values) => {
 
 export const deleteExam = (id) => {
   return axios.post(`/exam/delete/${id}`);
+};
+
+export const updateProctor = (id, values) => {
+  return axios.post(`/exam/update-proctor/${id}`, values);
 };
 
 //Student

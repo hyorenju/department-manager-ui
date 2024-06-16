@@ -338,7 +338,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
         </ProForm.Group>
 
         <ProForm.Group>
-          <ProFormText width="xl" name="name" label="Ghi chú" placeholder="Nhập ghi chú" />
+          <ProFormText width="xl" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
         </ProForm.Group>
 
         <ProForm.Group>

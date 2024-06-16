@@ -10,7 +10,7 @@ export const ModalErrorImportTeaching = ({ open, setOpen }) => {
     <>
       <Modal
         width={750}
-        maskClosable={false}
+        maskClosable={true}
         title={
           <h1 className="text-sky-900 text-2xl font-bold">
             Hướng dẫn import tệp excel phân công giảng dạy

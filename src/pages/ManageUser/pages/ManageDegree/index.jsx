@@ -121,7 +121,7 @@ export function ManageDegree() {
             current: page,
             total: total,
             pageSize: size,
-            // showSizeChanger: true,
+            showSizeChanger: false,
           }}
         />
         <ModalFormDegree

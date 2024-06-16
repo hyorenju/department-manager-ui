@@ -40,7 +40,7 @@ function LoginSuccess() {
           getItem('Danh sách người dùng', `/manage/user`),
           getItem('Danh sách lớp', `/manage/class`),
           getItem('Danh sách môn học', `/manage/subject`),
-          getItem('Danh sách đề tài TT', `/manage/intern`),
+          getItem('Quản lý đề tài thực tập', `/manage/intern`),
           getItem('Phân công giảng dạy', `/manage/teaching`),
           getItem('Phân công kỳ thi', `/manage/exam`),
         ];
@@ -82,6 +82,7 @@ function LoginSuccess() {
           getItem('Phân công kỳ thi', `/manage/exam`),
           getItem('Danh sách khoa', `/manage/faculty`),
           getItem('Danh sách bộ môn', `/manage/department`),
+          getItem('Thống kê', `/manage/statistic`),
         ];
       default:
         return [];
@@ -96,7 +97,7 @@ function LoginSuccess() {
         </a>
       </div>
       <Divider className="my-2"></Divider>
-      <div className="hover:bg-indigo-100 rounded-md p-1">
+      <div className=" w-[180px] hover:bg-indigo-100 rounded-md p-1">
         <a className="hover:text-black" href="/instruction">
           Hướng dẫn sử dụng
         </a>
@@ -139,9 +140,7 @@ function LoginSuccess() {
                   className="bg-white cursor-pointer mr-6"
                   shape="circle"
                   size={40}
-                  src={
-                    <img src={userData?.avatar ? userData?.avatar : userAvatar} alt={'avatar'} />
-                  }
+                  src={<img src={userData.avatar ? userData.avatar : userAvatar} alt={'avatar'} />}
                 />
               </Popover>
             </Space>

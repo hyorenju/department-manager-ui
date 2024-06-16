@@ -557,7 +557,7 @@ function ManageUser() {
         placement="right"
         open={openDrawer}
         width={600}
-        maskClosable={false}
+        maskClosable={true}
         onClose={() => setOpenDrawer(false)}
       >
         <ManageDegree open={openDrawer} />
