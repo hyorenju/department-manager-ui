@@ -1,16 +1,16 @@
 import {
   DeleteOutlined,
-  EditOutlined,
-  SearchOutlined,
-  UserAddOutlined,
   DownloadOutlined,
-  UploadOutlined,
+  EditOutlined,
+  FileDoneOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
-  FileDoneOutlined,
   SaveOutlined,
+  SearchOutlined,
   SwapOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
+import { useMutation } from '@tanstack/react-query';
 import {
   Button,
   Input,
@@ -22,27 +22,23 @@ import {
   Tooltip,
   Typography,
   Upload,
-  message,
-  notification,
 } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {
   deleteTeaching,
-  getAllRole,
   getDepartmentSelection,
   getFacultySelection,
   getMasterDataSelection,
   getTeachingList,
   getUserSelection,
 } from '../../api/axios';
-import { ButtonCustom } from '../../components/ButtonCustom';
-import { notificationError, notificationSuccess } from '../../components/Notification';
-import { ModalFormTeaching } from './components/ModalFormTeaching';
 import { excelApi } from '../../api/excelApi';
 import { promiseApi } from '../../api/promiseApi';
+import { ButtonCustom } from '../../components/ButtonCustom';
 import { messageErrorToSever } from '../../components/Message';
-import { useMutation } from '@tanstack/react-query';
-import { ModalErrorImportTeaching, ModalShowError } from './components/ModalErrorImportTeaching';
+import { notificationError, notificationSuccess } from '../../components/Notification';
+import { ModalErrorImportTeaching } from './components/ModalErrorImportTeaching';
+import { ModalFormTeaching } from './components/ModalFormTeaching';
 
 function ManageTeaching() {
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
@@ -649,13 +645,13 @@ function ManageTeaching() {
     },
     {
       // title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
-      title: isAll & (roleId == 'LECTURER') ? '' : 'Tùy chọn',
+      title: isAll & (roleId === 'LECTURER') ? '' : 'Tùy chọn',
       align: 'center',
       fixed: 'right',
       // width: roleId !== 'LECTURER' ? '5%' : '0',
-      width: isAll & (roleId == 'LECTURER') ? '0' : '5%',
+      width: isAll & (roleId === 'LECTURER') ? '0' : '5%',
       render:
-        (!isAll || roleId != 'LECTURER') &&
+        (!isAll || roleId !== 'LECTURER') &&
         ((e, record, index) => (
           <Button.Group key={index}>
             <ButtonCustom
