@@ -200,13 +200,19 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
       dataIndex: 'studentId',
       align: 'left',
       fixed: 'left',
-      width: '10%',
+      width: '9%',
     },
     {
       title: 'Tên sinh viên',
       dataIndex: 'name',
       align: 'left',
-      width: '22%',
+      width: '15%',
+    },
+    {
+      title: 'Lớp',
+      dataIndex: 'classId',
+      align: 'left',
+      width: '12%',
     },
     {
       title: 'Số điện thoại',
@@ -218,7 +224,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
       title: 'Nơi thực tập',
       dataIndex: 'company',
       align: 'left',
-      width: '22%',
+      width: '20%',
     },
     {
       title: 'Ghi chú',
@@ -262,13 +268,20 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
   return (
     <div>
       <ModalForm
-        width={internData.id ? 1100 : 700}
+        width={internData.id ? 1200 : 700}
         title={internData.id ? 'Sửa thông tin đề tài thực tập' : 'Thêm đề tài thực tập'}
         initialValues={internData}
         modalProps={{
           maskClosable: false,
           destroyOnClose: true,
-          okText: internData.id ? 'Lưu' : 'Tạo',
+          okText:
+            !handleUploadFinal.isPending &&
+            !handleUploadOutline.isPending &&
+            !handleUploadProgress.isPending
+              ? internData.id
+                ? 'Lưu'
+                : 'Tạo'
+              : 'Vui lòng chờ',
           cancelText: 'Hủy',
         }}
         open={openForm}

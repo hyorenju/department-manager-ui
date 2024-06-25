@@ -60,7 +60,7 @@ function ManageIntern() {
 
   const [valueSearchName, setValueSearchName] = useState();
   const [searchName, setSearchName] = useState();
-  const [schoolYearId, setSchoolYearId] = useState();
+  const [schoolYearId, setSchoolYearId] = useState(null);
   const [term, setTerm] = useState();
   const [instructorId, setInstructorId] = useState();
   const [typeId, setTypeId] = useState();
@@ -234,11 +234,15 @@ function ManageIntern() {
         handleGetInternList();
       } else if (res && res.success === false) {
         setOpenModalError(true);
-        window.open(res.error?.message);
-        messageErrorToSever(
-          null,
-          'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
-        );
+        if (res.error?.code === 500) {
+          messageErrorToSever(res, null);
+        } else {
+          window.open(res.error?.message);
+          messageErrorToSever(
+            null,
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+          );
+        }
       }
     },
   });
@@ -246,8 +250,28 @@ function ManageIntern() {
   const handleSetIsAll = () => {
     if (isAll) {
       setIsAll(false);
+      setPage(1);
+      setValueSearchName(null);
+      setSearchName(null);
+      setSchoolYearId(null);
+      setTerm(null);
+      setInstructorId(null);
+      setTypeId(null);
+      setStatus(null);
+      setFacultyId(null);
+      setDepartmentId(null);
     } else {
       setIsAll(true);
+      setPage(1);
+      setValueSearchName(null);
+      setSearchName(null);
+      setSchoolYearId(null);
+      setTerm(null);
+      setInstructorId(null);
+      setTypeId(null);
+      setStatus(null);
+      setFacultyId(null);
+      setDepartmentId(null);
     }
   };
 

@@ -173,12 +173,17 @@ export function ModalFormTeaching({
     <div>
       <ModalForm
         width={1100}
-        title={teachingData.id ? 'Sửa phân công' : 'Thêm phân công'}
+        title={teachingData.id ? 'Sửa thông tin phân công giảng dạy' : 'Thêm phân công giảng dạy'}
         initialValues={teachingData}
         modalProps={{
           maskClosable: false,
           destroyOnClose: true,
-          okText: teachingData.id ? 'Lưu' : 'Tạo',
+          okText:
+            !handleUploadComponent.isPending && !handleUploadSummary.isPending
+              ? teachingData.id
+                ? 'Lưu'
+                : 'Tạo'
+              : 'Vui lòng chờ',
           cancelText: 'Hủy',
         }}
         open={openForm}

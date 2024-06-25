@@ -53,7 +53,7 @@ function ManageTeaching() {
   const [formCreate, setFormCreate] = useState(true);
   const [openModalError, setOpenModalError] = useState(false);
 
-  const [schoolYearId, setSchoolYearId] = useState();
+  const [schoolYearId, setSchoolYearId] = useState(null);
   const [term, setTerm] = useState();
   const [status, setStatus] = useState();
   const [facultyId, setFacultyId] = useState();
@@ -63,8 +63,8 @@ function ManageTeaching() {
   const [subjectName, setSubjectName] = useState();
   const [subjectId, setSubjectId] = useState();
   const [teacherId, setTeacherId] = useState();
+  const [classId, setClassId] = useState();
   const [teacherIdToRead, setTeacherIdToRead] = useState(null);
-  // const [searchFacultyId, setSearchFacultyId] = useState('');
   const [isAll, setIsAll] = useState(false);
 
   // handle delete teaching
@@ -95,6 +95,8 @@ function ManageTeaching() {
       departmentId: departmentId,
       subjectId: subjectId,
       subjectName: subjectName,
+      teacherId: teacherId,
+      classId: classId,
       status: status,
     })
       .then((res) => {
@@ -142,6 +144,8 @@ function ManageTeaching() {
     departmentId,
     subjectId,
     subjectName,
+    teacherId,
+    classId,
     status,
   ]);
 
@@ -230,11 +234,18 @@ function ManageTeaching() {
         handleGetTeachingList();
       } else if (res && res.success === false) {
         setOpenModalError(true);
-        window.open(res.error?.message);
-        messageErrorToSever(
-          null,
-          'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
-        );
+        if (res.error?.message === 'DATA_NOT_FOUND') {
+          messageErrorToSever(
+            res,
+            'Không tìm thấy dữ liệu. Hãy chắc chắn rằng file excel được nhập từ ô A1',
+          );
+        } else {
+          window.open(res.error?.message);
+          messageErrorToSever(
+            null,
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+          );
+        }
       }
     },
   });
@@ -263,8 +274,30 @@ function ManageTeaching() {
   const handleSetIsAll = () => {
     if (isAll) {
       setIsAll(false);
+      setSchoolYearId(null);
+      setTerm(null);
+      setStatus(null);
+      setFacultyId(null);
+      setDepartmentId(null);
+      setSearchSubjectName(null);
+      setSearchSubjectId(null);
+      setSubjectName(null);
+      setSubjectId(null);
+      setTeacherId(null);
+      setTeacherIdToRead(null);
     } else {
       setIsAll(true);
+      setSchoolYearId(null);
+      setTerm(null);
+      setStatus(null);
+      setFacultyId(null);
+      setDepartmentId(null);
+      setSearchSubjectName(null);
+      setSearchSubjectId(null);
+      setSubjectName(null);
+      setSubjectId(null);
+      setTeacherId(null);
+      setTeacherIdToRead(null);
     }
   };
 

@@ -88,6 +88,7 @@ export function ModalFormStudent({
           id: studentData?.id ? studentData?.id : null,
           studentId: studentData?.id ? studentData.studentId : null,
           name: studentData?.id ? studentData.name : null,
+          classId: studentData?.id ? studentData.classId : null,
           phoneNumber: studentData?.id ? studentData.phoneNumber : null,
           company: studentData?.id ? studentData.company : null,
           intern: intern,
@@ -140,6 +141,9 @@ export function ModalFormStudent({
             label="Họ tên"
             placeholder="Nhập họ tên"
           />
+          <ProFormText width="md" name="classId" label="Mã lớp" placeholder="Nhập mã lớp" />
+        </ProForm.Group>
+        <ProForm.Group>
           <ProFormText
             rules={[{ required: true, message: 'Không được để trống' }]}
             width="md"
@@ -147,8 +151,6 @@ export function ModalFormStudent({
             label="Số điện thoại"
             placeholder="Số điện thoại"
           />
-        </ProForm.Group>
-        <ProForm.Group>
           <ProFormText
             rules={[{ required: true, message: 'Không được để trống' }]}
             width="md"

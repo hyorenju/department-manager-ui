@@ -52,6 +52,7 @@ import { ModalFormAssignment } from './components/ModalFormAssignment';
 
 function ManageExam() {
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
+  const userData = JSON.parse(sessionStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormExam, setOpenModalFormExam] = useState(false);
@@ -71,7 +72,7 @@ function ManageExam() {
   const [departmentId, setDepartmentId] = useState();
   const [searchSubjectName, setSearchSubjectName] = useState();
   const [subjectName, setSubjectName] = useState();
-  const [schoolYearId, setSchoolYearId] = useState();
+  const [schoolYearId, setSchoolYearId] = useState(null);
   const [term, setTerm] = useState();
   const [formId, setFormId] = useState();
   const [testDay, setTestDay] = useState('');
@@ -249,14 +250,22 @@ function ManageExam() {
     onSuccess: (res) => {
       if (res && res.success === true) {
         notificationSuccess('Upload file thành công');
+        setPage(1);
         handleGetExamList();
       } else if (res && res.success === false) {
         setOpenModalError(true);
-        window.open(res.error?.message);
-        messageErrorToSever(
-          null,
-          'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
-        );
+        if (res.error?.message === 'DATA_NOT_FOUND') {
+          messageErrorToSever(
+            res,
+            'Không tìm thấy dữ liệu. Hãy chắc chắn rằng file excel được nhập từ ô A1',
+          );
+        } else {
+          window.open(res.error?.message);
+          messageErrorToSever(
+            null,
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+          );
+        }
       }
     },
   });
@@ -285,8 +294,32 @@ function ManageExam() {
   const handleSetIsAll = () => {
     if (isAll) {
       setIsAll(false);
+      setPage(1);
+      setFacultyId(null);
+      setDepartmentId(null);
+      setSearchSubjectName(null);
+      setSubjectName(null);
+      setSchoolYearId(null);
+      setTerm(null);
+      setFormId(null);
+      setTestDay(null);
+      setProctorId(null);
+      setSearchClassId(null);
+      setClassId(null);
     } else {
       setIsAll(true);
+      setPage(1);
+      setFacultyId(null);
+      setDepartmentId(null);
+      setSearchSubjectName(null);
+      setSubjectName(null);
+      setSchoolYearId(null);
+      setTerm(null);
+      setFormId(null);
+      setTestDay(null);
+      setProctorId(null);
+      setSearchClassId(null);
+      setClassId(null);
     }
   };
 
@@ -864,29 +897,38 @@ function ManageExam() {
       width: roleId !== 'LECTURER' ? '3.5%' : '0',
       render:
         roleId !== 'LECTURER' &&
-        ((e, record, index) => (
-          <Button.Group key={index}>
-            <Button className="bg-blue-100" onClick={() => handleClickAssign(record)} size="small">
-              Phân công
-            </Button>
-            <ButtonCustom title={'Sửa'} handleClick={() => handleClickEdit(record)} size="small" />
-            <Popconfirm
-              title="Bạn có chắc chắn muốn xóa phân công này?"
-              icon={<DeleteOutlined />}
-              okText="Xóa"
-              okType="danger"
-              onConfirm={() => handleConfirmDeleteExam(record.id)}
-            >
+        ((e, record, index) =>
+          userData.department?.id === record.subject?.department?.id && (
+            <Button.Group key={index}>
               <Button
-                className="flex justify-center items-center text-md shadow-md"
+                className="bg-blue-100"
+                onClick={() => handleClickAssign(record)}
                 size="small"
-                danger
               >
-                Xóa
+                Phân công
               </Button>
-            </Popconfirm>
-          </Button.Group>
-        )),
+              <ButtonCustom
+                title={'Sửa'}
+                handleClick={() => handleClickEdit(record)}
+                size="small"
+              />
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xóa phân công này?"
+                icon={<DeleteOutlined />}
+                okText="Xóa"
+                okType="danger"
+                onConfirm={() => handleConfirmDeleteExam(record.id)}
+              >
+                <Button
+                  className="flex justify-center items-center text-md shadow-md"
+                  size="small"
+                  danger
+                >
+                  Xóa
+                </Button>
+              </Popconfirm>
+            </Button.Group>
+          )),
     },
   ];
 
@@ -941,6 +983,7 @@ function ManageExam() {
       <ModalFormExam
         isCreate={formCreate}
         onSuccess={() => {
+          setPage(1);
           handleGetExamList();
           setOpenModalFormExam(false);
         }}

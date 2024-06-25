@@ -104,7 +104,12 @@ export function ModalFormSubject({
         modalProps={{
           maskClosable: false,
           destroyOnClose: true,
-          okText: subjectData.id ? 'Lưu' : 'Tạo',
+          okText:
+            !handleUploadLecture.isPending && !handleUploadOutline.isPending
+              ? subjectData.id
+                ? 'Lưu'
+                : 'Tạo'
+              : 'Vui lòng chờ',
           cancelText: 'Hủy',
         }}
         open={openForm}
