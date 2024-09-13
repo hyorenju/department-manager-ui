@@ -1,3 +1,4 @@
+import { values } from '@ant-design/plots/es/core/utils';
 import axios from './instane';
 
 //Authorization
@@ -16,6 +17,10 @@ export const getUserList = (values) => {
 
 export const getUserSelection = (values) => {
   return axios.post(`/user/selection`, values);
+};
+
+export const getUserOption = () => {
+  return axios.post(`/user/pick`);
 };
 
 export const createUser = (values) => {
@@ -44,6 +49,10 @@ export const updateAvatar = (values) => {
 
 export const changePassword = (values) => {
   return axios.post(`/user/change-password`, values);
+};
+
+export const lockAccount = (id) => {
+  return axios.post(`/user/lock/${id}`);
 };
 
 //Master data
@@ -174,6 +183,14 @@ export const deleteIntern = (id) => {
   return axios.post(`/intern/delete/${id}`);
 };
 
+export const lockIntern = (id) => {
+  return axios.post(`/intern/lock/${id}`);
+};
+
+export const lockInternList = (values) => {
+  return axios.post(`/intern/lock`, values);
+};
+
 //Teaching
 export const getTeachingList = (values) => {
   return axios.post(`/teaching/list`, values);
@@ -189,6 +206,14 @@ export const updateTeaching = (id, values) => {
 
 export const deleteTeaching = (id) => {
   return axios.post(`/teaching/delete/${id}`);
+};
+
+export const lockTeaching = (id) => {
+  return axios.post(`/teaching/lock/${id}`);
+};
+
+export const lockTeachingList = (values) => {
+  return axios.post(`/teaching/lock`, values);
 };
 
 export const readFromDaoTao = (id) => {
@@ -235,4 +260,63 @@ export const updateStudent = (id, values) => {
 
 export const deleteStudent = (id) => {
   return axios.post(`/student/delete/${id}`);
+};
+
+//Project
+export const getProjectList = (values) => {
+  return axios.post(`/project/list`, values);
+};
+
+export const createProject = (values) => {
+  return axios.post(`/project/create`, values);
+};
+
+export const updateProject = (id, values) => {
+  return axios.post(`/project/update/${id}`, values);
+};
+
+export const deleteProject = (id) => {
+  return axios.post(`/project/delete/${id}`);
+};
+
+//Task
+export const getTasktList = (values) => {
+  return axios.post(`/task/list`, values);
+};
+
+export const createTask = (values) => {
+  return axios.post(`/task/create`, values);
+};
+
+export const updateTask = (id, values) => {
+  return axios.post(`/task/update/${id}`, values);
+};
+
+export const upOrdinalNumber = (id) => {
+  return axios.post(`/task/up/${id}`);
+};
+
+export const deleteTask = (id) => {
+  return axios.post(`/task/delete/${id}`);
+};
+
+//UserTask
+export const getUserTaskList = (values) => {
+  return axios.post('user-task/list', values);
+};
+
+export const getUserTaskPage = (values) => {
+  return axios.post('user-task/page', values);
+};
+
+export const updateParticipant = (values) => {
+  return axios.post('user-task/update', values);
+};
+
+export const updateTaskStatus = (id, values) => {
+  return axios.post(`user-task/status/${id}`, values);
+};
+
+export const finishedMyTask = (id) => {
+  return axios.post(`user-task/finished/${id}`);
 };

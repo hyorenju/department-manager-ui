@@ -6,9 +6,22 @@ import {
   UserAddOutlined,
   PlusOutlined,
   TableOutlined,
+  UnlockOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Button, Drawer, Input, Popconfirm, Select, Space, Table, Tooltip, Typography } from 'antd';
+import {
+  Button,
+  Drawer,
+  Input,
+  message,
+  Popconfirm,
+  Select,
+  Space,
+  Table,
+  Tooltip,
+  Typography,
+} from 'antd';
 import React, { useEffect, useState } from 'react';
 import {
   deleteUser,
@@ -17,6 +30,7 @@ import {
   getFacultySelection,
   getMasterDataSelection,
   getUserList,
+  lockAccount,
 } from '../../api/axios';
 import { excelApi } from '../../api/excelApi';
 import { ButtonCustom } from '../../components/ButtonCustom';
@@ -27,6 +41,7 @@ import { ManageDegree } from './pages/ManageDegree';
 
 function ManageUser() {
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
+  const userInfo = JSON.parse(sessionStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormUser, setOpenModalFormUser] = useState(false);
@@ -46,7 +61,7 @@ function ManageUser() {
   const [searchLastName, setSearchLastName] = useState('');
   const [searchDegreeId, setSearchDegreeId] = useState('');
   const [searchFacultyId, setSearchFacultyId] = useState('');
-  const [searchDepartmentId, setSearchDepartmentId] = useState('');
+  const [searchDepartmentId, setSearchDepartmentId] = useState(userInfo?.department?.id);
   const [searchRoleId, setSearchRoleId] = useState('');
 
   // handle delete user
@@ -177,6 +192,20 @@ function ManageUser() {
       }
     },
   });
+
+  const handleLockAccount = (id) => {
+    setLoadingTable(true);
+    lockAccount(id)
+      .then((res) => {
+        if (res.data?.success) {
+          message.success('Thành công');
+          handleGetUserList();
+        } else {
+          message.error('Có lỗi xảy ra!');
+        }
+      })
+      .finally(() => setLoadingTable(false));
+  };
 
   const columns = [
     {
@@ -438,36 +467,57 @@ function ManageUser() {
       // title: 'Tùy chọn',
       align: 'center',
       fixed: 'right',
-      width: roleId !== 'LECTURER' ? '7.5%' : '0',
+      width: roleId !== 'LECTURER' ? '8%' : '0',
       // width: '7.5%',
       render:
         roleId !== 'LECTURER' &&
-        ((e, record, index) => (
-          <Button.Group key={index}>
-            <ButtonCustom
-              title={'Sửa'}
-              icon={<EditOutlined />}
-              handleClick={() => handleClickEdit(record)}
-              size="small"
-            />
-            <Popconfirm
-              title="Bạn có chắc chắn muốn xóa người dùng này?"
-              icon={<DeleteOutlined />}
-              okText="Xóa"
-              okType="danger"
-              onConfirm={() => handleConfirmDeleteUser(record.id)}
-            >
+        ((e, record, index) =>
+          (roleId === 'MANAGER' || roleId === 'DEPUTY') &&
+          userInfo.department?.id === record.department?.id && (
+            <Button.Group key={index}>
               <Button
-                className="flex justify-center items-center text-md shadow-md"
-                icon={<DeleteOutlined />}
+                icon={
+                  record.isLock === null ? (
+                    <UnlockOutlined />
+                  ) : record.isLock === false ? (
+                    <UnlockOutlined />
+                  ) : (
+                    <LockOutlined />
+                  )
+                }
+                onClick={() => handleLockAccount(record.id)}
                 size="small"
-                danger
+                style={
+                  record.isLock === true
+                    ? { backgroundColor: '#ffd2e5' }
+                    : { backgroundColor: '#d7e6fa' }
+                }
+              />
+              <ButtonCustom
+                title={'Sửa'}
+                icon={<EditOutlined />}
+                handleClick={() => handleClickEdit(record)}
+                size="small"
+              />
+              <Popconfirm
+                placement="topRight"
+                title="Bạn có chắc chắn muốn xóa người dùng này?"
+                icon={<DeleteOutlined />}
+                okText="Xóa"
+                okType="danger"
+                onConfirm={() => handleConfirmDeleteUser(record.id)}
               >
-                Xóa
-              </Button>
-            </Popconfirm>
-          </Button.Group>
-        )),
+                <Button
+                  className="flex justify-center items-center text-md shadow-md"
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  danger
+                >
+                  Xóa
+                </Button>
+              </Popconfirm>
+            </Button.Group>
+          )),
     },
   ];
 
@@ -524,8 +574,9 @@ function ManageUser() {
           }}
           rowKey="id"
           loading={loadingTable}
-          bordered={true}
+          // bordered={true}
           dataSource={dataSource}
+          size="middle"
           columns={columns}
           pagination={{
             onChange: (page, size) => {

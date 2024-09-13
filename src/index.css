@@ -41,6 +41,20 @@
   border-radius: 6px;
 }
 
+.ant-table-cell {
+  border: 1px solid rgb(200, 200, 200);
+}
+.ant-table-container {
+  border: 2px solid rgb(200, 200, 200);
+}
+.ant-table-header{
+  border-bottom: 2px solid rgb(200, 200, 200);
+}
+
+.ant-radio-group{
+  display: none;
+}
+
 * ::-webkit-scrollbar {
   width: 6px;
   height: 4px;

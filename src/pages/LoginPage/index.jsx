@@ -33,7 +33,7 @@ function LoginPage() {
           sessionStorage.setItem('user_info', JSON.stringify(res.data));
           sessionStorage.setItem('user_role', JSON.stringify(res.data?.role?.id));
           notificationSuccess('Đăng nhập thành công');
-          navigate(`/manage`);
+          navigate(`/manage/user`);
         }
       } else if (res && res.success === false && res.error.code === 500) {
         notificationError(res.error.message);

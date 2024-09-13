@@ -5,15 +5,21 @@ import ManageUser from './pages/ManageUser';
 import ManageClass from './pages/ManageClass';
 import ManageSubject from './pages/MangeSubject';
 import ManageIntern from './pages/ManageIntern';
+import ManageInternV2 from './pages/ManageInternV2';
 import ManageExam from './pages/ManageExam';
 import ManageTeaching from './pages/ManageTeaching';
 import ManageFaculty from './pages/ManageFaculty';
 import ManageDepartment from './pages/ManageDeparment';
 import Statistic from './pages/Statistic';
+import Project from './pages/Project';
 import { Button } from 'antd';
 import Profile from './pages/Profile';
+import Work from './pages/Work';
+import { useState } from 'react';
 
 const { createBrowserRouter } = require('react-router-dom');
+
+const userData = JSON.parse(sessionStorage.getItem('user_info'));
 
 export const router = createBrowserRouter([
   {
@@ -43,7 +49,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'intern',
-        element: <ManageIntern />,
+        element: <ManageInternV2 />,
         errorElement: <NotFound />,
       },
       {
@@ -72,8 +78,18 @@ export const router = createBrowserRouter([
         errorElement: <NotFound />,
       },
       {
+        path: 'work',
+        element: <Work userData={userData} />,
+        errorElement: <NotFound />,
+      },
+      {
         path: 'statistic',
         element: <Statistic />,
+        errorElement: <NotFound />,
+      },
+      {
+        path: 'project',
+        element: <Project />,
         errorElement: <NotFound />,
       },
     ],

@@ -1,8 +1,8 @@
 import { Image, Modal } from 'antd';
 import React from 'react';
-import img from '../../../../assets/img/import-teaching-require.png';
+import img from '../../../../assets/img/import-intern-require.png';
 
-export const ModalErrorImportTeaching = ({ open, setOpen }) => {
+export const ModalErrorImportIntern = ({ open, setOpen }) => {
   const handleClickOk = () => {
     setOpen(false);
   };
@@ -12,7 +12,9 @@ export const ModalErrorImportTeaching = ({ open, setOpen }) => {
         width={750}
         maskClosable={true}
         title={
-          <h1 className="text-sky-900 text-2xl font-bold">Hướng dẫn import tệp excel giảng dạy</h1>
+          <h1 className="text-sky-900 text-2xl font-bold">
+            Hướng dẫn import tệp excel đề tài thực tập
+          </h1>
         }
         open={open}
         onCancel={handleClickOk}
@@ -29,7 +31,7 @@ export const ModalErrorImportTeaching = ({ open, setOpen }) => {
           đúng format mà vẫn thất bại, vui lòng xem tệp lỗi mà chúng tôi đã gửi để kiểm tra chi tiết
           lỗi.
         </p>
-        <Image src={img} alt="Mẫu file giảng dạy" className="w-full h-full object-cover" />
+        <Image src={img} alt="Mẫu file đề tài thực tập" className="w-full h-full object-cover" />
       </Modal>
     </>
   );

@@ -36,6 +36,7 @@ import { useMutation } from '@tanstack/react-query';
 
 function ManageSubject() {
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
+  const userInfo = JSON.parse(sessionStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormSubject, setOpenModalFormSubject] = useState(false);
@@ -305,32 +306,35 @@ function ManageSubject() {
       width: roleId !== 'LECTURER' ? '7%' : '0',
       render:
         roleId !== 'LECTURER' &&
-        ((e, record, index) => (
-          <Button.Group key={index}>
-            <ButtonCustom
-              title={'Sửa'}
-              icon={<EditOutlined />}
-              handleClick={() => handleClickEdit(record)}
-              size="small"
-            />
-            <Popconfirm
-              title="Bạn có chắc chắn muốn môn học này?"
-              icon={<DeleteOutlined />}
-              okText="Xóa"
-              okType="danger"
-              onConfirm={() => handleConfirmDeleteSubject(record.id)}
-            >
-              <Button
-                className="flex justify-center items-center text-md shadow-md"
-                icon={<DeleteOutlined />}
+        ((e, record, index) =>
+          (roleId === 'MANAGER' || roleId === 'DEPUTY') &&
+          userInfo.department?.id === record.department?.id && (
+            <Button.Group key={index}>
+              <ButtonCustom
+                title={'Sửa'}
+                icon={<EditOutlined />}
+                handleClick={() => handleClickEdit(record)}
                 size="small"
-                danger
+              />
+              <Popconfirm
+                placement="topRight"
+                title="Bạn có chắc chắn muốn môn học này?"
+                icon={<DeleteOutlined />}
+                okText="Xóa"
+                okType="danger"
+                onConfirm={() => handleConfirmDeleteSubject(record.id)}
               >
-                Xóa
-              </Button>
-            </Popconfirm>
-          </Button.Group>
-        )),
+                <Button
+                  className="flex justify-center items-center text-md shadow-md"
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  danger
+                >
+                  Xóa
+                </Button>
+              </Popconfirm>
+            </Button.Group>
+          )),
     },
   ];
 
@@ -390,8 +394,9 @@ function ManageSubject() {
           }}
           rowKey="id"
           loading={loadingTable}
-          bordered={true}
+          // bordered={true}
           dataSource={dataSource}
+          size="middle"
           columns={columns}
           pagination={{
             onChange: (page, size) => {

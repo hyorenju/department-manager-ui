@@ -173,7 +173,7 @@ export function ModalFormTeaching({
     <div>
       <ModalForm
         width={1100}
-        title={teachingData.id ? 'Sửa thông tin phân công giảng dạy' : 'Thêm phân công giảng dạy'}
+        title={teachingData.id ? 'Sửa thông tin giảng dạy' : 'Thêm giảng dạy'}
         initialValues={teachingData}
         modalProps={{
           maskClosable: false,
@@ -208,6 +208,7 @@ export function ModalFormTeaching({
             placeholder="Chọn khoa"
             options={facultySelection}
             onChange={(value) => setFacultyId(value)}
+            disabled={teachingData?.isLock ? true : false}
           />
           <ProFormSelect
             showSearch
@@ -220,6 +221,7 @@ export function ModalFormTeaching({
             placeholder="Chọn bộ môn"
             options={departmentSelection}
             onChange={(value) => setDepartmentId(value)}
+            disabled={teachingData?.isLock ? true : false}
           />
           <ProFormSelect
             showSearch
@@ -282,7 +284,7 @@ export function ModalFormTeaching({
             rules={
               roleId === 'LECTURER' ? null : [{ required: true, message: 'Không được để trống' }]
             }
-            disabled={roleId === 'LECTURER' ? true : false}
+            disabled={roleId === 'LECTURER' ? true : teachingData?.isLock ? true : false}
             name={['teacher', 'id']}
             label="Giáo viên giảng dạy"
             placeholder="Chọn giáo viên giảng dạy"
@@ -311,7 +313,13 @@ export function ModalFormTeaching({
             placeholder="Nhập nhóm môn học"
             disabled={isCreate ? false : true}
           />
-          <ProFormText width="md" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
+          <ProFormText
+            width="md"
+            name="note"
+            label="Ghi chú"
+            placeholder="Nhập ghi chú"
+            disabled={teachingData?.isLock ? true : false}
+          />
         </ProForm.Group>
 
         <ProForm.Group>
@@ -333,7 +341,7 @@ export function ModalFormTeaching({
             }}
             fileList={componentList}
             icon={handleUploadComponent.isPending ? <LoadingOutlined /> : <UploadOutlined />}
-            disabled={handleUploadComponent.isPending ? true : false}
+            disabled={handleUploadComponent.isPending ? true : teachingData?.isLock ? true : false}
           />
           <ProFormUploadButton
             title="Bấm để tải"
@@ -353,7 +361,7 @@ export function ModalFormTeaching({
             }}
             fileList={summaryList}
             icon={handleUploadSummary.isPending ? <LoadingOutlined /> : <UploadOutlined />}
-            disabled={handleUploadSummary.isPending ? true : false}
+            disabled={handleUploadSummary.isPending ? true : teachingData?.isLock ? true : false}
           />
         </ProForm.Group>
       </ModalForm>

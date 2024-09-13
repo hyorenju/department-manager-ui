@@ -65,7 +65,7 @@ function ManageExam() {
   const [formCreate, setFormCreate] = useState(true);
   const [openModalError, setOpenModalError] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
-  const EditableContext = React.createContext(null);
+  // const EditableContext = React.createContext(null);
   // const [showProctor1Changer, setShowProctor1Changer] = useState('block');
 
   const [facultyId, setFacultyId] = useState();
@@ -894,10 +894,11 @@ function ManageExam() {
       title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
       align: 'center',
       fixed: 'right',
-      width: roleId !== 'LECTURER' ? '3.5%' : '0',
+      width: roleId !== 'LECTURER' ? '3%' : '0',
       render:
         roleId !== 'LECTURER' &&
         ((e, record, index) =>
+          (roleId === 'MANAGER' || roleId === 'DEPUTY' || roleId === 'PRINCIPAL') &&
           userData.department?.id === record.subject?.department?.id && (
             <Button.Group key={index}>
               <Button
@@ -913,6 +914,7 @@ function ManageExam() {
                 size="small"
               />
               <Popconfirm
+                placement="topRight"
                 title="Bạn có chắc chắn muốn xóa phân công này?"
                 icon={<DeleteOutlined />}
                 okText="Xóa"
@@ -935,7 +937,7 @@ function ManageExam() {
   return (
     <div>
       <Title level={3} className="uppercase text-center" style={{ marginBottom: 4 }}>
-        Danh sách phân công kỳ thi
+        Quản lý lịch coi thi
       </Title>
       <div className="flex justify-between mb-2">
         <div className="flex">
@@ -1019,8 +1021,9 @@ function ManageExam() {
           }}
           rowKey="id"
           loading={loadingTable}
-          bordered={true}
+          // bordered={true}
           dataSource={dataSource}
+          size="middle"
           columns={columns}
           pagination={{
             onChange: (page, size) => {
@@ -1038,7 +1041,7 @@ function ManageExam() {
         {dataSource.length > 0 && (
           <div className="absolute bottom-5 left-0">
             <ButtonCustom
-              title="Xuất danh sách phân công kỳ thi"
+              title="Xuất danh sách lịch coi thi"
               loading={exportExamToExcel.isPending}
               handleClick={() => {
                 exportExamToExcel.mutate();

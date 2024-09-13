@@ -28,12 +28,6 @@ import { ButtonCustom } from '../../../../components/ButtonCustom';
 import { ModalFormStudent } from '../ModalFormStudent';
 
 export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internData, onSuccess }) {
-  const [loadingTable, setLoadingTable] = useState(false);
-  const [dataSource, setDataSource] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [formCreate, setFormCreate] = useState(true);
-  const [openModalFormStudent, setOpenModalFormStudent] = useState(false);
-  const [studentData, setStudentData] = useState();
   const [outline, setOutline] = useState('');
   const [progress, setProgress] = useState('');
   const [final, setFinal] = useState('');
@@ -56,7 +50,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
           res.data?.error?.errorDetailList?.forEach((e) => message.error(e.message));
         }
       } else if (res.data?.error?.code === 500) {
-        message.error(res.data?.error?.message);
+        notificationError(res.data?.error?.message);
       }
     });
   };
@@ -76,7 +70,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
           res.data?.error?.errorDetailList?.forEach((e) => message.error(e.message));
         }
       } else if (res.data?.error?.code === 500) {
-        message.error(res.data?.error?.message);
+        notificationError(res.data?.error?.message);
       }
     });
   };
@@ -108,24 +102,10 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
   }, [openForm]);
 
   useEffect(() => {
-    if (openForm && internData.id) {
-      handleGetStudentList();
-    }
     setOutlineList([]);
     setProgressList([]);
     setFinalList([]);
   }, [openForm]);
-
-  const handleGetStudentList = () => {
-    setLoadingTable(true);
-    getStudentList(internData)
-      .then((res) => {
-        if (res.data?.success === true) {
-          setDataSource(res.data?.data?.items);
-        } else notificationError('Bạn không có quyền truy cập');
-      })
-      .finally(() => setLoadingTable(false));
-  };
 
   const handleUploadOutline = useMutation({
     mutationKey: ['uploadFile'],
@@ -176,100 +156,10 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
     },
   });
 
-  const handleClickEdit = (record) => {
-    setStudentData(record);
-    setFormCreate(false);
-    setOpenModalFormStudent(true);
-  };
-
-  const handleConfirmDeleteStudent = (id) => {
-    setLoadingTable(true);
-    deleteStudent(id)
-      .then((res) => {
-        if (res.data?.success === true) {
-          notificationSuccess('Xóa thành công');
-          handleGetStudentList();
-        } else notificationError(res.data?.error?.message);
-      })
-      .finally(() => setLoadingTable(false));
-  };
-
-  const columns = [
-    {
-      title: 'MSV',
-      dataIndex: 'studentId',
-      align: 'left',
-      fixed: 'left',
-      width: '9%',
-    },
-    {
-      title: 'Tên sinh viên',
-      dataIndex: 'name',
-      align: 'left',
-      width: '15%',
-    },
-    {
-      title: 'Lớp',
-      dataIndex: 'classId',
-      align: 'left',
-      width: '12%',
-    },
-    {
-      title: 'Số điện thoại',
-      dataIndex: 'phoneNumber',
-      align: 'left',
-      width: '12%',
-    },
-    {
-      title: 'Nơi thực tập',
-      dataIndex: 'company',
-      align: 'left',
-      width: '20%',
-    },
-    {
-      title: 'Ghi chú',
-      dataIndex: 'note',
-      align: 'left',
-    },
-    {
-      title: 'Tùy chọn',
-      align: 'center',
-      fixed: 'right',
-      width: '15%',
-      render: (e, record, index) => (
-        <Button.Group key={index}>
-          <ButtonCustom
-            title={'Sửa'}
-            icon={<EditOutlined />}
-            handleClick={() => handleClickEdit(record)}
-            size="small"
-          />
-          <Popconfirm
-            placement="topRight"
-            title="Bạn có chắc chắn muốn xóa sinh viên này?"
-            icon={<DeleteOutlined />}
-            okText="Xóa"
-            okType="danger"
-            onConfirm={() => handleConfirmDeleteStudent(record.id)}
-          >
-            <Button
-              className="flex justify-center items-center text-md shadow-md"
-              icon={<DeleteOutlined />}
-              size="small"
-              danger
-            >
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Button.Group>
-      ),
-    },
-  ];
-
   return (
     <div>
       <ModalForm
-        width={internData.id ? 1200 : 700}
+        width={700}
         title={internData.id ? 'Sửa thông tin đề tài thực tập' : 'Thêm đề tài thực tập'}
         initialValues={internData}
         modalProps={{
@@ -320,6 +210,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
             label="Loại đề tài"
             placeholder="Chọn loại đề tài"
             options={internTypeSelection}
+            disabled={!internData?.isLock ? false : true}
           />
           <ProFormSelect
             showSearch
@@ -332,6 +223,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
             label="Năm học"
             placeholder="Chọn năm học"
             options={schoolYearSelection}
+            disabled={!internData?.isLock ? false : true}
           />
           <ProFormSelect
             showSearch
@@ -348,11 +240,18 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
               { label: 2, value: 2 },
               { label: 3, value: 3 },
             ]}
+            disabled={!internData?.isLock ? false : true}
           />
         </ProForm.Group>
 
         <ProForm.Group>
-          <ProFormText width="xl" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
+          <ProFormText
+            width="xl"
+            name="note"
+            label="Ghi chú"
+            placeholder="Nhập ghi chú"
+            disabled={!internData?.isLock ? false : true}
+          />
         </ProForm.Group>
 
         <ProForm.Group>
@@ -374,7 +273,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
             }}
             fileList={outlineList}
             icon={handleUploadOutline.isPending ? <LoadingOutlined /> : <UploadOutlined />}
-            disabled={handleUploadOutline.isPending ? true : false}
+            disabled={handleUploadOutline.isPending ? true : internData?.isLock ? true : false}
           />
           <ProFormUploadButton
             title="Bấm để tải"
@@ -394,7 +293,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
             }}
             fileList={progressList}
             icon={handleUploadProgress.isPending ? <LoadingOutlined /> : <UploadOutlined />}
-            disabled={handleUploadProgress.isPending ? true : false}
+            disabled={handleUploadOutline.isPending ? true : internData?.isLock ? true : false}
           />
           <ProFormUploadButton
             title="Bấm để tải"
@@ -414,54 +313,9 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
             }}
             fileList={finalList}
             icon={handleUploadFinal.isPending ? <LoadingOutlined /> : <UploadOutlined />}
-            disabled={handleUploadFinal.isPending ? true : false}
+            disabled={handleUploadOutline.isPending ? true : internData?.isLock ? true : false}
           />
         </ProForm.Group>
-        <ModalFormStudent
-          isCreate={formCreate}
-          onSuccess={() => {
-            handleGetStudentList();
-            setOpenModalFormStudent(false);
-          }}
-          intern={internData}
-          studentData={studentData}
-          openForm={openModalFormStudent}
-          onChangeClickOpen={(open) => {
-            if (!open) {
-              setStudentData({});
-              setOpenModalFormStudent(false);
-            }
-          }}
-        />
-        {!isCreate && (
-          <div className="relative mt-3">
-            {!isCreate && (
-              <Button
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setOpenModalFormStudent(true);
-                  setFormCreate(true);
-                }}
-                className="absolute right-0 top-[-40px] flex items-center text-md font-medium shadow-md bg-slate-100"
-              >
-                Thêm sinh viên vào đề tài
-              </Button>
-            )}
-            <Table
-              scroll={{
-                y: 5000,
-                x: 600,
-              }}
-              rowKey="id"
-              loading={loadingTable}
-              // bordered={true}
-              dataSource={dataSource}
-              size="middle"
-              columns={columns}
-              pagination={false}
-            />
-          </div>
-        )}
       </ModalForm>
     </div>
   );

@@ -44,6 +44,15 @@ function ManageClass() {
   const [formCreate, setFormCreate] = useState(true);
   const [facultySelection, setFacultySelection] = useState([]);
   const [facultyId, setFacultyId] = useState('');
+  const [classId, setClassId] = useState('');
+  const [className, setClassName] = useState('');
+  const [homeroomTeacher, setHomeroomTeacher] = useState('');
+  const [monitor, setMonitor] = useState('');
+
+  const [classIdSearch, setClassIdSearch] = useState('');
+  const [classNameSearch, setClassNameSearch] = useState('');
+  const [homeroomTeacherSearch, setHomeroomTeacherSearch] = useState('');
+  const [monitorSearch, setMonitorSearch] = useState('');
 
   // handle delete class
   const handleConfirmDeleteClass = (id) => {
@@ -59,11 +68,20 @@ function ManageClass() {
   };
 
   // handle get class list
-  const debunceValue = useDebounce(valueSearchClass, 750);
-  const keyword = debunceValue[0];
+  // const debunceValue = useDebounce(valueSearchClass, 750);
+  // const keyword = debunceValue[0];
   const handleGetClassList = () => {
     setLoadingTable(true);
-    getClassList({ page: page, size: size, keyword: keyword, facultyId: facultyId })
+    getClassList({
+      page: page,
+      size: size,
+      // keyword: keyword,
+      facultyId: facultyId,
+      id: classId,
+      name: className,
+      hrTeacher: homeroomTeacher,
+      monitor: monitor,
+    })
       .then((res) => {
         if (res.data?.success === true) {
           setDataSource(res.data?.data?.items);
@@ -83,7 +101,7 @@ function ManageClass() {
   useEffect(() => {
     return handleGetClassList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, size, keyword, facultyId]);
+  }, [page, size, facultyId, classId, className, homeroomTeacher, monitor]);
 
   useEffect(() => {
     getFacultySelection().then((res) => {
@@ -100,8 +118,12 @@ function ManageClass() {
     mutationKey: ['exportClassList'],
     mutationFn: () =>
       excelApi.exportClassList({
-        keyword: keyword,
+        // keyword: keyword,
         facultyId: facultyId,
+        id: classId,
+        name: className,
+        hrTeacher: homeroomTeacher,
+        monitor: monitor,
       }),
     onSuccess: (res) => {
       if (res && res.success === true) {
@@ -120,12 +142,72 @@ function ManageClass() {
       align: 'left',
       fixed: 'left',
       width: '5%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập mã lớp'}
+            value={classIdSearch}
+            onChange={(e) => setClassIdSearch(e.target.value)}
+            className="w-[180px] mb-3 block"
+            onPressEnter={(e) => {
+              setClassId(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setClassId(null);
+                setClassIdSearch(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo mã lớp">
+          <SearchOutlined
+            className={`${classId ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
       title: 'Tên lớp',
       dataIndex: 'name',
       align: 'left',
       width: '9%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập tên lớp'}
+            value={classNameSearch}
+            onChange={(e) => setClassNameSearch(e.target.value)}
+            className="w-[240px] mb-3 block"
+            onPressEnter={(e) => {
+              setClassName(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setClassName(null);
+                setClassNameSearch(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo tên lớp">
+          <SearchOutlined
+            className={`${className ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
       title: 'Khoa',
@@ -162,12 +244,72 @@ function ManageClass() {
       dataIndex: 'hrTeacher',
       align: 'left',
       width: '8%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập thông tin gvcn'}
+            value={homeroomTeacherSearch}
+            onChange={(e) => setHomeroomTeacherSearch(e.target.value)}
+            className="w-[240px] mb-3 block"
+            onPressEnter={(e) => {
+              setHomeroomTeacher(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setHomeroomTeacher(null);
+                setHomeroomTeacherSearch(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo thông tin gvcn">
+          <SearchOutlined
+            className={`${homeroomTeacher ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
       title: 'Lớp trưởng',
       dataIndex: 'monitor',
       align: 'left',
       width: '8%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập thông tin lớp trưởng'}
+            value={monitorSearch}
+            onChange={(e) => setMonitorSearch(e.target.value)}
+            className="w-[240px] mb-3 block"
+            onPressEnter={(e) => {
+              setMonitor(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setMonitor(null);
+                setMonitorSearch(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo thông tin lớp trưởng">
+          <SearchOutlined
+            className={`${monitor ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
       title: 'Sđt lớp trưởng',
@@ -240,6 +382,7 @@ function ManageClass() {
               size="small"
             />
             <Popconfirm
+              placement="topRight"
               title="Bạn có chắc chắn muốn xóa lớp này?"
               icon={<DeleteOutlined />}
               okText="Xóa"
@@ -267,7 +410,7 @@ function ManageClass() {
       </Title>
       <div className="flex justify-between mb-2">
         <div className="flex">
-          <Tooltip className="flex" title="Tìm kiếm lớp">
+          {/* <Tooltip className="flex" title="Tìm kiếm lớp">
             <Input
               prefix={<SearchOutlined className="opacity-60 mr-1" />}
               placeholder="Nhập từ khóa"
@@ -275,7 +418,7 @@ function ManageClass() {
               onChange={(e) => setValueSearchClass(e.target.value)}
               value={valueSearchClass}
             />
-          </Tooltip>
+          </Tooltip> */}
           <p className="my-auto ml-2">Tổng số kết quả: {total}</p>
         </div>
         <Space>
@@ -316,8 +459,10 @@ function ManageClass() {
           }}
           rowKey="id"
           loading={loadingTable}
-          bordered={true}
+          // bordered={true}
           dataSource={dataSource}
+          // size="small"
+          size="middle"
           columns={columns}
           pagination={{
             onChange: (page, size) => {

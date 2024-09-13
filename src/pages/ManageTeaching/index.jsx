@@ -3,17 +3,21 @@ import {
   DownloadOutlined,
   EditOutlined,
   FileDoneOutlined,
+  LockFilled,
+  LockOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   SaveOutlined,
   SearchOutlined,
   SwapOutlined,
+  UnlockOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
 import {
   Button,
   Input,
+  message,
   Popconfirm,
   Popover,
   Select,
@@ -31,6 +35,7 @@ import {
   getMasterDataSelection,
   getTeachingList,
   getUserSelection,
+  lockTeaching,
 } from '../../api/axios';
 import { excelApi } from '../../api/excelApi';
 import { promiseApi } from '../../api/promiseApi';
@@ -39,12 +44,14 @@ import { messageErrorToSever } from '../../components/Message';
 import { notificationError, notificationSuccess } from '../../components/Notification';
 import { ModalErrorImportTeaching } from './components/ModalErrorImportTeaching';
 import { ModalFormTeaching } from './components/ModalFormTeaching';
+import { ModalFormLockTeaching } from './components/ModalFormLockTeaching';
 
 function ManageTeaching() {
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormTeaching, setOpenModalFormTeaching] = useState(false);
+  const [openModalFormLockTeachingList, setOpenModalFormLockTeachingList] = useState(false);
   const [teachingData, setTeachingData] = useState({});
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -111,6 +118,20 @@ function ManageTeaching() {
       .finally(() => setLoadingTable(false));
   };
 
+  const handleLockTeaching = (id) => {
+    setLoadingTable(true);
+    lockTeaching(id)
+      .then((res) => {
+        if (res.data?.success) {
+          message.success('Thành công');
+          handleGetTeachingList();
+        } else {
+          message.error(res.data?.error?.message);
+        }
+      })
+      .finally(() => setLoadingTable(false));
+  };
+
   const handleClickEdit = (record) => {
     setTeachingData(record);
     setOpenModalFormTeaching(true);
@@ -126,7 +147,7 @@ function ManageTeaching() {
         setTeacherIdToRead(null);
         handleGetTeachingList();
       } else {
-        messageErrorToSever(res, 'Lỗi không xác định');
+        messageErrorToSever(res, null);
       }
     },
   });
@@ -687,6 +708,24 @@ function ManageTeaching() {
         (!isAll || roleId !== 'LECTURER') &&
         ((e, record, index) => (
           <Button.Group key={index}>
+            <Button
+              icon={
+                record.isLock === null ? (
+                  <UnlockOutlined />
+                ) : record.isLock === false ? (
+                  <UnlockOutlined />
+                ) : (
+                  <LockOutlined />
+                )
+              }
+              onClick={() => handleLockTeaching(record.id)}
+              size="small"
+              style={
+                record.isLock === true
+                  ? { backgroundColor: '#ffd2e5' }
+                  : { backgroundColor: '#d7e6fa' }
+              }
+            />
             <ButtonCustom
               title={'Sửa'}
               icon={<EditOutlined />}
@@ -694,6 +733,7 @@ function ManageTeaching() {
               size="small"
             />
             <Popconfirm
+              placement="topRight"
               title="Bạn có chắc chắn muốn xóa phân công này?"
               icon={<DeleteOutlined />}
               okText="Xóa"
@@ -717,7 +757,7 @@ function ManageTeaching() {
   return (
     <div>
       <Title level={3} className="uppercase text-center" style={{ marginBottom: 4 }}>
-        Danh sách phân công giảng dạy
+        Quản lý giảng dạy và điểm
       </Title>
       <div className="flex justify-between mb-2">
         <div className="flex">
@@ -778,7 +818,11 @@ function ManageTeaching() {
                 Đọc từ trang đào tạo
               </Button>
             </Popover>
-
+            <ButtonCustom
+              title="Tùy chọn lock"
+              handleClick={() => setOpenModalFormLockTeachingList(true)}
+              icon={<LockFilled />}
+            />
             <Button
               icon={<PlusOutlined />}
               onClick={() => {
@@ -808,6 +852,18 @@ function ManageTeaching() {
           }
         }}
       />
+      <ModalFormLockTeaching
+        onSuccess={() => {
+          handleGetTeachingList();
+          setOpenModalFormLockTeachingList(false);
+        }}
+        openForm={openModalFormLockTeachingList}
+        onChangeClickOpen={(open) => {
+          if (!open) {
+            setOpenModalFormLockTeachingList(false);
+          }
+        }}
+      />
 
       <div className="relative">
         <Table
@@ -817,8 +873,9 @@ function ManageTeaching() {
           }}
           rowKey="id"
           loading={loadingTable}
-          bordered={true}
+          // bordered={true}
           dataSource={dataSource}
+          size="middle"
           columns={columns}
           pagination={{
             onChange: (page, size) => {
@@ -836,7 +893,7 @@ function ManageTeaching() {
         {dataSource.length > 0 && (
           <div className="absolute bottom-5 left-0">
             <ButtonCustom
-              title="Xuất danh sách phân công giảng dạy"
+              title="Xuất danh sách giảng dạy"
               loading={exportTeachingToExcel.isPending}
               handleClick={() => {
                 exportTeachingToExcel.mutate();

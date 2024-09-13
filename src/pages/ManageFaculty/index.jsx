@@ -151,6 +151,7 @@ function ManageFaculty() {
             size="small"
           />
           <Popconfirm
+            placement="topRight"
             title="Bạn có chắc chắn muốn xóa khoa này?"
             icon={<DeleteOutlined />}
             okText="Xóa"
@@ -214,8 +215,9 @@ function ManageFaculty() {
           }}
           rowKey="id"
           loading={loadingTable}
-          bordered={true}
+          // bordered={true}
           dataSource={dataSource}
+          size="middle"
           columns={columns}
           pagination={{
             onChange: (page, size) => {

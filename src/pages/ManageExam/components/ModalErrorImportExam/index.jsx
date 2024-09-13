@@ -13,7 +13,7 @@ export const ModalErrorImportExam = ({ open, setOpen }) => {
         maskClosable={true}
         title={
           <h1 className="text-sky-900 text-2xl font-bold">
-            Hướng dẫn import tệp excel phân công kỳ thi
+            Hướng dẫn import tệp excel lịch coi thi
           </h1>
         }
         open={open}

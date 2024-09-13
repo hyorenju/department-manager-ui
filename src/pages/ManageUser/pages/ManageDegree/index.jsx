@@ -71,6 +71,7 @@ export function ManageDegree() {
             size="small"
           />
           <Popconfirm
+            placement="topRight"
             title="Bạn có chắc chắn muốn xóa trình độ này?"
             icon={<DeleteOutlined />}
             okText="Xóa"

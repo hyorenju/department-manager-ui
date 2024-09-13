@@ -291,6 +291,7 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
         </ProForm.Group>
         {!isCreate && (
           <Popconfirm
+            placement="topRight"
             title={
               <>
                 <p>Bạn có chắc chắn muốn chuyển vai trò của mình cho người dùng này?</p>

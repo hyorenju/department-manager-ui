@@ -190,6 +190,7 @@ function ManageDepartment() {
             size="small"
           />
           <Popconfirm
+            placement="topRight"
             title="Bạn có chắc chắn muốn xóa bộ môn này?"
             icon={<DeleteOutlined />}
             okText="Xóa"
@@ -265,8 +266,9 @@ function ManageDepartment() {
           }}
           rowKey="id"
           loading={loadingTable}
-          bordered={true}
+          // bordered={true}
           dataSource={dataSource}
+          size="middle"
           columns={columns}
           pagination={{
             onChange: (page, size) => {

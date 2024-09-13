@@ -9,6 +9,9 @@ import {
   QuestionCircleOutlined,
   UploadOutlined,
   SwapOutlined,
+  UnlockOutlined,
+  LockOutlined,
+  LockFilled,
 } from '@ant-design/icons';
 import { ProFormSelect } from '@ant-design/pro-components';
 import {
@@ -34,6 +37,9 @@ import {
   getUserSelection,
   getFacultySelection,
   getDepartmentSelection,
+  deleteStudent,
+  getStudentList,
+  lockIntern,
 } from '../../api/axios';
 import { excelApi } from '../../api/excelApi';
 import { notificationError, notificationSuccess } from '../../components/Notification';
@@ -43,6 +49,8 @@ import { ModalFormIntern } from './components/ModalFormIntern';
 import { useMutation } from '@tanstack/react-query';
 import { ManageInternType } from './pages/ManageInternType';
 import { ModalErrorImportIntern } from './components/ModalErrorImportIntern';
+import { ModalFormStudent } from './components/ModalFormStudent';
+import { ModalFormLockIntern } from './components/ModalFormLockIntern';
 
 function ManageIntern() {
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
@@ -50,14 +58,19 @@ function ManageIntern() {
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormIntern, setOpenModalFormIntern] = useState(false);
+  const [openModalFormStudent, setOpenModalFormStudent] = useState(false);
+  const [openModalFormLockInternList, setOpenModalFormLockInternList] = useState(false);
   const [internData, setInternData] = useState({});
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [size, setSize] = useState(10);
-  const [dataSource, setDataSource] = useState([]);
+  const [internDataSource, setInternDataSource] = useState([]);
+  const [studentDataSource, setStudentDataSource] = useState([]);
   const [formCreate, setFormCreate] = useState(true);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [openModalError, setOpenModalError] = useState(false);
+  const [intern, setIntern] = useState({});
+  const [studentData, setStudentData] = useState();
 
   const [valueSearchName, setValueSearchName] = useState();
   const [searchName, setSearchName] = useState();
@@ -101,7 +114,7 @@ function ManageIntern() {
     })
       .then((res) => {
         if (res.data?.success === true) {
-          setDataSource(res.data?.data?.items);
+          setInternDataSource(res.data?.data?.items);
           setTotal(res.data?.data?.total);
           setLoadingTable(false);
         } else
@@ -114,10 +127,30 @@ function ManageIntern() {
       .finally(() => setLoadingTable(false));
   };
 
-  const handleClickEdit = (record) => {
+  // handle get student list
+  const handleGetStudentList = () => {
+    if (intern.id) {
+      setLoadingTable(true);
+      getStudentList({ internId: intern?.id })
+        .then((res) => {
+          if (res.data?.success === true) {
+            setStudentDataSource(res.data?.data?.items);
+          } else notificationError('Bạn không có quyền truy cập');
+        })
+        .finally(() => setLoadingTable(false));
+    }
+  };
+
+  const handleClickEditIntern = (record) => {
     setInternData(record);
     setFormCreate(false);
     setOpenModalFormIntern(true);
+  };
+
+  const handleClickEditStudent = (record) => {
+    setStudentData(record);
+    setFormCreate(false);
+    setOpenModalFormStudent(true);
   };
 
   useEffect(() => {
@@ -136,6 +169,10 @@ function ManageIntern() {
     facultyId,
     departmentId,
   ]);
+
+  useEffect(() => {
+    handleGetStudentList();
+  }, [intern]);
 
   const [schoolYearSelection, setSchoolYearSelection] = useState([]);
   useEffect(() => {
@@ -297,6 +334,137 @@ function ManageIntern() {
     },
   };
 
+  const handleConfirmDeleteStudent = (id) => {
+    setLoadingTable(true);
+    deleteStudent(id)
+      .then((res) => {
+        if (res.data?.success === true) {
+          notificationSuccess('Xóa thành công');
+          handleGetStudentList();
+        } else notificationError(res.data?.error?.message);
+      })
+      .finally(() => setLoadingTable(false));
+  };
+
+  const handleLockIntern = (id) => {
+    setLoadingTable(true);
+    lockIntern(id)
+      .then((res) => {
+        if (res.data?.success) {
+          message.success('Thành công');
+          handleGetInternList();
+          setIntern(res.data.data);
+          setInternData(res.data.data);
+        } else {
+          message.error(res.data?.error?.message);
+        }
+      })
+      .finally(() => setLoadingTable(false));
+  };
+
+  const expandedRowRender = () => {
+    const columns = [
+      {
+        title: 'MSV',
+        dataIndex: 'studentId',
+        align: 'left',
+        fixed: 'left',
+        width: '9%',
+      },
+      {
+        title: 'Tên sinh viên',
+        dataIndex: 'name',
+        align: 'left',
+        width: '15%',
+      },
+      {
+        title: 'Lớp',
+        dataIndex: 'classId',
+        align: 'left',
+        width: '12%',
+      },
+      {
+        title: 'Số điện thoại',
+        dataIndex: 'phoneNumber',
+        align: 'left',
+        width: '10%',
+      },
+      {
+        title: 'Nơi thực tập',
+        dataIndex: 'company',
+        align: 'left',
+        width: '20%',
+      },
+      {
+        title: 'Ghi chú',
+        dataIndex: 'note',
+        align: 'left',
+      },
+      {
+        title: 'Tùy chọn',
+        align: 'center',
+        fixed: 'right',
+        width: '12%',
+        render: (e, record, index) => (
+          <Button.Group key={index}>
+            <ButtonCustom
+              title={'Sửa'}
+              icon={<EditOutlined />}
+              handleClick={() => handleClickEditStudent(record)}
+              size="small"
+            />
+            <Popconfirm
+              placement="topRight"
+              title="Bạn có chắc chắn muốn xóa sinh viên này?"
+              icon={<DeleteOutlined />}
+              okText="Xóa"
+              okType="danger"
+              onConfirm={() => handleConfirmDeleteStudent(record.id)}
+            >
+              <Button
+                className="flex justify-center items-center text-md shadow-md"
+                icon={<DeleteOutlined />}
+                size="small"
+                danger
+              >
+                Xóa
+              </Button>
+            </Popconfirm>
+          </Button.Group>
+        ),
+      },
+    ];
+    return (
+      <Table
+        title={() => {
+          return (
+            <div className="flex justify-between">
+              <p className="text-center font-bold text-lg">{`${intern?.name}`}</p>
+              <div>
+                <Button
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setOpenModalFormStudent(true);
+                    setFormCreate(true);
+                  }}
+                  className="items-center text-md font-medium shadow-md bg-slate-100"
+                >
+                  Thêm sinh viên
+                </Button>
+              </div>
+            </div>
+          );
+        }}
+        columns={columns}
+        dataSource={studentDataSource}
+        pagination={false}
+        footer={() => {
+          return <hr />;
+        }}
+      />
+    );
+  };
+
   const columns = [
     {
       title: 'Khoa',
@@ -367,29 +535,23 @@ function ManageIntern() {
       dataIndex: ['schoolYear', 'name'],
       align: 'left',
       width: '5%',
-      filterDropdown:
-        isAll &&
-        (() => (
-          <div className="p-3 flex flex-col gap-2 w-[170px]">
-            <Select
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              value={schoolYearId}
-              options={schoolYearSelection}
-              placeholder="Chọn năm học"
-              onChange={(schoolYearId) => setSchoolYearId(schoolYearId)}
-            />
-            <Space>
-              <ButtonCustom
-                handleClick={() => setSchoolYearId(null)}
-                size="small"
-                title={'Reset'}
-              />
-            </Space>
-          </div>
-        )),
+      filterDropdown: (
+        <div className="p-3 flex flex-col gap-2 w-[170px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={schoolYearId}
+            options={schoolYearSelection}
+            placeholder="Chọn năm học"
+            onChange={(schoolYearId) => setSchoolYearId(schoolYearId)}
+          />
+          <Space>
+            <ButtonCustom handleClick={() => setSchoolYearId(null)} size="small" title={'Reset'} />
+          </Space>
+        </div>
+      ),
       filterIcon: () => (
         <Tooltip title="Tìm kiếm theo năm học">
           <SearchOutlined className={`${schoolYearId ? 'text-blue-500' : undefined} text-base`} />
@@ -401,38 +563,36 @@ function ManageIntern() {
       dataIndex: 'term',
       align: 'left',
       width: '3.5%',
-      filterDropdown:
-        isAll &&
-        (() => (
-          <div className="p-3 flex flex-col gap-2 w-[150px]">
-            <Select
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              value={term}
-              options={[
-                {
-                  label: 'Học kỳ 1',
-                  value: 1,
-                },
-                {
-                  label: 'Học kỳ 2',
-                  value: 2,
-                },
-                {
-                  label: 'Học kỳ 3',
-                  value: 3,
-                },
-              ]}
-              placeholder="Chọn học kỳ"
-              onChange={(term) => setTerm(term)}
-            />
-            <Space>
-              <ButtonCustom handleClick={() => setTerm(null)} size="small" title={'Reset'} />
-            </Space>
-          </div>
-        )),
+      filterDropdown: (
+        <div className="p-3 flex flex-col gap-2 w-[150px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={term}
+            options={[
+              {
+                label: 'Học kỳ 1',
+                value: 1,
+              },
+              {
+                label: 'Học kỳ 2',
+                value: 2,
+              },
+              {
+                label: 'Học kỳ 3',
+                value: 3,
+              },
+            ]}
+            placeholder="Chọn học kỳ"
+            onChange={(term) => setTerm(term)}
+          />
+          <Space>
+            <ButtonCustom handleClick={() => setTerm(null)} size="small" title={'Reset'} />
+          </Space>
+        </div>
+      ),
       filterIcon: () => (
         <Tooltip title="Tìm kiếm theo học kỳ">
           <SearchOutlined className={`${term ? 'text-blue-500' : undefined} text-base`} />
@@ -627,15 +787,33 @@ function ManageIntern() {
       title: isAll & (roleId === 'LECTURER') ? '' : 'Tùy chọn',
       align: 'center',
       fixed: 'right',
-      width: isAll & (roleId === 'LECTURER') ? '0' : '7%',
+      width: isAll & (roleId === 'LECTURER') ? '0' : '7.5%',
       render:
         (!isAll || roleId !== 'LECTURER') &&
         ((e, record, index) => (
           <Button.Group key={index}>
+            <Button
+              icon={
+                record.isLock === null ? (
+                  <UnlockOutlined />
+                ) : record.isLock === false ? (
+                  <UnlockOutlined />
+                ) : (
+                  <LockOutlined />
+                )
+              }
+              onClick={() => handleLockIntern(record.id)}
+              size="small"
+              style={
+                record.isLock === true
+                  ? { backgroundColor: '#ffd2e5' }
+                  : { backgroundColor: '#d7e6fa' }
+              }
+            />
             <ButtonCustom
               title={'Sửa'}
               icon={<EditOutlined />}
-              handleClick={() => handleClickEdit(record)}
+              handleClick={() => handleClickEditIntern(record)}
               size="small"
             />
             <Popconfirm
@@ -690,6 +868,11 @@ function ManageIntern() {
           {roleId !== 'LECTURER' && (
             <>
               <ButtonCustom
+                title="Tùy chọn lock"
+                handleClick={() => setOpenModalFormLockInternList(true)}
+                icon={<LockFilled />}
+              />
+              <ButtonCustom
                 title="Loại đề tài"
                 handleClick={() => setOpenDrawer(true)}
                 icon={<TableOutlined />}
@@ -723,6 +906,35 @@ function ManageIntern() {
           }
         }}
       />
+      <ModalFormStudent
+        isCreate={formCreate}
+        onSuccess={() => {
+          handleGetStudentList();
+          setOpenModalFormStudent(false);
+        }}
+        intern={intern}
+        studentData={studentData}
+        openForm={openModalFormStudent}
+        onChangeClickOpen={(open) => {
+          if (!open) {
+            setStudentData({});
+            setOpenModalFormStudent(false);
+          }
+        }}
+      />
+      <ModalFormLockIntern
+        onSuccess={() => {
+          handleGetInternList();
+          handleGetStudentList();
+          setOpenModalFormLockInternList(false);
+        }}
+        openForm={openModalFormLockInternList}
+        onChangeClickOpen={(open) => {
+          if (!open) {
+            setOpenModalFormLockInternList(false);
+          }
+        }}
+      />
       <div className="relative">
         <Table
           scroll={{
@@ -732,7 +944,7 @@ function ManageIntern() {
           rowKey="id"
           loading={loadingTable}
           // bordered={true}
-          dataSource={dataSource}
+          dataSource={internDataSource}
           size="middle"
           columns={columns}
           pagination={{
@@ -746,9 +958,22 @@ function ManageIntern() {
             current: page,
             showSizeChanger: false,
           }}
+          expandable={{
+            expandedRowRender,
+            onExpand: (expanded, record) => {
+              if (expanded) {
+                setIntern(record);
+              }
+            },
+            onExpandedRowsChange: (row) => {
+              if (row.length === 2) {
+                row.shift();
+              }
+            },
+          }}
         />
 
-        {dataSource.length > 0 && (
+        {internDataSource.length > 0 && (
           <div className="absolute bottom-5 left-0">
             <ButtonCustom
               title="Xuất danh sách đề tài thực tập"

@@ -71,6 +71,7 @@ export function ManageExamForm() {
             size="small"
           />
           <Popconfirm
+            placement="topRight"
             title="Bạn có chắc chắn muốn xóa hình thức này?"
             icon={<DeleteOutlined />}
             okText="Xóa"

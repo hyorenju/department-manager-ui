@@ -1,9 +1,15 @@
-import { LineOutlined, PoweroffOutlined } from '@ant-design/icons';
+import {
+  LineOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  PoweroffOutlined,
+} from '@ant-design/icons';
 import { Avatar, Button, Layout, Menu, Space, Tooltip, Typography, Popover, Divider } from 'antd';
 import Cookies from 'js-cookie';
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import userAvatar from '../../assets/img/user.png';
+import { ButtonCustom } from '../ButtonCustom';
 
 function LoginSuccess() {
   const { Title } = Typography;
@@ -11,6 +17,7 @@ function LoginSuccess() {
   const { Header, Sider, Content } = Layout;
   const userData = JSON.parse(sessionStorage.getItem('user_info'));
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
+  const [hideLayout, setHideLayout] = useState(false);
 
   const handleClickItemMenu = ({ key }) => {
     navigate(key);
@@ -41,8 +48,9 @@ function LoginSuccess() {
           getItem('Danh sách lớp', `/manage/class`),
           getItem('Danh sách môn học', `/manage/subject`),
           getItem('Quản lý đề tài thực tập', `/manage/intern`),
-          getItem('Phân công giảng dạy', `/manage/teaching`),
-          getItem('Phân công kỳ thi', `/manage/exam`),
+          getItem('Quản lý giảng dạy và điểm', `/manage/teaching`),
+          getItem('Quản lý lịch coi thi', `/manage/exam`),
+          getItem('Danh sách công việc', `/manage/project`),
         ];
       case 'MANAGER':
         return [
@@ -50,8 +58,9 @@ function LoginSuccess() {
           getItem('Quản lí lớp', `/manage/class`),
           getItem('Quản lí môn học', `/manage/subject`),
           getItem('Quản lí đề tài thực tập', `/manage/intern`),
-          getItem('Phân công giảng dạy', `/manage/teaching`),
-          getItem('Phân công kỳ thi', `/manage/exam`),
+          getItem('Quản lý giảng dạy và điểm', `/manage/teaching`),
+          getItem('Quản lý lịch coi thi', `/manage/exam`),
+          getItem('Quản lý công việc', `/manage/project`),
         ];
       case 'DEPUTY':
         return [
@@ -59,8 +68,9 @@ function LoginSuccess() {
           getItem('Quản lí lớp', `/manage/class`),
           getItem('Quản lí môn học', `/manage/subject`),
           getItem('Quản lí đề tài thực tập', `/manage/intern`),
-          getItem('Phân công giảng dạy', `/manage/teaching`),
-          getItem('Phân công kỳ thi', `/manage/exam`),
+          getItem('Quản lý giảng dạy và điểm', `/manage/teaching`),
+          getItem('Quản lý lịch coi thi', `/manage/exam`),
+          getItem('Quản lý công việc', `/manage/project`),
         ];
       case 'DEAN':
         return [
@@ -68,8 +78,8 @@ function LoginSuccess() {
           getItem('Quản lí lớp', `/manage/class`),
           getItem('Quản lí môn học', `/manage/subject`),
           getItem('Quản lí đề tài thực tập', `/manage/intern`),
-          getItem('Phân công giảng dạy', `/manage/teaching`),
-          getItem('Phân công kỳ thi', `/manage/exam`),
+          getItem('Quản lý giảng dạy và điểm', `/manage/teaching`),
+          getItem('Quản lý lịch coi thi', `/manage/exam`),
           getItem('Danh sách bộ môn', `/manage/department`),
         ];
       case 'PRINCIPAL':
@@ -78,8 +88,8 @@ function LoginSuccess() {
           getItem('Quản lí lớp', `/manage/class`),
           getItem('Quản lí môn học', `/manage/subject`),
           getItem('Quản lí đề tài thực tập', `/manage/intern`),
-          getItem('Phân công giảng dạy', `/manage/teaching`),
-          getItem('Phân công kỳ thi', `/manage/exam`),
+          getItem('Quản lý giảng dạy và điểm', `/manage/teaching`),
+          getItem('Quản lý lịch coi thi', `/manage/exam`),
           getItem('Danh sách khoa', `/manage/faculty`),
           getItem('Danh sách bộ môn', `/manage/department`),
           getItem('Thống kê', `/manage/statistic`),
@@ -94,6 +104,11 @@ function LoginSuccess() {
       <div className="hover:bg-indigo-100 rounded-md p-1">
         <a className="hover:text-black" href="/manage/profile">
           Quản lý tài khoản
+        </a>
+      </div>
+      <div className="hover:bg-indigo-100 rounded-md p-1">
+        <a className="hover:text-black" href="/manage/work">
+          Công việc phải làm
         </a>
       </div>
       <Divider className="my-2"></Divider>
@@ -113,7 +128,7 @@ function LoginSuccess() {
   return (
     <div className="p-1 bg-white">
       <Layout className="h-[98.5vh] p-0">
-        <Sider style={{ borderRadius: '6px' }} width={200}>
+        <Sider hidden={hideLayout} style={{ borderRadius: '6px' }} width={230}>
           <div className="py-3 px-6 flex justify-center items-center border-b-2 border-stone-50">
             <Title style={{ color: '#fff', marginBottom: 0, width: '100%' }} level={4}>
               {userData?.lastName ? `Xin chào ${userData?.lastName}` : 'Xin chào admin'}
@@ -131,9 +146,30 @@ function LoginSuccess() {
         </Sider>
         <Layout className="ml-1">
           <Header theme="dark" className="rounded-md flex justify-between items-center p-8">
-            <Title style={{ color: '#fff', marginBottom: 0, textTransform: 'uppercase' }} level={3}>
-              Bộ môn {userData?.department?.name}
-            </Title>
+            <div className="flex">
+              <Button
+                className="text-black bg-gray-400 border-white"
+                onClick={() => {
+                  if (hideLayout) {
+                    setHideLayout(false);
+                  } else if (!hideLayout) {
+                    setHideLayout(true);
+                  }
+                }}
+                icon={hideLayout ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              />
+              <Title
+                style={{
+                  color: '#fff',
+                  marginBottom: 0,
+                  textTransform: 'uppercase',
+                  marginLeft: '12px',
+                }}
+                level={3}
+              >
+                Bộ môn {userData?.department?.name}
+              </Title>
+            </div>
             <Space size={24}>
               <Popover content={content} trigger={'click'}>
                 <Avatar
