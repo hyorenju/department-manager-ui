@@ -387,7 +387,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Hình thức thi"
             placeholder="Chọn hình thức thi"
             options={examFormSelection}
-            disabled={isCreate ? true : false}
           />
           <ProFormText
             rules={[
@@ -397,7 +396,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             name="examCode"
             label="Mã đề thi"
             placeholder="Nhập mã đề thi"
-            disabled={isCreate ? true : false}
           />
         </ProForm.Group>
         <ProForm.Group>
@@ -416,14 +414,11 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            rules={[{ required: true, message: 'Không được để trống' }]}
             name={['proctor1', 'id']}
             label="Giám thị coi thi 1"
             placeholder="Chọn giám thị coi thi 1"
             options={proctorSelection}
-            disabled={isCreate ? true : false}
           />
           <ProFormSelect
             showSearch
@@ -431,14 +426,11 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            rules={[{ required: true, message: 'Không được để trống' }]}
             name={['proctor2', 'id']}
             label="Giám thị coi thi 2"
             placeholder="Chọn giám thị coi thi 2"
             options={proctorSelection}
-            disabled={isCreate ? true : false}
           />
           <ProFormSelect
             showSearch
@@ -453,7 +445,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Giáo viên in sao đề"
             placeholder="Chọn giáo viên"
             options={userSelection}
-            disabled={isCreate ? true : false}
           />
         </ProForm.Group>
         <ProForm.Group>
@@ -470,7 +461,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Giáo viên giảng dạy"
             placeholder="Chọn giáo viên giảng dạy"
             options={lecturerTeachSelection}
-            disabled={isCreate ? true : false}
           />
           <ProFormSelect
             showSearch
@@ -485,7 +475,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Giáo viên bốc đề"
             placeholder="Chọn giáo viên bốc đề"
             options={userSelection}
-            disabled={isCreate ? true : false}
           />
         </ProForm.Group>
         <ProForm.Group>
@@ -502,7 +491,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Giáo viên ký nhận đề"
             placeholder="Chọn giáo viên"
             options={userSelection}
-            disabled={isCreate ? true : false}
           />
           <ProFormSelect
             showSearch
@@ -517,7 +505,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Giáo viên chấm thi 1"
             placeholder="Chọn giáo viên"
             options={userSelection}
-            disabled={isCreate ? true : false}
           />
           <ProFormSelect
             showSearch
@@ -532,7 +519,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Giáo viên chấm thi 2"
             placeholder="Chọn giáo viên"
             options={userSelection}
-            disabled={isCreate ? true : false}
           />
         </ProForm.Group>
         <ProForm.Group>
@@ -549,7 +535,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Giáo viên ký nhận bài thi"
             placeholder="Chọn giáo viên"
             options={userSelection}
-            disabled={isCreate ? true : false}
           />
           <ProFormSelect
             showSearch
@@ -564,7 +549,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Giáo viên bàn giao bài"
             placeholder="Chọn giáo viên"
             options={userSelection}
-            disabled={isCreate ? true : false}
           />
           <ProFormSelect
             showSearch
@@ -579,7 +563,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Giáo viên bàn giao điểm"
             placeholder="Chọn giáo viên"
             options={userSelection}
-            disabled={isCreate ? true : false}
           />
         </ProForm.Group>
         <ProForm.Group></ProForm.Group>
