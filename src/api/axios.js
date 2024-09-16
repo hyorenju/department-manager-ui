@@ -229,6 +229,10 @@ export const getAssignSelection = (id) => {
   return axios.post(`/exam/assign-selection/${id}`);
 };
 
+export const getAssignSelectionByRequest = (values) => {
+  return axios.post(`/exam/assign-selection`, values);
+};
+
 export const createExam = (values) => {
   return axios.post(`/exam/create`, values);
 };

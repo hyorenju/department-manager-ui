@@ -18,6 +18,7 @@ import {
   getSubjectSelection,
   getFacultySelection,
   getDepartmentSelection,
+  getAssignSelectionByRequest,
 } from '../../../../api/axios';
 import { useMutation } from '@tanstack/react-query';
 import { notificationSuccess, notificationError } from '../../../../components/Notification';
@@ -27,6 +28,9 @@ import TextArea from 'antd/es/input/TextArea';
 export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData, onSuccess }) {
   const [facultyId, setFacultyId] = useState(null);
   const [departmentId, setDepartmentId] = useState(null);
+  const [testDay, setTestDay] = useState('');
+  const [lessonStart, setLessonStart] = useState(null);
+  const [lessonsTest, setLessonsTest] = useState(null);
 
   const handleCreateExam = (values) => {
     createExam(values).then((res) => {
@@ -153,7 +157,7 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
 
   const [proctorSelection, setProctorSelection] = useState([]);
   useEffect(() => {
-    if (openForm) {
+    if (openForm && !isCreate) {
       getAssignSelection(examData?.id).then((res) => {
         if (res.data?.success) {
           const newArr = [];
@@ -168,6 +172,23 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
       });
     }
   }, [openForm]);
+
+  useEffect(() => {
+    if (testDay !== '' && lessonStart != null && lessonsTest != null) {
+      getAssignSelectionByRequest({ testDay, lessonStart, lessonsTest }).then((res) => {
+        if (res.data?.success) {
+          const newArr = [];
+          res.data?.data?.items?.map((item) =>
+            newArr.push({
+              label: `${item?.id} - ${item?.firstName} ${item?.lastName}`,
+              value: item?.id,
+            }),
+          );
+          setProctorSelection(newArr);
+        }
+      });
+    }
+  }, [testDay, lessonStart, lessonsTest]);
 
   const [userSelection, setUserSelection] = useState([]);
   useEffect(() => {
@@ -310,6 +331,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             disabled={isCreate ? false : true}
             fieldProps={{
               format: 'DD/MM/YYYY',
+              onChange: (e) => {
+                setTestDay(`${e.$D}/${e.$M + 1}/${e.$y}`);
+              },
             }}
           />
           <ProFormText
@@ -321,6 +345,11 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Tiết bắt đầu"
             placeholder="Nhập tiết bắt đầu"
             disabled={isCreate ? false : true}
+            fieldProps={{
+              onBlur: (e) => {
+                setLessonStart(e.target.value);
+              },
+            }}
           />
           <ProFormText
             rules={[
@@ -331,6 +360,11 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Số tiết thi"
             placeholder="Nhập số tiết"
             disabled={isCreate ? false : true}
+            fieldProps={{
+              onBlur: (e) => {
+                setLessonsTest(e.target.value);
+              },
+            }}
           />
         </ProForm.Group>
         <ProForm.Group>
@@ -366,13 +400,7 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
           />
         </ProForm.Group>
         <ProForm.Group>
-          <ProFormText
-            rules={[{ required: true, message: 'Không được để trống' }]}
-            width="md"
-            name="quantity"
-            label="Sĩ số"
-            placeholder="Nhập sĩ số"
-          />
+          <ProFormText width="md" name="quantity" label="Sĩ số" placeholder="Nhập sĩ số" />
 
           <ProFormSelect
             showSearch
@@ -380,18 +408,18 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            // rules={[
+            //   !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            // ]}
             name={['form', 'id']}
             label="Hình thức thi"
             placeholder="Chọn hình thức thi"
             options={examFormSelection}
           />
           <ProFormText
-            rules={[
-              isCreate ? { required: false } : { required: true, message: 'Không được để trống' },
-            ]}
+            // rules={[
+            //   isCreate ? { required: false } : { required: true, message: 'Không được để trống' },
+            // ]}
             width="md"
             name="examCode"
             label="Mã đề thi"
@@ -438,9 +466,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            // rules={[
+            //   !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            // ]}
             name={['printer', 'id']}
             label="Giáo viên in sao đề"
             placeholder="Chọn giáo viên"
@@ -454,9 +482,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="690px "
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            // rules={[
+            //   !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            // ]}
             name={['lecturerTeach', 'id']}
             label="Giáo viên giảng dạy"
             placeholder="Chọn giáo viên giảng dạy"
@@ -468,9 +496,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            // rules={[
+            //   !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            // ]}
             name={['picker', 'id']}
             label="Giáo viên bốc đề"
             placeholder="Chọn giáo viên bốc đề"
@@ -484,9 +512,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            // rules={[
+            //   !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            // ]}
             name={['questionTaker', 'id']}
             label="Giáo viên ký nhận đề"
             placeholder="Chọn giáo viên"
@@ -498,9 +526,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            // rules={[
+            //   !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            // ]}
             name={['marker1', 'id']}
             label="Giáo viên chấm thi 1"
             placeholder="Chọn giáo viên"
@@ -512,9 +540,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            // rules={[
+            //   !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            // ]}
             name={['marker2', 'id']}
             label="Giáo viên chấm thi 2"
             placeholder="Chọn giáo viên"
@@ -528,9 +556,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            // rules={[
+            //   !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            // ]}
             name={['examTaker', 'id']}
             label="Giáo viên ký nhận bài thi"
             placeholder="Chọn giáo viên"
@@ -542,9 +570,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            // rules={[
+            //   !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            // ]}
             name={['examGiver', 'id']}
             label="Giáo viên bàn giao bài"
             placeholder="Chọn giáo viên"
@@ -556,9 +584,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={[
-              !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+            // rules={[
+            //   !isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            // ]}
             name={['pointGiver', 'id']}
             label="Giáo viên bàn giao điểm"
             placeholder="Chọn giáo viên"

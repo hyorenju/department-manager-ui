@@ -72,6 +72,8 @@ function ManageExam() {
   const [departmentId, setDepartmentId] = useState();
   const [searchSubjectName, setSearchSubjectName] = useState();
   const [subjectName, setSubjectName] = useState();
+  const [searchSubjectId, setSearchSubjectId] = useState();
+  const [subjectId, setSubjectId] = useState();
   const [schoolYearId, setSchoolYearId] = useState(null);
   const [term, setTerm] = useState();
   const [formId, setFormId] = useState();
@@ -220,6 +222,7 @@ function ManageExam() {
     mutationKey: ['exportExamList'],
     mutationFn: () =>
       excelApi.exportExamList({
+        isAll: isAll,
         facultyId: facultyId,
         departmentId: departmentId,
         subjectName: subjectName,
@@ -324,70 +327,70 @@ function ManageExam() {
   };
 
   const columns = [
-    {
-      title: 'Khoa',
-      dataIndex: ['subject', 'department', 'faculty', 'name'],
-      align: 'left',
-      width: '4.5%',
-      filterDropdown:
-        isAll &&
-        (() => (
-          <div className="p-3 flex flex-col gap-2 w-[280px]">
-            <Select
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              value={facultyId}
-              options={facultySelection}
-              placeholder="Chọn khoa"
-              onChange={(searchFacultyId) => setFacultyId(searchFacultyId)}
-            />
-            <Space>
-              <ButtonCustom handleClick={() => setFacultyId(null)} size="small" title={'Reset'} />
-            </Space>
-          </div>
-        )),
-      filterIcon: () => (
-        <Tooltip title="Tìm kiếm theo khoa">
-          <SearchOutlined className={`${facultyId ? 'text-blue-500' : undefined} text-base`} />
-        </Tooltip>
-      ),
-    },
-    {
-      title: 'Bộ môn',
-      dataIndex: ['subject', 'department', 'name'],
-      align: 'left',
-      width: '4%',
-      filterDropdown:
-        isAll &&
-        (() => (
-          <div className="p-3 flex flex-col gap-2 w-[280px]">
-            <Select
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              value={departmentId}
-              options={departmentSelection}
-              placeholder="Chọn bộ môn"
-              onChange={(departmentId) => setDepartmentId(departmentId)}
-            />
-            <Space>
-              <ButtonCustom
-                handleClick={() => setDepartmentId(null)}
-                size="small"
-                title={'Reset'}
-              />
-            </Space>
-          </div>
-        )),
-      filterIcon: () => (
-        <Tooltip title="Tìm kiếm theo bộ môn">
-          <SearchOutlined className={`${departmentId ? 'text-blue-500' : undefined} text-base`} />
-        </Tooltip>
-      ),
-    },
+    // {
+    //   title: 'Khoa',
+    //   dataIndex: ['subject', 'department', 'faculty', 'name'],
+    //   align: 'left',
+    //   width: '4.5%',
+    //   filterDropdown:
+    //     isAll &&
+    //     (() => (
+    //       <div className="p-3 flex flex-col gap-2 w-[280px]">
+    //         <Select
+    //           showSearch
+    //           filterOption={(input, option) =>
+    //             (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+    //           }
+    //           value={facultyId}
+    //           options={facultySelection}
+    //           placeholder="Chọn khoa"
+    //           onChange={(searchFacultyId) => setFacultyId(searchFacultyId)}
+    //         />
+    //         <Space>
+    //           <ButtonCustom handleClick={() => setFacultyId(null)} size="small" title={'Reset'} />
+    //         </Space>
+    //       </div>
+    //     )),
+    //   filterIcon: () => (
+    //     <Tooltip title="Tìm kiếm theo khoa">
+    //       <SearchOutlined className={`${facultyId ? 'text-blue-500' : undefined} text-base`} />
+    //     </Tooltip>
+    //   ),
+    // },
+    // {
+    //   title: 'Bộ môn',
+    //   dataIndex: ['subject', 'department', 'name'],
+    //   align: 'left',
+    //   width: '4%',
+    //   filterDropdown:
+    //     isAll &&
+    //     (() => (
+    //       <div className="p-3 flex flex-col gap-2 w-[280px]">
+    //         <Select
+    //           showSearch
+    //           filterOption={(input, option) =>
+    //             (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+    //           }
+    //           value={departmentId}
+    //           options={departmentSelection}
+    //           placeholder="Chọn bộ môn"
+    //           onChange={(departmentId) => setDepartmentId(departmentId)}
+    //         />
+    //         <Space>
+    //           <ButtonCustom
+    //             handleClick={() => setDepartmentId(null)}
+    //             size="small"
+    //             title={'Reset'}
+    //           />
+    //         </Space>
+    //       </div>
+    //     )),
+    //   filterIcon: () => (
+    //     <Tooltip title="Tìm kiếm theo bộ môn">
+    //       <SearchOutlined className={`${departmentId ? 'text-blue-500' : undefined} text-base`} />
+    //     </Tooltip>
+    //   ),
+    // },
     {
       title: 'Năm học',
       dataIndex: ['schoolYear', 'name'],
@@ -466,6 +469,43 @@ function ManageExam() {
       ),
     },
     {
+      title: 'Mã',
+      dataIndex: ['subject', 'id'],
+      align: 'left',
+      fixed: 'left',
+      width: '1.8%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập mã môn thi'}
+            value={searchSubjectId}
+            onChange={(e) => setSearchSubjectId(e.target.value)}
+            className="w-[180px] mb-3 block"
+            onPressEnter={(e) => {
+              setSubjectId(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setSubjectId(null);
+                setSearchSubjectId(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo mã môn thi">
+          <SearchOutlined
+            className={`${subjectId ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
+    },
+    {
       title: 'Tên môn thi',
       dataIndex: ['subject', 'name'],
       align: 'left',
@@ -477,7 +517,7 @@ function ManageExam() {
             placeholder={'Nhập tên môn thi'}
             value={searchSubjectName}
             onChange={(e) => setSearchSubjectName(e.target.value)}
-            className="w-[180px] mb-3 block"
+            className="w-[260px] mb-3 block"
             onPressEnter={(e) => {
               setSubjectName(e.target.value);
             }}
@@ -506,7 +546,7 @@ function ManageExam() {
       title: 'Hình thức',
       dataIndex: ['form', 'name'],
       align: 'left',
-      width: '3%',
+      width: '2%',
       filterDropdown: () => (
         <div className="p-3 flex flex-col gap-2 w-[220px]">
           <Select
@@ -898,8 +938,9 @@ function ManageExam() {
       render:
         roleId !== 'LECTURER' &&
         ((e, record, index) =>
-          (roleId === 'MANAGER' || roleId === 'DEPUTY' || roleId === 'PRINCIPAL') &&
-          userData.department?.id === record.subject?.department?.id && (
+          ((roleId === 'MANAGER' || roleId === 'DEPUTY') &&
+            userData.department?.id === record.subject?.department?.id) ||
+          (roleId === 'PRINCIPAL' && (
             <Button.Group key={index}>
               <Button
                 className="bg-blue-100"
@@ -930,7 +971,7 @@ function ManageExam() {
                 </Button>
               </Popconfirm>
             </Button.Group>
-          )),
+          ))),
     },
   ];
 
