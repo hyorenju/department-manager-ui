@@ -53,6 +53,7 @@ function ManageProject() {
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
+  const [loadingExpandTable, setLoadingExpandTable] = useState(false);
   const [openModalFormProject, setOpenModalFormProject] = useState(false);
   const [openModalFormTask, setOpenModalFormTask] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -164,7 +165,7 @@ function ManageProject() {
   const expandedRowRender = () => {
     const columns = [
       {
-        title: 'Tên công việc',
+        title: 'Tên công việc nhỏ',
         dataIndex: 'name',
         align: 'left',
         fixed: 'left',
@@ -183,7 +184,7 @@ function ManageProject() {
         width: '10.5%',
       },
       {
-        title: 'Hạn chót',
+        title: 'Ngày kết thúc',
         dataIndex: 'deadline',
         align: 'left',
         width: '10.5%',
@@ -205,8 +206,8 @@ function ManageProject() {
         fixed: 'right',
         width: '15%',
         render: (e, record, index) => (
-          <div className="border-2 border-none rounded-md bg-primary">
-            <Button.Group key={index}>
+          <div className="border-2 border-none rounded-md bg-primary" key={index}>
+            <Button.Group>
               <Button
                 icon={<EditOutlined />}
                 onClick={() => handleClickEditTask(record)}
@@ -217,7 +218,7 @@ function ManageProject() {
               </Button>
               <Popconfirm
                 placement="topRight"
-                title="Bạn có chắc chắn muốn xóa công việc này?"
+                title="Bạn có chắc chắn muốn xóa công việc nhỏ này?"
                 icon={<DeleteOutlined />}
                 okText="Xóa"
                 okType="danger"
@@ -232,7 +233,7 @@ function ManageProject() {
                 </Button>
               </Popconfirm>
             </Button.Group>
-            <Button.Group key={index}>
+            <Button.Group>
               <Button
                 className="bg-white flex justify-center items-center shadow-lg"
                 onClick={() => handleUpOrdinalNumber(record.id)}
@@ -270,7 +271,7 @@ function ManageProject() {
                   }}
                   className="items-center text-md font-medium shadow-md bg-slate-100"
                 >
-                  Thêm công việc
+                  Thêm công việc nhỏ
                 </Button>
               </div>
             </div>
@@ -288,7 +289,7 @@ function ManageProject() {
 
   const columns = [
     {
-      title: 'Tên dự án',
+      title: 'Tên công việc',
       dataIndex: 'name',
       align: 'left',
       fixed: 'left',
@@ -306,7 +307,7 @@ function ManageProject() {
       width: '9%',
     },
     {
-      title: 'Hạn chót',
+      title: 'Ngày kết thúc',
       dataIndex: 'deadline',
       align: 'left',
       width: '9%',
@@ -345,7 +346,7 @@ function ManageProject() {
           />
           <Popconfirm
             placement="topRight"
-            title="Bạn có chắc chắn muốn xóa dự án này?"
+            title="Bạn có chắc chắn muốn xóa công việc này?"
             icon={<DeleteOutlined />}
             okText="Xóa"
             okType="danger"
@@ -380,11 +381,11 @@ function ManageProject() {
   return (
     <div>
       <Title level={3} className="uppercase text-center" style={{ marginBottom: 0 }}>
-        Danh sách dự án
+        Danh sách công việc
       </Title>
       <div className="flex justify-between mb-2">
         <div className="flex">
-          <Tooltip className="flex" title="Tìm kiếm dự án">
+          <Tooltip className="flex" title="Tìm kiếm công việc">
             <Input
               prefix={<SearchOutlined className="opacity-60 mr-1" />}
               placeholder="Nhập từ khóa"
@@ -413,7 +414,7 @@ function ManageProject() {
               }}
               className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
             >
-              Thêm dự án
+              Thêm công việc
             </Button>
           )}
         </Space>
@@ -479,6 +480,7 @@ function ManageProject() {
                 setProject(record);
               }
             },
+            //Only expand 1 project at the same time
             onExpandedRowsChange: (row) => {
               if (row.length === 2) {
                 row.shift();

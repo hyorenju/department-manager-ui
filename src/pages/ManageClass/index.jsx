@@ -1,42 +1,29 @@
 import {
   DeleteOutlined,
-  EditOutlined,
-  SearchOutlined,
-  UserAddOutlined,
   DownloadOutlined,
+  EditOutlined,
   PlusOutlined,
+  SearchOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
-import { ProFormSelect } from '@ant-design/pro-components';
-import {
-  Button,
-  Input,
-  Popconfirm,
-  Space,
-  Table,
-  Tooltip,
-  Typography,
-  message,
-  notification,
-  Select,
-} from 'antd';
-import Highlighter from 'react-highlight-words';
-import React, { useEffect, useState } from 'react';
-import { useDebounce } from 'use-debounce';
-import { deleteClass, getClassList, getFacultySelection } from '../../api/axios';
-import { ButtonCustom } from '../../components/ButtonCustom';
-import { ModalFormClass } from './components/ModalFormClass';
 import { useMutation } from '@tanstack/react-query';
+import { Button, Input, Popconfirm, Select, Space, Table, Tooltip, Typography, Upload } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { deleteClass, getClassList, getFacultySelection } from '../../api/axios';
 import { excelApi } from '../../api/excelApi';
-import { notificationError, notificationSuccess } from '../../components/Notification';
+import { ButtonCustom } from '../../components/ButtonCustom';
 import { messageErrorToSever } from '../../components/Message';
+import { notificationError, notificationSuccess } from '../../components/Notification';
+import { ModalErrorImportClass } from './components/ModalErrorImportUser';
+import { ModalFormClass } from './components/ModalFormClass';
 
 function ManageClass() {
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormClass, setOpenModalFormClass] = useState(false);
+  const [openModalError, setOpenModalError] = useState(false);
   const [classData, setClassData] = useState({});
-  const [valueSearchClass, setValueSearchClass] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [size, setSize] = useState(10);
@@ -135,6 +122,58 @@ function ManageClass() {
     },
   });
 
+  const importClassList = useMutation({
+    mutationKey: ['importClassList'],
+    mutationFn: (file) => {
+      const formData = new FormData();
+      formData.append('file', file.file);
+      return excelApi.importClassList(formData);
+    },
+    onSuccess: (res) => {
+      if (res && res.success === true) {
+        notificationSuccess('Upload file thành công');
+        handleGetClassList();
+      } else if (res && res.success === false) {
+        setOpenModalError(true);
+        if (res.error?.message === 'DATA_NOT_FOUND') {
+          messageErrorToSever(
+            res,
+            'Không tìm thấy dữ liệu. Hãy chắc chắn rằng file excel được nhập từ ô A1',
+          );
+        } else if (res.error?.message === 'NO_DATA') {
+          messageErrorToSever(res, 'Dữ liệu không hợp lệ, hãy trình bày theo hướng dẫn.');
+        } else {
+          window.open(res.error?.message);
+          messageErrorToSever(
+            null,
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+          );
+        }
+      }
+    },
+  });
+
+  const props = {
+    name: 'file',
+    multiple: false,
+    showUploadList: false,
+    customRequest: (file) => importClassList.mutate(file),
+    beforeUpload: (file) => {
+      const checkSize = file.size / 1024 / 1024 < 1;
+      const isXLXS =
+        file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      if (!isXLXS) {
+        notificationError(`${file.name} không phải là một file excel`, 3);
+        return false;
+      }
+      if (!checkSize) {
+        notificationError(`File tải lên không được quá 1MB`, 3);
+        return false;
+      }
+      return true;
+    },
+  };
+
   const columns = [
     {
       title: 'Mã lớp',
@@ -148,7 +187,7 @@ function ManageClass() {
             placeholder={'Nhập mã lớp'}
             value={classIdSearch}
             onChange={(e) => setClassIdSearch(e.target.value)}
-            className="w-[180px] mb-3 block"
+            className="w-[180px] mb-2 block"
             onPressEnter={(e) => {
               setClassId(e.target.value);
             }}
@@ -184,7 +223,7 @@ function ManageClass() {
             placeholder={'Nhập tên lớp'}
             value={classNameSearch}
             onChange={(e) => setClassNameSearch(e.target.value)}
-            className="w-[240px] mb-3 block"
+            className="w-[240px] mb-2 block"
             onPressEnter={(e) => {
               setClassName(e.target.value);
             }}
@@ -250,7 +289,7 @@ function ManageClass() {
             placeholder={'Nhập thông tin gvcn'}
             value={homeroomTeacherSearch}
             onChange={(e) => setHomeroomTeacherSearch(e.target.value)}
-            className="w-[240px] mb-3 block"
+            className="w-[240px] mb-2 block"
             onPressEnter={(e) => {
               setHomeroomTeacher(e.target.value);
             }}
@@ -286,7 +325,7 @@ function ManageClass() {
             placeholder={'Nhập thông tin lớp trưởng'}
             value={monitorSearch}
             onChange={(e) => setMonitorSearch(e.target.value)}
-            className="w-[240px] mb-3 block"
+            className="w-[240px] mb-2 block"
             onPressEnter={(e) => {
               setMonitor(e.target.value);
             }}
@@ -423,16 +462,25 @@ function ManageClass() {
         </div>
         <Space>
           {roleId !== 'LECTURER' && (
-            <Button
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setOpenModalFormClass(true);
-                setFormCreate(true);
-              }}
-              className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
-            >
-              Thêm lớp
-            </Button>
+            <>
+              <Upload {...props}>
+                <ButtonCustom
+                  title="Thêm danh sách lớp"
+                  icon={<UploadOutlined />}
+                  loading={importClassList.isPending}
+                />
+              </Upload>
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setOpenModalFormClass(true);
+                  setFormCreate(true);
+                }}
+                className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+              >
+                Thêm lớp
+              </Button>
+            </>
           )}
         </Space>
       </div>
@@ -489,6 +537,8 @@ function ManageClass() {
           </div>
         )}
       </div>
+
+      <ModalErrorImportClass open={openModalError} setOpen={(open) => setOpenModalError(open)} />
     </div>
   );
 }

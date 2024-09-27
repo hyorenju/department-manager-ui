@@ -59,7 +59,7 @@ export function ModalFormProject({
     <div>
       <ModalForm
         width={550}
-        title={projectData.id ? 'Sửa thông tin dự án' : 'Thêm dự án'}
+        title={projectData.id ? 'Sửa thông tin công việc' : 'Thêm công việc'}
         initialValues={projectData}
         modalProps={{
           maskClosable: false,
@@ -82,8 +82,8 @@ export function ModalFormProject({
             rules={[{ required: true, message: 'Không được để trống' }]}
             width="465px"
             name="name"
-            label="Tên dự án"
-            placeholder="Nhập tên dự án"
+            label="Tên công việc"
+            placeholder="Nhập tên công việc"
           />
           {isCreate && (
             <>
@@ -100,9 +100,9 @@ export function ModalFormProject({
               <ProFormDatePicker
                 rules={[{ required: true, message: 'Không được để trống' }]}
                 width="sm"
-                placeholder="Chọn hạn chót"
+                placeholder="Chọn ngày kến thúc"
                 name="deadline"
-                label="Hạn chót"
+                label="Ngày kết thúc"
                 fieldProps={{
                   format: 'DD/MM/YYYY',
                 }}
@@ -121,9 +121,9 @@ export function ModalFormProject({
               <ProFormText
                 rules={[{ required: true, message: 'Không được để trống' }]}
                 width="sm"
-                placeholder="Chọn hạn chót"
+                placeholder="Chọn ngày kết thúc"
                 name="deadline"
-                label="Hạn chót"
+                label="Ngày kết thúc"
                 fieldProps={{
                   format: 'DD/MM/YYYY',
                 }}

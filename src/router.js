@@ -6,6 +6,7 @@ import ManageClass from './pages/ManageClass';
 import ManageSubject from './pages/MangeSubject';
 import ManageIntern from './pages/ManageIntern';
 import ManageInternV2 from './pages/ManageInternV2';
+import ManageInternV3 from './pages/ManageInternV3';
 import ManageExam from './pages/ManageExam';
 import ManageTeaching from './pages/ManageTeaching';
 import ManageFaculty from './pages/ManageFaculty';
@@ -49,7 +50,9 @@ export const router = createBrowserRouter([
       },
       {
         path: 'intern',
-        element: <ManageInternV2 />,
+        // element: <ManageIntern />,
+        // element: <ManageInternV2 />,
+        element: <ManageInternV3 />,
         errorElement: <NotFound />,
       },
       {

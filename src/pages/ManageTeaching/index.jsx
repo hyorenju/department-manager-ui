@@ -260,6 +260,8 @@ function ManageTeaching() {
             res,
             'Không tìm thấy dữ liệu. Hãy chắc chắn rằng file excel được nhập từ ô A1',
           );
+        } else if (res.error?.message === 'NO_DATA') {
+          messageErrorToSever(res, 'Dữ liệu không hợp lệ, hãy trình bày theo hướng dẫn.');
         } else {
           window.open(res.error?.message);
           messageErrorToSever(
@@ -328,29 +330,23 @@ function ManageTeaching() {
       dataIndex: ['schoolYear', 'name'],
       align: 'left',
       width: '3.5%',
-      filterDropdown:
-        isAll &&
-        (() => (
-          <div className="p-3 flex flex-col gap-2 w-[170px]">
-            <Select
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              value={schoolYearId}
-              options={schoolYearSelection}
-              placeholder="Chọn năm học"
-              onChange={(schoolYearId) => setSchoolYearId(schoolYearId)}
-            />
-            <Space>
-              <ButtonCustom
-                handleClick={() => setSchoolYearId(null)}
-                size="small"
-                title={'Reset'}
-              />
-            </Space>
-          </div>
-        )),
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[170px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={schoolYearId}
+            options={schoolYearSelection}
+            placeholder="Chọn năm học"
+            onChange={(schoolYearId) => setSchoolYearId(schoolYearId)}
+          />
+          <Space>
+            <ButtonCustom handleClick={() => setSchoolYearId(null)} size="small" title={'Reset'} />
+          </Space>
+        </div>
+      ),
       filterIcon: () => (
         <Tooltip title="Tìm kiếm theo năm học">
           <SearchOutlined className={`${schoolYearId ? 'text-blue-500' : undefined} text-base`} />
@@ -362,38 +358,36 @@ function ManageTeaching() {
       dataIndex: 'term',
       align: 'left',
       width: '2%',
-      filterDropdown:
-        isAll &&
-        (() => (
-          <div className="p-3 flex flex-col gap-2 w-[150px]">
-            <Select
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              value={term}
-              options={[
-                {
-                  label: 'Học kỳ 1',
-                  value: 1,
-                },
-                {
-                  label: 'Học kỳ 2',
-                  value: 2,
-                },
-                {
-                  label: 'Học kỳ 3',
-                  value: 3,
-                },
-              ]}
-              placeholder="Chọn học kỳ"
-              onChange={(term) => setTerm(term)}
-            />
-            <Space>
-              <ButtonCustom handleClick={() => setTerm(null)} size="small" title={'Reset'} />
-            </Space>
-          </div>
-        )),
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[150px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={term}
+            options={[
+              {
+                label: 'Học kỳ 1',
+                value: 1,
+              },
+              {
+                label: 'Học kỳ 2',
+                value: 2,
+              },
+              {
+                label: 'Học kỳ 3',
+                value: 3,
+              },
+            ]}
+            placeholder="Chọn học kỳ"
+            onChange={(term) => setTerm(term)}
+          />
+          <Space>
+            <ButtonCustom handleClick={() => setTerm(null)} size="small" title={'Reset'} />
+          </Space>
+        </div>
+      ),
       filterIcon: () => (
         <Tooltip title="Tìm kiếm theo học kỳ">
           <SearchOutlined className={`${term ? 'text-blue-500' : undefined} text-base`} />
@@ -482,7 +476,7 @@ function ManageTeaching() {
             placeholder={'Nhập mã môn học'}
             value={searchSubjectId}
             onChange={(e) => setSearchSubjectId(e.target.value)}
-            className="w-[170px] mb-3 block"
+            className="w-[170px] mb-2 block"
             onPressEnter={(e) => {
               setSubjectId(e.target.value);
             }}
@@ -519,7 +513,7 @@ function ManageTeaching() {
             placeholder={'Nhập tên môn học'}
             value={searchSubjectName}
             onChange={(e) => setSearchSubjectName(e.target.value)}
-            className="w-[230px] mb-3 block"
+            className="w-[230px] mb-2 block"
             onPressEnter={(e) => {
               setSubjectName(e.target.value);
             }}
@@ -655,13 +649,13 @@ function ManageTeaching() {
       ),
     },
     {
-      title: 'Ngày phân công',
+      title: 'Ngày tạo',
       dataIndex: 'createdAt',
       align: 'left',
       width: '5.5%',
     },
     {
-      title: 'Người phân công',
+      title: 'Người tạo',
       render: (e, record, index) => (
         <>
           <p>
@@ -734,7 +728,7 @@ function ManageTeaching() {
             />
             <Popconfirm
               placement="topRight"
-              title="Bạn có chắc chắn muốn xóa phân công này?"
+              title="Bạn có chắc chắn muốn xóa bản ghi này?"
               icon={<DeleteOutlined />}
               okText="Xóa"
               okType="danger"
@@ -778,7 +772,7 @@ function ManageTeaching() {
             />
             <Upload {...props}>
               <ButtonCustom
-                title="Thêm danh sách phân công"
+                title="Thêm danh sách bản ghi"
                 icon={<UploadOutlined />}
                 loading={importTeachingList.isPending}
               />
@@ -794,7 +788,7 @@ function ManageTeaching() {
                     onChange={(e) => {
                       setTeacherIdToRead(e.target.value);
                     }}
-                    className="w-[170px] mb-3 block"
+                    className="w-[170px] mb-2 block"
                   />
                   <Button
                     icon={<SaveOutlined />}
@@ -831,7 +825,7 @@ function ManageTeaching() {
               }}
               className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
             >
-              Thêm phân công
+              Thêm bản ghi
             </Button>
           </>
           {/* )} */}

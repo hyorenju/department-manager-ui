@@ -9,6 +9,9 @@ import {
   QuestionCircleOutlined,
   UploadOutlined,
   SwapOutlined,
+  UnlockOutlined,
+  LockOutlined,
+  LockFilled,
 } from '@ant-design/icons';
 import { ProFormSelect } from '@ant-design/pro-components';
 import {
@@ -28,12 +31,13 @@ import {
 import React, { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import {
-  getInternList,
-  deleteIntern,
+  getInternshipList,
+  deleteInternship,
   getMasterDataSelection,
   getUserSelection,
   getFacultySelection,
   getDepartmentSelection,
+  lockInternship,
 } from '../../api/axios';
 import { excelApi } from '../../api/excelApi';
 import { notificationError, notificationSuccess } from '../../components/Notification';
@@ -43,6 +47,7 @@ import { ModalFormIntern } from './components/ModalFormIntern';
 import { useMutation } from '@tanstack/react-query';
 import { ManageInternType } from './pages/ManageInternType';
 import { ModalErrorImportIntern } from './components/ModalErrorImportIntern';
+import { ModalFormLockInternship } from './components/ModalFormLockInternship';
 
 function ManageIntern() {
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
@@ -50,6 +55,7 @@ function ManageIntern() {
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormIntern, setOpenModalFormIntern] = useState(false);
+  const [openModalFormLockInternshipList, setOpenModalFormLockInternshipList] = useState(false);
   const [internData, setInternData] = useState({});
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -69,11 +75,19 @@ function ManageIntern() {
   const [facultyId, setFacultyId] = useState();
   const [departmentId, setDepartmentId] = useState();
   const [isAll, setIsAll] = useState(false);
+  const [searchStudentId, setSearchStudentId] = useState();
+  const [studentId, setStudentId] = useState();
+  const [searchStudentName, setSearchStudentName] = useState();
+  const [studentName, setStudentName] = useState();
+  const [searchClassId, setSearchClassId] = useState();
+  const [classId, setClassId] = useState();
+  const [searchCompany, setSearchCompany] = useState();
+  const [company, setCompany] = useState();
 
   // handle delete intern
   const handleConfirmDeleteIntern = (id) => {
     setLoadingTable(true);
-    deleteIntern(id)
+    deleteInternship(id)
       .then((res) => {
         if (res.data?.success === true) {
           notificationSuccess('Xóa thành công');
@@ -86,7 +100,7 @@ function ManageIntern() {
   // handle get intern list
   const handleGetInternList = () => {
     setLoadingTable(true);
-    getInternList({
+    getInternshipList({
       page: page,
       size: size,
       isAll: isAll,
@@ -98,6 +112,10 @@ function ManageIntern() {
       status: status,
       facultyId: facultyId,
       departmentId: departmentId,
+      studentId,
+      studentName,
+      classId,
+      company,
     })
       .then((res) => {
         if (res.data?.success === true) {
@@ -135,6 +153,10 @@ function ManageIntern() {
     status,
     facultyId,
     departmentId,
+    studentId,
+    studentName,
+    classId,
+    company,
   ]);
 
   const [schoolYearSelection, setSchoolYearSelection] = useState([]);
@@ -211,6 +233,10 @@ function ManageIntern() {
         status: status,
         facultyId: facultyId,
         departmentId: departmentId,
+        studentId,
+        studentName,
+        classId,
+        company,
       }),
     onSuccess: (res) => {
       if (res && res.success === true) {
@@ -236,8 +262,6 @@ function ManageIntern() {
       } else if (res && res.success === false) {
         setOpenModalError(true);
         if (res.error?.code === 500) {
-          messageErrorToSever(res, null);
-        } else {
           window.open(res.error?.message);
           messageErrorToSever(
             null,
@@ -297,12 +321,27 @@ function ManageIntern() {
     },
   };
 
+  const handleLockIntern = (id) => {
+    setLoadingTable(true);
+    lockInternship(id)
+      .then((res) => {
+        if (res.data?.success) {
+          message.success('Thành công');
+          handleGetInternList();
+          setInternData(res.data.data);
+        } else {
+          message.error(res.data?.error?.message);
+        }
+      })
+      .finally(() => setLoadingTable(false));
+  };
+
   const columns = [
     {
       title: 'Khoa',
       dataIndex: ['instructor', 'department', 'faculty', 'name'],
       align: 'left',
-      width: '9%',
+      width: '5%',
       filterDropdown:
         isAll &&
         (() => (
@@ -332,7 +371,7 @@ function ManageIntern() {
       title: 'Bộ môn',
       dataIndex: ['instructor', 'department', 'name'],
       align: 'left',
-      width: '9%',
+      width: '6%',
       filterDropdown:
         isAll &&
         (() => (
@@ -366,7 +405,7 @@ function ManageIntern() {
       title: 'Năm học',
       dataIndex: ['schoolYear', 'name'],
       align: 'left',
-      width: '5%',
+      width: '3%',
       filterDropdown:
         isAll &&
         (() => (
@@ -400,7 +439,7 @@ function ManageIntern() {
       title: 'HK',
       dataIndex: 'term',
       align: 'left',
-      width: '3.5%',
+      width: '1.5%',
       filterDropdown:
         isAll &&
         (() => (
@@ -440,11 +479,162 @@ function ManageIntern() {
       ),
     },
     {
+      title: 'MSV',
+      dataIndex: 'studentId',
+      align: 'left',
+      fixed: 'left',
+      width: '2.5%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập MSV'}
+            value={searchStudentId}
+            onChange={(e) => setSearchStudentId(e.target.value)}
+            className="w-[120px] mb-2 block"
+            onPressEnter={(e) => {
+              setStudentId(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setStudentId(null);
+                setSearchStudentId(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo MSV">
+          <SearchOutlined
+            className={`${studentId ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Tên sinh viên',
+      dataIndex: 'studentName',
+      align: 'left',
+      width: '5.5%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập tên sinh viên'}
+            value={searchStudentName}
+            onChange={(e) => setSearchStudentName(e.target.value)}
+            className="w-[260px] mb-2 block"
+            onPressEnter={(e) => {
+              setStudentName(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setStudentName(null);
+                setSearchStudentName(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo tên sinh viên">
+          <SearchOutlined
+            className={`${studentName ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Lớp',
+      dataIndex: 'classId',
+      align: 'left',
+      width: '3.5%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập mã lớp'}
+            value={searchClassId}
+            onChange={(e) => setSearchClassId(e.target.value)}
+            className="w-[150px] mb-2 block"
+            onPressEnter={(e) => {
+              setClassId(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setClassId(null);
+                setSearchClassId(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo mã lớp">
+          <SearchOutlined
+            className={`${classId ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Số điện thoại',
+      dataIndex: 'phone',
+      align: 'left',
+      width: '3.5%',
+    },
+    {
+      title: 'Nơi thực tập',
+      dataIndex: 'company',
+      align: 'left',
+      width: '6.5%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập tên cơ sở thực tập'}
+            value={searchCompany}
+            onChange={(e) => setSearchCompany(e.target.value)}
+            className="w-[260px] mb-2 block"
+            onPressEnter={(e) => {
+              setCompany(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setCompany(null);
+                setSearchCompany(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm tên cơ sở thực tập">
+          <SearchOutlined
+            className={`${company ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
+    },
+    {
       title: 'Tên đề tài thực tập',
       dataIndex: 'name',
       align: 'left',
       fixed: 'left',
-      width: '11%',
+      width: '7%',
       filterDropdown: () => (
         <div className="p-3">
           <Input
@@ -480,7 +670,7 @@ function ManageIntern() {
       title: 'Loại đề tài',
       dataIndex: ['type', 'name'],
       align: 'left',
-      width: '6%',
+      width: '4%',
       filterDropdown: () => (
         <div className="p-3 flex flex-col gap-2 w-[250px]">
           <Select
@@ -515,7 +705,7 @@ function ManageIntern() {
         </>
       ),
       align: 'left',
-      width: '10%',
+      width: '6%',
       filterDropdown:
         isAll &&
         (() => (
@@ -555,7 +745,7 @@ function ManageIntern() {
         </>
       ),
       align: 'left',
-      width: '6%',
+      width: '3%',
     },
     {
       title: 'File tiến độ',
@@ -567,7 +757,7 @@ function ManageIntern() {
         </>
       ),
       align: 'left',
-      width: '6%',
+      width: '3%',
     },
     {
       title: 'File tổng kết',
@@ -579,13 +769,13 @@ function ManageIntern() {
         </>
       ),
       align: 'left',
-      width: '6%',
+      width: '3%',
     },
     {
       title: 'Trạng thái đề tài',
       dataIndex: 'status',
       align: 'left',
-      width: '8%',
+      width: '4.5%',
       filterDropdown: () => (
         <div className="p-3 flex flex-col gap-2 w-[180px]">
           <Select
@@ -619,6 +809,44 @@ function ManageIntern() {
       ),
     },
     {
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      align: 'left',
+      width: '4.5%',
+    },
+    {
+      title: 'Người tạo',
+      render: (e, record, index) => (
+        <>
+          <p>
+            {record?.createdBy?.id} {record.createdBy ? '-' : null} {record?.createdBy?.firstName}{' '}
+            {record?.createdBy?.lastName}
+          </p>
+        </>
+      ),
+      align: 'left',
+      width: '6%',
+    },
+    {
+      title: 'Chỉnh sửa lần cuối',
+      dataIndex: 'modifiedAt',
+      align: 'left',
+      width: '4.5%',
+    },
+    {
+      title: 'Người sửa',
+      render: (e, record, index) => (
+        <>
+          <p>
+            {record?.modifiedBy?.id} {record.modifiedBy ? '-' : null}{' '}
+            {record?.modifiedBy?.firstName} {record?.modifiedBy?.lastName}
+          </p>
+        </>
+      ),
+      align: 'left',
+      width: '6%',
+    },
+    {
       title: 'Ghi chú',
       dataIndex: 'note',
       align: 'left',
@@ -627,11 +855,31 @@ function ManageIntern() {
       title: isAll & (roleId === 'LECTURER') ? '' : 'Tùy chọn',
       align: 'center',
       fixed: 'right',
-      width: isAll & (roleId === 'LECTURER') ? '0' : '7%',
+      width: isAll & (roleId === 'LECTURER') ? '0' : '4.5%',
       render:
         (!isAll || roleId !== 'LECTURER') &&
         ((e, record, index) => (
           <Button.Group key={index}>
+            {roleId !== 'LECTURER' && (
+              <Button
+                icon={
+                  record.isLock === null ? (
+                    <UnlockOutlined />
+                  ) : record.isLock === false ? (
+                    <UnlockOutlined />
+                  ) : (
+                    <LockOutlined />
+                  )
+                }
+                onClick={() => handleLockIntern(record.id)}
+                size="small"
+                style={
+                  record.isLock === true
+                    ? { backgroundColor: '#ffd2e5' }
+                    : { backgroundColor: '#d7e6fa' }
+                }
+              />
+            )}
             <ButtonCustom
               title={'Sửa'}
               icon={<EditOutlined />}
@@ -690,6 +938,11 @@ function ManageIntern() {
           {roleId !== 'LECTURER' && (
             <>
               <ButtonCustom
+                title="Tùy chọn lock"
+                handleClick={() => setOpenModalFormLockInternshipList(true)}
+                icon={<LockFilled />}
+              />
+              <ButtonCustom
                 title="Loại đề tài"
                 handleClick={() => setOpenDrawer(true)}
                 icon={<TableOutlined />}
@@ -711,6 +964,7 @@ function ManageIntern() {
       <ModalFormIntern
         isCreate={formCreate}
         onSuccess={() => {
+          setIsAll(true);
           handleGetInternList();
           setOpenModalFormIntern(false);
         }}
@@ -723,11 +977,23 @@ function ManageIntern() {
           }
         }}
       />
+      <ModalFormLockInternship
+        onSuccess={() => {
+          handleGetInternList();
+          setOpenModalFormLockInternshipList(false);
+        }}
+        openForm={openModalFormLockInternshipList}
+        onChangeClickOpen={(open) => {
+          if (!open) {
+            setOpenModalFormLockInternshipList(false);
+          }
+        }}
+      />
       <div className="relative">
         <Table
           scroll={{
             y: '64vh',
-            x: 2200,
+            x: 3700,
           }}
           rowKey="id"
           loading={loadingTable}

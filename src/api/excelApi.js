@@ -1,6 +1,16 @@
 import instane from './instane';
 
 export const excelApi = {
+  importUserList: async (values) => {
+    const url = '/user/import';
+    try {
+      const res = await instane.post(url, values);
+      return res.data;
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+
   exportUserList: async (values) => {
     const url = '/user/export';
     try {
@@ -11,8 +21,28 @@ export const excelApi = {
     }
   },
 
+  importClassList: async (values) => {
+    const url = '/class/import';
+    try {
+      const res = await instane.post(url, values);
+      return res.data;
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+
   exportClassList: async (values) => {
     const url = '/class/export';
+    try {
+      const res = await instane.post(url, values);
+      return res.data;
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+
+  importSubjectList: async (values) => {
+    const url = '/subject/import';
     try {
       const res = await instane.post(url, values);
       return res.data;
@@ -32,7 +62,7 @@ export const excelApi = {
   },
 
   importInternList: async (values) => {
-    const url = '/intern/import';
+    const url = '/internship/import';
     try {
       const res = await instane.post(url, values);
       return res.data;
@@ -42,7 +72,7 @@ export const excelApi = {
   },
 
   exportInternList: async (values) => {
-    const url = '/intern/export';
+    const url = '/internship/export';
     try {
       const res = await instane.post(url, values);
       return res.data;

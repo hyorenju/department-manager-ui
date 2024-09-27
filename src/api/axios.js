@@ -191,6 +191,31 @@ export const lockInternList = (values) => {
   return axios.post(`/intern/lock`, values);
 };
 
+//Internship
+export const getInternshipList = (values) => {
+  return axios.post(`/internship/list`, values);
+};
+
+export const createInternship = (values) => {
+  return axios.post(`/internship/create`, values);
+};
+
+export const updateInternship = (id, values) => {
+  return axios.post(`/internship/update/${id}`, values);
+};
+
+export const deleteInternship = (id) => {
+  return axios.post(`/internship/delete/${id}`);
+};
+
+export const lockInternship = (id) => {
+  return axios.post(`/internship/lock/${id}`);
+};
+
+export const lockInternshipList = (values) => {
+  return axios.post(`/internship/lock`, values);
+};
+
 //Teaching
 export const getTeachingList = (values) => {
   return axios.post(`/teaching/list`, values);

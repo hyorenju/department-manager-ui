@@ -62,9 +62,11 @@ function LoginPage() {
           <h1 className="text-3xl font-bold text-white mt-28">WEBSITE</h1>
           <h1 className="text-3xl font-bold text-white">QUẢN LÝ BỘ MÔN</h1>
         </div>
-        <div className="absolute left-[15%] bottom-30 mx-auto w-4/6">
-          <p className="text-sm italic text-white mt-20">{'(*) Sinh viên khóa 65 khoa CNTT'}</p>
-          <p className="text-sm italic text-white">{'654661 - Cam Trọng Hiếu'}</p>
+        <div className="relative text-center">
+          <p className="text-sm italic text-white mt-20">
+            {'Nhóm nghiên cứu Bộ môn Khoa học máy tính'}
+          </p>
+          <p className="text-sm italic text-white">{'Khoa CNTT - Học viện Nông nghiệp Việt Nam'}</p>
         </div>
       </div>
       <div className="w-[25vw] max-xl:w-[80vh] border-solid border-sky-900 border-2 rounded-r-lg">

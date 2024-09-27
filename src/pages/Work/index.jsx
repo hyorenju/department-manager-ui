@@ -158,7 +158,7 @@ export function Work({ userData }) {
 
   const columns = [
     {
-      title: 'Tên dự án',
+      title: 'Tên công việc',
       dataIndex: ['task', 'project', 'name'],
       align: 'left',
       fixed: 'left',
@@ -184,7 +184,7 @@ export function Work({ userData }) {
       width: '9%',
     },
     {
-      title: 'Hạn chót',
+      title: 'Ngày kết thúc',
       dataIndex: ['task', 'deadline'],
       align: 'left',
       width: '9%',

@@ -272,8 +272,13 @@ function ManageIntern() {
         handleGetInternList();
       } else if (res && res.success === false) {
         setOpenModalError(true);
-        if (res.error?.code === 500) {
-          messageErrorToSever(res, null);
+        if (res.error?.message === 'DATA_NOT_FOUND') {
+          messageErrorToSever(
+            res,
+            'Không tìm thấy dữ liệu. Hãy chắc chắn rằng file excel được nhập từ ô A1',
+          );
+        } else if (res.error?.message === 'NO_DATA') {
+          messageErrorToSever(res, 'Dữ liệu không hợp lệ, hãy trình bày theo hướng dẫn.');
         } else {
           window.open(res.error?.message);
           messageErrorToSever(
@@ -611,7 +616,7 @@ function ManageIntern() {
             placeholder={'Nhập tên'}
             value={valueSearchName}
             onChange={(e) => setValueSearchName(e.target.value)}
-            className="w-[280px] mb-3 block"
+            className="w-[280px] mb-2 block"
             onPressEnter={(e) => {
               setSearchName(e.target.value);
             }}

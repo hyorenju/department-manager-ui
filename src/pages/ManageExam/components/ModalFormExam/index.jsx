@@ -104,7 +104,12 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
       getSubjectSelection({ facultyId, departmentId }).then((res) => {
         if (res.data?.success) {
           const newArr = [];
-          res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+          res.data?.data?.items?.map((item) =>
+            newArr.push({
+              label: `${item?.id} - ${item?.name}`,
+              value: item?.id,
+            }),
+          );
           setSubjectSelection(newArr);
         }
       });
@@ -117,7 +122,12 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
       getMasterDataSelection({ type: 'SCHOOL_YEAR' }).then((res) => {
         if (res.data?.success) {
           const newArr = [];
-          res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+          res.data?.data?.items?.map((item) =>
+            newArr.push({
+              label: item?.name,
+              value: item?.id,
+            }),
+          );
           setSchoolYearSelection(newArr);
         }
       });
@@ -242,47 +252,6 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            name={['subject', 'department', 'faculty', 'name']}
-            label="Khoa"
-            placeholder="Chọn khoa"
-            options={facultySelection}
-            onChange={(value) => setFacultyId(value)}
-          />
-          <ProFormSelect
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            width="md"
-            name={['subject', 'department', 'name']}
-            label="Bộ môn"
-            placeholder="Chọn bộ môn"
-            options={departmentSelection}
-            onChange={(value) => setDepartmentId(value)}
-          />
-          <ProFormSelect
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            width="md"
-            rules={[
-              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
-            name={['subject', 'id']}
-            label="Môn thi"
-            placeholder="Chọn môn thi"
-            options={subjectSelection}
-            disabled={isCreate ? false : true}
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormSelect
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            width="md"
             rules={[
               isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
             ]}
@@ -311,60 +280,20 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             ]}
             disabled={isCreate ? false : true}
           />
-          <ProFormText
-            rules={[{ required: true, message: 'Không được để trống' }]}
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
             width="md"
-            name="testRoom"
-            label="Phòng thi"
-            placeholder="Nhập phòng thi"
-          />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormDatePicker
             rules={[
               isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
             ]}
-            width="md"
-            placeholder="Chọn ngày thi"
-            name="testDay"
-            label="Ngày thi"
+            name={['subject', 'id']}
+            label="Môn thi"
+            placeholder="Chọn môn thi"
+            options={subjectSelection}
             disabled={isCreate ? false : true}
-            fieldProps={{
-              format: 'DD/MM/YYYY',
-              onChange: (e) => {
-                setTestDay(`${e.$D}/${e.$M + 1}/${e.$y}`);
-              },
-            }}
-          />
-          <ProFormText
-            rules={[
-              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
-            width="md"
-            name="lessonStart"
-            label="Tiết bắt đầu"
-            placeholder="Nhập tiết bắt đầu"
-            disabled={isCreate ? false : true}
-            fieldProps={{
-              onBlur: (e) => {
-                setLessonStart(e.target.value);
-              },
-            }}
-          />
-          <ProFormText
-            rules={[
-              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
-            width="md"
-            name="lessonsTest"
-            label="Số tiết thi"
-            placeholder="Nhập số tiết"
-            disabled={isCreate ? false : true}
-            fieldProps={{
-              onBlur: (e) => {
-                setLessonsTest(e.target.value);
-              },
-            }}
           />
         </ProForm.Group>
         <ProForm.Group>
@@ -402,6 +331,62 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
         <ProForm.Group>
           <ProFormText width="md" name="quantity" label="Sĩ số" placeholder="Nhập sĩ số" />
 
+          <ProFormDatePicker
+            rules={[
+              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
+            width="md"
+            placeholder="Chọn ngày thi"
+            name="testDay"
+            label="Ngày thi"
+            disabled={isCreate ? false : true}
+            fieldProps={{
+              format: 'DD/MM/YYYY',
+              onChange: (e) => {
+                setTestDay(`${e.$D}/${e.$M + 1}/${e.$y}`);
+              },
+            }}
+          />
+          <ProFormText
+            rules={[{ required: true, message: 'Không được để trống' }]}
+            width="md"
+            name="testRoom"
+            label="Phòng thi"
+            placeholder="Nhập phòng thi"
+          />
+        </ProForm.Group>
+        <ProForm.Group>
+          <ProFormText
+            rules={[
+              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
+            width="md"
+            name="lessonStart"
+            label="Tiết bắt đầu"
+            placeholder="Nhập tiết bắt đầu"
+            disabled={isCreate ? false : true}
+            fieldProps={{
+              onBlur: (e) => {
+                setLessonStart(e.target.value);
+              },
+            }}
+          />
+          <ProFormText
+            rules={[
+              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            ]}
+            width="md"
+            name="lessonsTest"
+            label="Số tiết thi"
+            placeholder="Nhập số tiết"
+            disabled={isCreate ? false : true}
+            fieldProps={{
+              onBlur: (e) => {
+                setLessonsTest(e.target.value);
+              },
+            }}
+          />
+
           <ProFormSelect
             showSearch
             filterOption={(input, option) =>
@@ -416,6 +401,9 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             placeholder="Chọn hình thức thi"
             options={examFormSelection}
           />
+        </ProForm.Group>
+
+        <ProForm.Group>
           <ProFormText
             // rules={[
             //   isCreate ? { required: false } : { required: true, message: 'Không được để trống' },
@@ -425,9 +413,7 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
             label="Mã đề thi"
             placeholder="Nhập mã đề thi"
           />
-        </ProForm.Group>
-        <ProForm.Group>
-          <ProFormTextArea width="1050px" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
+          <ProFormTextArea width="689px" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
         </ProForm.Group>
 
         <hr className="mb-3" />
@@ -435,6 +421,32 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
           <p className="uppercase text-lg underline">Phân công môn thi</p>
         </div>
 
+        <ProForm.Group>
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            name={['subject', 'department', 'faculty', 'name']}
+            label="Khoa"
+            placeholder="Chọn khoa"
+            options={facultySelection}
+            onChange={(value) => setFacultyId(value)}
+          />
+          <ProFormSelect
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            width="md"
+            name={['subject', 'department', 'name']}
+            label="Bộ môn"
+            placeholder="Chọn bộ môn"
+            options={departmentSelection}
+            onChange={(value) => setDepartmentId(value)}
+          />
+        </ProForm.Group>
         <ProForm.Group>
           <ProFormSelect
             showSearch

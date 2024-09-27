@@ -82,10 +82,10 @@ export function ModalFormTask({
     });
   };
 
+  const [userIds, setUserIds] = useState([]);
   const [userSelected, setUserSelected] = useState([]);
   const [userOption, setUserOption] = useState([]);
   useEffect(() => {
-    setUserSelected([]);
     if (openForm) {
       getUserOption().then((res) => {
         if (res.data?.success) {
@@ -102,18 +102,28 @@ export function ModalFormTask({
       getUserTaskList({ taskId: taskData?.id }).then((res) => {
         if (res.data?.success) {
           const newArr = [];
-          res.data?.data?.items?.map((item) =>
+          res.data?.data?.items?.map((item) => {
             newArr.push({
               label: `${item?.user?.id} - ${item?.user?.firstName} ${item?.user?.lastName}`,
               value: item?.user?.id,
-            }),
-          );
+            });
+          });
+          // res.data?.data?.items?.map((item) => anotherNewArr.push(item?.user?.id));
           setUserSelected(newArr);
-          // setUserSelected(newArr);
         }
       });
     }
-  }, [openForm]);
+  }, [openForm, !isCreate]);
+
+  useEffect(() => {
+    setUserSelected([]);
+  }, [openForm, isCreate]);
+
+  useEffect(() => {
+    const anotherNewArr = [];
+    userSelected.map((item) => anotherNewArr.push(item?.user?.id));
+    setUserIds(anotherNewArr);
+  }, [userSelected]);
 
   return (
     <div>
@@ -126,6 +136,7 @@ export function ModalFormTask({
           start: taskData.id ? taskData.start : null,
           deadline: taskData.id ? taskData.deadline : null,
           projectId: projectId,
+          userIds: userIds,
         }}
         modalProps={{
           maskClosable: false,
@@ -167,9 +178,9 @@ export function ModalFormTask({
               <ProFormDatePicker
                 rules={[{ required: true, message: 'Không được để trống' }]}
                 width="sm"
-                placeholder="Chọn hạn chót"
+                placeholder="Chọn ngày kết thúc"
                 name="deadline"
-                label="Hạn chót"
+                label="Ngày kết thúc"
                 fieldProps={{
                   format: 'DD/MM/YYYY',
                 }}
@@ -188,9 +199,9 @@ export function ModalFormTask({
               <ProFormText
                 rules={[{ required: true, message: 'Không được để trống' }]}
                 width="sm"
-                placeholder="Chọn hạn chót"
+                placeholder="Chọn ngày kết thúc"
                 name="deadline"
-                label="Hạn chót"
+                label="Ngày kết thúc"
                 fieldProps={{
                   format: 'DD/MM/YYYY',
                 }}
@@ -199,42 +210,28 @@ export function ModalFormTask({
           )}
         </ProForm.Group>
         <ProForm.Group>
-          {!isCreate && (
-            <div className="flex">
-              <div>
-                <p>Những người thực hiện</p>
-                <Select
-                  mode="multiple"
-                  placeholder="Chọn những người thực hiện"
-                  value={userSelected}
-                  onChange={setUserSelected}
-                  // onChange={(e) => {
-                  //   setUserSelected(e);
-                  //   console.log(filteredOptions);
-                  // }}
-                  style={{
-                    width: '480px',
-                    marginTop: '9px',
-                  }}
-                  options={userOption}
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                />
-              </div>
-              <div className="mt-[30px] ml-2">
-                <Button
-                  onClick={() => handleUpdateParticitant()}
-                  className="items-center text-md shadow-md shadow-md bg-pink-100"
-                  size="md"
-                >
-                  Chốt thành viên
-                </Button>
-              </div>
-            </div>
-          )}
+          <ProFormSelect
+            rules={[{ required: true, message: 'Không được để trống' }]}
+            name="userIds"
+            mode="multiple"
+            placeholder="Chọn những người thực hiện"
+            value={userSelected}
+            onChange={setUserSelected}
+            label={'Những người thực hiện'}
+            // onChange={(e) => {
+            //   setUserSelected(e);
+            //   console.log(e);
+            // }}
+            style={{
+              width: '550px',
+            }}
+            options={userOption}
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+          />
           <ProFormTextArea
-            width={isCreate ? '700px' : '465px'}
+            width="465px"
             name="description"
             label="Mô tả"
             placeholder="Nhập mô tả (không bắt buộc)"

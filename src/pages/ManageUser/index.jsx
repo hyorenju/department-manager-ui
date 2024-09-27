@@ -8,6 +8,8 @@ import {
   TableOutlined,
   UnlockOutlined,
   LockOutlined,
+  UploadOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
 import {
@@ -21,6 +23,7 @@ import {
   Table,
   Tooltip,
   Typography,
+  Upload,
 } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {
@@ -38,6 +41,7 @@ import { messageErrorToSever } from '../../components/Message';
 import { notificationError, notificationSuccess } from '../../components/Notification';
 import { ModalFormUser } from './components/ModalFormUser';
 import { ManageDegree } from './pages/ManageDegree';
+import { ModalErrorImportUser } from './components/ModalErrorImportUser';
 
 function ManageUser() {
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
@@ -45,6 +49,7 @@ function ManageUser() {
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormUser, setOpenModalFormUser] = useState(false);
+  const [openModalError, setOpenModalError] = useState(false);
   const [userData, setUserData] = useState({});
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -207,6 +212,58 @@ function ManageUser() {
       .finally(() => setLoadingTable(false));
   };
 
+  const importUserList = useMutation({
+    mutationKey: ['importUserList'],
+    mutationFn: (file) => {
+      const formData = new FormData();
+      formData.append('file', file.file);
+      return excelApi.importUserList(formData);
+    },
+    onSuccess: (res) => {
+      if (res && res.success === true) {
+        notificationSuccess('Upload file thành công');
+        handleGetUserList();
+      } else if (res && res.success === false) {
+        setOpenModalError(true);
+        if (res.error?.message === 'DATA_NOT_FOUND') {
+          messageErrorToSever(
+            res,
+            'Không tìm thấy dữ liệu. Hãy chắc chắn rằng file excel được nhập từ ô A1',
+          );
+        } else if (res.error?.message === 'NO_DATA') {
+          messageErrorToSever(res, 'Dữ liệu không hợp lệ, hãy trình bày theo hướng dẫn.');
+        } else {
+          window.open(res.error?.message);
+          messageErrorToSever(
+            null,
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+          );
+        }
+      }
+    },
+  });
+
+  const props = {
+    name: 'file',
+    multiple: false,
+    showUploadList: false,
+    customRequest: (file) => importUserList.mutate(file),
+    beforeUpload: (file) => {
+      const checkSize = file.size / 1024 / 1024 < 1;
+      const isXLXS =
+        file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      if (!isXLXS) {
+        notificationError(`${file.name} không phải là một file excel`, 3);
+        return false;
+      }
+      if (!checkSize) {
+        notificationError(`File tải lên không được quá 1MB`, 3);
+        return false;
+      }
+      return true;
+    },
+  };
+
   const columns = [
     {
       title: 'Mã',
@@ -220,7 +277,7 @@ function ManageUser() {
             placeholder={'Nhập mã giảng viên'}
             value={valueSearchId}
             onChange={(e) => setValueSearchId(e.target.value)}
-            className="w-[180px] mb-3 block"
+            className="w-[180px] mb-2 block"
             onPressEnter={(e) => {
               setSearchId(e.target.value);
             }}
@@ -256,7 +313,7 @@ function ManageUser() {
             placeholder={'Nhập họ đệm'}
             value={valueSearchFirstName}
             onChange={(e) => setValueSearchFirstName(e.target.value)}
-            className="w-[180px] mb-3 block"
+            className="w-[180px] mb-2 block"
             onPressEnter={(e) => {
               setSearchFirstName(e.target.value);
             }}
@@ -292,7 +349,7 @@ function ManageUser() {
             placeholder={'Nhập tên'}
             value={valueSearchLastName}
             onChange={(e) => setValueSearchLastName(e.target.value)}
-            className="w-[180px] mb-3 block"
+            className="w-[180px] mb-2 block"
             onPressEnter={(e) => {
               setSearchLastName(e.target.value);
             }}
@@ -531,6 +588,18 @@ function ManageUser() {
         <Space>
           {roleId !== 'LECTURER' && (
             <>
+              <QuestionCircleOutlined
+                title="Bấm để xem file mẫu import"
+                className="hover:cursor-pointer hover:text-primary"
+                onClick={() => setOpenModalError(true)}
+              />
+              <Upload {...props}>
+                <ButtonCustom
+                  title="Thêm danh sách người dùng"
+                  icon={<UploadOutlined />}
+                  loading={importUserList.isPending}
+                />
+              </Upload>
               <ButtonCustom
                 title="Danh sách trình độ"
                 handleClick={() => setOpenDrawer(true)}
@@ -613,6 +682,7 @@ function ManageUser() {
       >
         <ManageDegree open={openDrawer} />
       </Drawer>
+      <ModalErrorImportUser open={openModalError} setOpen={(open) => setOpenModalError(open)} />
     </div>
   );
 }

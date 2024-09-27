@@ -5,6 +5,8 @@ import {
   UserAddOutlined,
   DownloadOutlined,
   PlusOutlined,
+  QuestionCircleOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import { ProFormSelect } from '@ant-design/pro-components';
 import {
@@ -18,6 +20,7 @@ import {
   message,
   notification,
   Select,
+  Upload,
 } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
@@ -33,6 +36,7 @@ import { excelApi } from '../../api/excelApi';
 import { notificationError, notificationSuccess } from '../../components/Notification';
 import { messageErrorToSever } from '../../components/Message';
 import { useMutation } from '@tanstack/react-query';
+import { ModalErrorImportSubject } from './components/ModalErrorImportSubject';
 
 function ManageSubject() {
   const roleId = JSON.parse(sessionStorage.getItem('user_role'));
@@ -40,6 +44,7 @@ function ManageSubject() {
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormSubject, setOpenModalFormSubject] = useState(false);
+  const [openModalError, setOpenModalError] = useState(false);
   const [subjectData, setSubjectData] = useState({});
   const [valueSearchSubject, setValueSearchSubject] = useState('');
   const [page, setPage] = useState(1);
@@ -90,6 +95,37 @@ function ManageSubject() {
       })
       .finally(() => setLoadingTable(false));
   };
+
+  const importSubjectList = useMutation({
+    mutationKey: ['importSubjectList'],
+    mutationFn: (file) => {
+      const formData = new FormData();
+      formData.append('file', file.file);
+      return excelApi.importSubjectList(formData);
+    },
+    onSuccess: (res) => {
+      if (res && res.success === true) {
+        notificationSuccess('Upload file thành công');
+        handleGetSubjectList();
+      } else if (res && res.success === false) {
+        setOpenModalError(true);
+        if (res.error?.message === 'DATA_NOT_FOUND') {
+          messageErrorToSever(
+            res,
+            'Không tìm thấy dữ liệu. Hãy chắc chắn rằng file excel được nhập từ ô A1',
+          );
+        } else if (res.error?.message === 'NO_DATA') {
+          messageErrorToSever(res, 'Dữ liệu không hợp lệ, hãy trình bày theo hướng dẫn.');
+        } else {
+          window.open(res.error?.message);
+          messageErrorToSever(
+            null,
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+          );
+        }
+      }
+    },
+  });
 
   const handleClickEdit = (record) => {
     setSubjectData(record);
@@ -142,6 +178,27 @@ function ManageSubject() {
       }
     },
   });
+
+  const props = {
+    name: 'file',
+    multiple: false,
+    showUploadList: false,
+    customRequest: (file) => importSubjectList.mutate(file),
+    beforeUpload: (file) => {
+      const checkSize = file.size / 1024 / 1024 < 1;
+      const isXLXS =
+        file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      if (!isXLXS) {
+        notificationError(`${file.name} không phải là một file excel`, 3);
+        return false;
+      }
+      if (!checkSize) {
+        notificationError(`File tải lên không được quá 1MB`, 3);
+        return false;
+      }
+      return true;
+    },
+  };
 
   const columns = [
     {
@@ -358,16 +415,30 @@ function ManageSubject() {
         </div>
         <Space>
           {roleId !== 'LECTURER' && (
-            <Button
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setOpenModalFormSubject(true);
-                setFormCreate(true);
-              }}
-              className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
-            >
-              Thêm môn học
-            </Button>
+            <>
+              <QuestionCircleOutlined
+                title="Bấm để xem file mẫu import"
+                className="hover:cursor-pointer hover:text-primary"
+                onClick={() => setOpenModalError(true)}
+              />
+              <Upload {...props}>
+                <ButtonCustom
+                  title="Thêm danh sách môn học"
+                  icon={<UploadOutlined />}
+                  loading={importSubjectList.isPending}
+                />
+              </Upload>
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setOpenModalFormSubject(true);
+                  setFormCreate(true);
+                }}
+                className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+              >
+                Thêm môn học
+              </Button>
+            </>
           )}
         </Space>
       </div>
@@ -423,6 +494,7 @@ function ManageSubject() {
           </div>
         )}
       </div>
+      <ModalErrorImportSubject open={openModalError} setOpen={(open) => setOpenModalError(open)} />
     </div>
   );
 }
