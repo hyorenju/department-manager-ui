@@ -334,6 +334,10 @@ export const getUserTaskList = (values) => {
   return axios.post('user-task/list', values);
 };
 
+export const getUserTaskCalendar = (values) => {
+  return axios.post('user-task/calendar', values);
+};
+
 export const getUserTaskPage = (values) => {
   return axios.post('user-task/page', values);
 };
@@ -348,4 +352,8 @@ export const updateTaskStatus = (id, values) => {
 
 export const finishedMyTask = (id) => {
   return axios.post(`user-task/finished/${id}`);
+};
+
+export const deleteUserTask = (id) => {
+  return axios.post(`user-task/delete/${id}`);
 };

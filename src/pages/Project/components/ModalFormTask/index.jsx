@@ -26,6 +26,7 @@ export function ModalFormTask({
   taskData,
   onSuccess,
   projectId,
+  modifier,
 }) {
   const handleCreateTask = (values) => {
     createTask(values).then((res) => {
@@ -86,19 +87,29 @@ export function ModalFormTask({
   const [userSelected, setUserSelected] = useState([]);
   const [userOption, setUserOption] = useState([]);
   useEffect(() => {
+    setUserSelected([]);
     if (openForm) {
-      getUserOption().then((res) => {
-        if (res.data?.success) {
-          const newArr = [];
-          res.data?.data?.items?.map((item) =>
-            newArr.push({
-              label: `${item?.id} - ${item?.firstName} ${item?.lastName}`,
-              value: item?.id,
-            }),
-          );
-          setUserOption(newArr);
-        }
-      });
+      if (modifier.role?.id === 'LECTURER') {
+        setUserOption([
+          {
+            label: `${modifier?.id} - ${modifier?.firstName} ${modifier?.lastName}`,
+            value: modifier.id,
+          },
+        ]);
+      } else {
+        getUserOption().then((res) => {
+          if (res.data?.success) {
+            const newArr = [];
+            res.data?.data?.items?.map((item) =>
+              newArr.push({
+                label: `${item?.id} - ${item?.firstName} ${item?.lastName}`,
+                value: item?.id,
+              }),
+            );
+            setUserOption(newArr);
+          }
+        });
+      }
       getUserTaskList({ taskId: taskData?.id }).then((res) => {
         if (res.data?.success) {
           const newArr = [];
@@ -113,11 +124,7 @@ export function ModalFormTask({
         }
       });
     }
-  }, [openForm, !isCreate]);
-
-  useEffect(() => {
-    setUserSelected([]);
-  }, [openForm, isCreate]);
+  }, [openForm]);
 
   useEffect(() => {
     const anotherNewArr = [];
@@ -210,28 +217,30 @@ export function ModalFormTask({
           )}
         </ProForm.Group>
         <ProForm.Group>
-          <ProFormSelect
-            rules={[{ required: true, message: 'Không được để trống' }]}
-            name="userIds"
-            mode="multiple"
-            placeholder="Chọn những người thực hiện"
-            value={userSelected}
-            onChange={setUserSelected}
-            label={'Những người thực hiện'}
-            // onChange={(e) => {
-            //   setUserSelected(e);
-            //   console.log(e);
-            // }}
-            style={{
-              width: '550px',
-            }}
-            options={userOption}
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-          />
+          {isCreate && (
+            <ProFormSelect
+              rules={[{ required: true, message: 'Không được để trống' }]}
+              name="userIds"
+              mode="multiple"
+              placeholder="Chọn những người thực hiện"
+              value={userSelected}
+              onChange={setUserSelected}
+              label={'Những người thực hiện'}
+              // onChange={(e) => {
+              //   setUserSelected(e);
+              //   console.log(e);
+              // }}
+              style={{
+                width: '550px',
+              }}
+              options={userOption}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+            />
+          )}
           <ProFormTextArea
-            width="465px"
+            width={isCreate ? '465px' : '600px'}
             name="description"
             label="Mô tả"
             placeholder="Nhập mô tả (không bắt buộc)"

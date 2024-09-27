@@ -11,6 +11,7 @@ import {
   CaretUpOutlined,
   UpCircleOutlined,
   InfoCircleOutlined,
+  FilterOutlined,
 } from '@ant-design/icons';
 import { ProFormSelect } from '@ant-design/pro-components';
 import {
@@ -50,7 +51,7 @@ import { render } from '@testing-library/react';
 import { ManageTaskDetail } from './pages/ManageTaskDetail';
 
 function ManageProject() {
-  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
+  const userData = JSON.parse(sessionStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [loadingExpandTable, setLoadingExpandTable] = useState(false);
@@ -181,19 +182,25 @@ function ManageProject() {
         title: 'Ngày bắt đầu',
         dataIndex: 'start',
         align: 'left',
-        width: '10.5%',
+        width: '10%',
       },
       {
         title: 'Ngày kết thúc',
         dataIndex: 'deadline',
         align: 'left',
-        width: '10.5%',
+        width: '10%',
+      },
+      {
+        title: 'Tiến độ',
+        dataIndex: ['taskStatus', 'name'],
+        align: 'left',
+        width: '14%',
       },
       {
         title: 'Ngày tạo',
         dataIndex: 'createdAt',
         align: 'left',
-        width: '17%',
+        width: '14%',
       },
       // {
       //   title: 'Status',
@@ -204,36 +211,48 @@ function ManageProject() {
         title: 'Tùy chọn',
         align: 'center',
         fixed: 'right',
-        width: '15%',
+        width: '12%',
         render: (e, record, index) => (
-          <div className="border-2 border-none rounded-md bg-primary" key={index}>
+          <div key={index}>
             <Button.Group>
               <Button
-                icon={<EditOutlined />}
-                onClick={() => handleClickEditTask(record)}
+                className="bg-blue-100 flex justify-center items-center shadow-lg"
+                onClick={() => {
+                  handleClickTaskDetail(record);
+                }}
                 size="small"
-                className="flex border-white justify-center items-center bg-white shadow-lg"
+                icon={<InfoCircleOutlined />}
               >
-                Sửa
+                Chi tiết
               </Button>
-              <Popconfirm
-                placement="topRight"
-                title="Bạn có chắc chắn muốn xóa công việc nhỏ này?"
-                icon={<DeleteOutlined />}
-                okText="Xóa"
-                okType="danger"
-                onConfirm={() => handleConfirmDeleteTask(record.id)}
-              >
-                <Button
-                  className="flex justify-center items-center bg-white text-md shadow-md"
-                  icon={<DeleteOutlined />}
-                  size="small"
-                >
-                  Xóa
-                </Button>
-              </Popconfirm>
+
+              {record.project?.createdBy?.id === userData.id && (
+                <div className="flex">
+                  <Button
+                    icon={<EditOutlined />}
+                    onClick={() => handleClickEditTask(record)}
+                    size="small"
+                    className="flex border-white justify-center items-center bg-white shadow-lg"
+                  ></Button>
+                  <Popconfirm
+                    placement="topRight"
+                    title="Bạn có chắc chắn muốn xóa công việc nhỏ này?"
+                    icon={<DeleteOutlined />}
+                    okText="Xóa"
+                    okType="danger"
+                    onConfirm={() => handleConfirmDeleteTask(record.id)}
+                  >
+                    <Button
+                      className="flex justify-center items-center bg-white text-md shadow-md"
+                      icon={<DeleteOutlined />}
+                      size="small"
+                      danger
+                    ></Button>
+                  </Popconfirm>
+                </div>
+              )}
             </Button.Group>
-            <Button.Group>
+            {/* <Button.Group>
               <Button
                 className="bg-white flex justify-center items-center shadow-lg"
                 onClick={() => handleUpOrdinalNumber(record.id)}
@@ -251,7 +270,7 @@ function ManageProject() {
               >
                 Chi tiết
               </Button>
-            </Button.Group>
+            </Button.Group> */}
           </div>
         ),
       },
@@ -277,6 +296,10 @@ function ManageProject() {
             </div>
           );
         }}
+        scroll={{
+          y: '64vh',
+          x: 1250,
+        }}
         columns={columns}
         dataSource={taskDataSource}
         pagination={false}
@@ -293,7 +316,7 @@ function ManageProject() {
       dataIndex: 'name',
       align: 'left',
       fixed: 'left',
-      width: '18%',
+      width: '17%',
     },
     {
       title: 'Mô tả',
@@ -304,13 +327,19 @@ function ManageProject() {
       title: 'Ngày bắt đầu',
       dataIndex: 'start',
       align: 'left',
-      width: '9%',
+      width: '8%',
     },
     {
       title: 'Ngày kết thúc',
       dataIndex: 'deadline',
       align: 'left',
-      width: '9%',
+      width: '8%',
+    },
+    {
+      title: 'Tiến độ',
+      dataIndex: ['projectStatus', 'name'],
+      align: 'left',
+      width: '12%',
     },
     {
       title: 'Người tạo',
@@ -329,7 +358,7 @@ function ManageProject() {
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       align: 'left',
-      width: '13%',
+      width: '11%',
     },
     {
       title: 'Tùy chọn',
@@ -338,29 +367,33 @@ function ManageProject() {
       width: '10.5%',
       render: (e, record, index) => (
         <Button.Group key={index}>
-          <ButtonCustom
-            title={'Sửa'}
-            icon={<EditOutlined />}
-            handleClick={() => handleClickEditProject(record)}
-            size="small"
-          />
-          <Popconfirm
-            placement="topRight"
-            title="Bạn có chắc chắn muốn xóa công việc này?"
-            icon={<DeleteOutlined />}
-            okText="Xóa"
-            okType="danger"
-            onConfirm={() => handleConfirmDeleteProject(record.id)}
-          >
-            <Button
-              className="flex justify-center items-center text-md shadow-md"
-              icon={<DeleteOutlined />}
-              size="small"
-              danger
-            >
-              Xóa
-            </Button>
-          </Popconfirm>
+          {record.createdBy?.id === userData.id && (
+            <>
+              <ButtonCustom
+                title={'Sửa'}
+                icon={<EditOutlined />}
+                handleClick={() => handleClickEditProject(record)}
+                size="small"
+              />
+              <Popconfirm
+                placement="topRight"
+                title="Bạn có chắc chắn muốn xóa công việc này?"
+                icon={<DeleteOutlined />}
+                okText="Xóa"
+                okType="danger"
+                onConfirm={() => handleConfirmDeleteProject(record.id)}
+              >
+                <Button
+                  className="flex justify-center items-center text-md shadow-md"
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  danger
+                >
+                  Xóa
+                </Button>
+              </Popconfirm>
+            </>
+          )}
         </Button.Group>
       ),
     },
@@ -405,18 +438,31 @@ function ManageProject() {
           <p className="my-auto ml-2">Tổng số kết quả: {total}</p>
         </div>
         <Space>
-          {roleId !== 'LECTURER' && (
+          <Popconfirm
+            placement="bottomRight"
+            title="Tính năng này đang được phát triển"
+            icon={false}
+            okText="Lọc"
+            onConfirm={() => {}}
+          >
             <Button
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setOpenModalFormProject(true);
-                setFormCreate(true);
-              }}
-              className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+              className="flex justify-center items-center bg-white text-md shadow-md"
+              icon={<FilterOutlined />}
+              size="medium"
             >
-              Thêm công việc
+              Chọn điều kiện lọc
             </Button>
-          )}
+          </Popconfirm>
+          <Button
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setOpenModalFormProject(true);
+              setFormCreate(true);
+            }}
+            className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+          >
+            Thêm công việc
+          </Button>
         </Space>
       </div>
       <ModalFormProject
@@ -449,12 +495,13 @@ function ManageProject() {
             setOpenModalFormTask(false);
           }
         }}
+        modifier={userData}
       />
       <div className="relative">
         <Table
           scroll={{
             y: '64vh',
-            x: 1400,
+            x: 1550,
           }}
           rowKey="id"
           loading={loadingTable}
@@ -494,11 +541,15 @@ function ManageProject() {
           }
           placement="right"
           open={openDrawer}
-          width={1200}
+          width={1300}
           maskClosable={true}
-          onClose={() => setOpenDrawer(false)}
+          onClose={() => {
+            setOpenDrawer(false);
+            handleGetTaskList();
+            handleGetProjectList();
+          }}
         >
-          <ManageTaskDetail open={openDrawer} taskData={taskData} />
+          <ManageTaskDetail open={openDrawer} taskData={taskData} modifier={userData} />
         </Drawer>
       </div>
     </div>

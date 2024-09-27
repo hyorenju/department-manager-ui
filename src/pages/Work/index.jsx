@@ -16,7 +16,7 @@ import { promiseApi } from '../../api/promiseApi';
 import { useMutation } from '@tanstack/react-query';
 import {
   finishedMyTask,
-  getUserTaskList,
+  getUserTaskCalendar,
   getUserTaskPage,
   updateTaskStatus,
 } from '../../api/axios';
@@ -40,7 +40,7 @@ export function Work({ userData }) {
 
   useEffect(() => {
     if (componentVariant === 'Lịch công việc') {
-      getUserTaskList({
+      getUserTaskCalendar({
         userId: userData?.id,
         monthCalendar: dateCalendar.month() + 1,
         yearCalendar: dateCalendar.year(),
@@ -88,7 +88,7 @@ export function Work({ userData }) {
     finishedMyTask(id).then((res) => {
       if (res.data?.success) {
         handelGetUserTaskList();
-        notificationSuccess('Công việc đã được loại khỏi danh sách đang thực hiện.');
+        notificationSuccess('Bạn đã xác nhận hoàn thành công việc.');
       } else notificationError('Bạn không có quyền truy cập');
     });
   };
@@ -120,9 +120,9 @@ export function Work({ userData }) {
       ) {
         taskList.push({
           type:
-            render?.userTask?.taskStatus?.name === 'Chưa hoàn thành'
+            render?.userTask?.personalStatus?.name === 'Chưa hoàn thành'
               ? 'warning'
-              : render?.userTask?.taskStatus?.name === 'Đã quá hạn'
+              : render?.userTask?.personalStatus?.name === 'Đã quá hạn'
               ? 'error'
               : 'success',
           content: render?.userTask?.task?.name,
@@ -158,36 +158,36 @@ export function Work({ userData }) {
 
   const columns = [
     {
-      title: 'Tên công việc',
+      title: 'Công việc lớn',
       dataIndex: ['task', 'project', 'name'],
       align: 'left',
       fixed: 'left',
-      width: '18%',
+      width: '14%',
     },
     {
-      title: 'Tên công việc',
+      title: 'Công việc nhỏ',
       dataIndex: ['task', 'name'],
       align: 'left',
       fixed: 'left',
-      width: '18%',
+      width: '16%',
     },
     {
       title: 'Tiến độ',
-      dataIndex: ['taskStatus', 'name'],
+      dataIndex: ['personalStatus', 'name'],
       align: 'left',
-      width: '13%',
+      width: '11%',
     },
     {
       title: 'Ngày bắt đầu',
       dataIndex: ['task', 'start'],
       align: 'left',
-      width: '9%',
+      width: '7%',
     },
     {
       title: 'Ngày kết thúc',
       dataIndex: ['task', 'deadline'],
       align: 'left',
-      width: '9%',
+      width: '7%',
     },
     {
       title: 'Người giao việc',
@@ -201,41 +201,48 @@ export function Work({ userData }) {
         </>
       ),
       align: 'left',
-      width: '14%',
+      width: '12%',
+    },
+    {
+      title: 'Ghi chú',
+      dataIndex: 'note',
+      align: 'left',
     },
     {
       title: 'Ngày giao',
       dataIndex: ['task', 'createdAt'],
       align: 'left',
-      width: '13%',
+      width: '7.5%',
     },
     {
       title: 'Tùy chọn',
       align: 'center',
       fixed: 'right',
-      width: '8%',
+      width: '6.5%',
       render: (e, record, index) => (
         <Button.Group key={index}>
-          <Popconfirm
-            placement="topRight"
-            title={
-              <>
-                <p>Xác nhận đã hoàn thành công việc?</p>
-                <p>Hành động này không thể hoàn tác!</p>
-              </>
-            }
-            icon={<DeleteOutlined />}
-            okText="Đồng ý"
-            onConfirm={() => handleFinishedTask(record?.id)}
-          >
-            <Button
-              className="flex justify-center items-center text-md shadow-md"
-              icon={<CheckOutlined />}
-              size="small"
+          {!record.personalStatus?.name?.includes('Hoàn thành') && (
+            <Popconfirm
+              placement="topRight"
+              title={
+                <>
+                  <p>Xác nhận đã hoàn thành công việc?</p>
+                  <p>Hành động này không thể hoàn tác!</p>
+                </>
+              }
+              icon={<DeleteOutlined />}
+              okText="Đồng ý"
+              onConfirm={() => handleFinishedTask(record?.id)}
             >
-              Xong
-            </Button>
-          </Popconfirm>
+              <Button
+                className="flex justify-center items-center text-md shadow-md"
+                icon={<CheckOutlined />}
+                size="small"
+              >
+                Xong
+              </Button>
+            </Popconfirm>
+          )}
         </Button.Group>
       ),
     },
@@ -293,7 +300,7 @@ export function Work({ userData }) {
             <Table
               scroll={{
                 y: '64vh',
-                x: 1400,
+                x: 1600,
               }}
               rowKey="id"
               loading={loadingTable}

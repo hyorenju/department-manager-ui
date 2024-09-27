@@ -4,10 +4,10 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Popconfirm, Space, Table } from 'antd';
 import { useEffect, useState } from 'react';
-import { getUserTaskList } from '../../../../api/axios';
+import { deleteUserTask, getUserTaskList } from '../../../../api/axios';
 import { ModalFormTaskDetail } from '../components/ModalFormTaskDetail';
 
-export function ManageTaskDetail({ open, taskData }) {
+export function ManageTaskDetail({ open, taskData, modifier }) {
   const [loadingTable, setLoadingTable] = useState(false);
   const [total, setTotal] = useState();
   const [openModal, setOpenModal] = useState(false);
@@ -21,6 +21,19 @@ export function ManageTaskDetail({ open, taskData }) {
         if (res.data?.success === true) {
           setTaskDetailList(res.data?.data?.items);
           setTotal(res.data?.data?.total);
+        } else if (res && res.success === false) {
+          notificationError(res?.error.message);
+        }
+      })
+      .finally(() => setLoadingTable(false));
+  };
+
+  const handleConfirmDeleteUserTask = (id) => {
+    setLoadingTable(true);
+    deleteUserTask(id)
+      .then((res) => {
+        if (res.data?.success === true) {
+          handleGetTaskDetailList();
         } else if (res && res.success === false) {
           notificationError(res?.error.message);
         }
@@ -51,7 +64,7 @@ export function ManageTaskDetail({ open, taskData }) {
     },
     {
       title: 'Tiến độ',
-      dataIndex: ['taskStatus', 'name'],
+      dataIndex: ['personalStatus', 'name'],
       width: '16%',
     },
     {
@@ -68,19 +81,37 @@ export function ManageTaskDetail({ open, taskData }) {
       align: 'center',
       fixed: 'right',
       width: '9%',
-      render: (record, index) => (
-        <Button.Group key={index}>
-          <ButtonCustom
-            title={'Sửa'}
-            icon={<EditOutlined />}
-            handleClick={() => {
-              setOpenModal(true);
-              setTaskDetail(record);
-            }}
-            size="small"
-          />
-        </Button.Group>
-      ),
+      render: (record, index) =>
+        modifier.id === record.task?.project?.createdBy?.id && (
+          <Button.Group key={index}>
+            <ButtonCustom
+              title={'Sửa'}
+              icon={<EditOutlined />}
+              handleClick={() => {
+                setOpenModal(true);
+                setTaskDetail(record);
+              }}
+              size="small"
+            />
+            <Popconfirm
+              placement="topRight"
+              title="Bạn có chắc chắn muốn xóa người dùng này?"
+              icon={<DeleteOutlined />}
+              okText="Xóa"
+              okType="danger"
+              onConfirm={() => handleConfirmDeleteUserTask(record.id)}
+            >
+              <Button
+                className="flex justify-center items-center text-md shadow-md"
+                icon={<DeleteOutlined />}
+                size="small"
+                danger
+              >
+                Xóa
+              </Button>
+            </Popconfirm>
+          </Button.Group>
+        ),
     },
   ];
   return (
