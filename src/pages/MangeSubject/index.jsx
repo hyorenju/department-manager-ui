@@ -52,9 +52,13 @@ function ManageSubject() {
   const [size, setSize] = useState(10);
   const [dataSource, setDataSource] = useState([]);
   const [formCreate, setFormCreate] = useState(true);
+  const [searchId, setSearchId] = useState(null);
+  const [searchName, setSearchName] = useState(null);
 
-  const [searchFacultyId, setSearchFacultyId] = useState('');
-  const [searchDepartmentId, setSearchDepartmentId] = useState('');
+  const [searchFacultyId, setSearchFacultyId] = useState(null);
+  const [searchDepartmentId, setSearchDepartmentId] = useState(null);
+  const [id, setId] = useState(null);
+  const [name, setName] = useState(null);
 
   // handle delete subject
   const handleConfirmDeleteSubject = (id) => {
@@ -70,14 +74,13 @@ function ManageSubject() {
   };
 
   // handle get subject list
-  const debunceValue = useDebounce(valueSearchSubject, 750);
-  const keyword = debunceValue[0];
   const handleGetSubjectList = () => {
     setLoadingTable(true);
     getSubjectList({
       page: page,
       size: size,
-      keyword: keyword,
+      id,
+      name,
       departmentId: searchDepartmentId,
       facultyId: searchFacultyId,
     })
@@ -120,7 +123,7 @@ function ManageSubject() {
           window.open(res.error?.message);
           messageErrorToSever(
             null,
-            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn. (Hãy chắc chắn rằng trình duyệt của bạn không chặn tự động mở tab mới)',
           );
         }
       }
@@ -136,7 +139,7 @@ function ManageSubject() {
   useEffect(() => {
     return handleGetSubjectList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, size, keyword, searchDepartmentId, searchFacultyId]);
+  }, [page, size, id, name, searchDepartmentId, searchFacultyId]);
 
   const [facultySelection, setFacultySelection] = useState([]);
   useEffect(() => {
@@ -165,7 +168,8 @@ function ManageSubject() {
     mutationKey: ['exportSubjectList'],
     mutationFn: () =>
       excelApi.exportSubjectList({
-        keyword: keyword,
+        id,
+        name,
         departmentId: searchDepartmentId,
         facultyId: searchFacultyId,
       }),
@@ -206,6 +210,35 @@ function ManageSubject() {
       dataIndex: 'id',
       align: 'left',
       width: '5%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập mã môn học'}
+            value={searchId}
+            onChange={(e) => setSearchId(e.target.value)}
+            className="w-[150px] mb-2 block"
+            onPressEnter={(e) => {
+              setPage(1);
+              setId(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setId(null);
+                setSearchId(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo mã môn học">
+          <SearchOutlined className={`${id ? 'text-blue-500' : undefined} text-md p-1 text-base`} />
+        </Tooltip>
+      ),
     },
     {
       title: 'Tên môn học',
@@ -213,6 +246,37 @@ function ManageSubject() {
       align: 'left',
       fixed: 'left',
       width: '10%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập tên môn học'}
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+            className="w-[240px] mb-2 block"
+            onPressEnter={(e) => {
+              setPage(1);
+              setName(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setName(null);
+                setSearchName(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo tên môn học">
+          <SearchOutlined
+            className={`${name ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
       title: 'Khoa',
@@ -360,7 +424,7 @@ function ManageSubject() {
       title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
       align: 'center',
       fixed: 'right',
-      width: roleId !== 'LECTURER' ? '7%' : '0',
+      width: roleId !== 'LECTURER' ? '3%' : '0',
       render:
         roleId !== 'LECTURER' &&
         ((e, record, index) =>
@@ -368,7 +432,6 @@ function ManageSubject() {
           userInfo.department?.id === record.department?.id && (
             <Button.Group key={index}>
               <ButtonCustom
-                title={'Sửa'}
                 icon={<EditOutlined />}
                 handleClick={() => handleClickEdit(record)}
                 size="small"
@@ -386,9 +449,7 @@ function ManageSubject() {
                   icon={<DeleteOutlined />}
                   size="small"
                   danger
-                >
-                  Xóa
-                </Button>
+                ></Button>
               </Popconfirm>
             </Button.Group>
           )),
@@ -402,7 +463,7 @@ function ManageSubject() {
       </Title>
       <div className="flex justify-between mb-2">
         <div className="flex">
-          <Tooltip className="flex" title="Tìm kiếm môn học">
+          {/* <Tooltip className="flex" title="Tìm kiếm môn học">
             <Input
               prefix={<SearchOutlined className="opacity-60 mr-1" />}
               placeholder="Nhập từ khóa"
@@ -410,7 +471,7 @@ function ManageSubject() {
               onChange={(e) => setValueSearchSubject(e.target.value)}
               value={valueSearchSubject}
             />
-          </Tooltip>
+          </Tooltip> */}
           <p className="my-auto ml-2">Tổng số kết quả: {total}</p>
         </div>
         <Space>

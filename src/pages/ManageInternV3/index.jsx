@@ -257,6 +257,7 @@ function ManageIntern() {
     },
     onSuccess: (res) => {
       if (res && res.success === true) {
+        setIsAll(true);
         notificationSuccess('Upload file thành công');
         handleGetInternList();
       } else if (res && res.success === false) {
@@ -265,7 +266,7 @@ function ManageIntern() {
           window.open(res.error?.message);
           messageErrorToSever(
             null,
-            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn. (Hãy chắc chắn rằng trình duyệt của bạn không chặn tự động mở tab mới)',
           );
         }
       }
@@ -338,35 +339,110 @@ function ManageIntern() {
 
   const columns = [
     {
-      title: 'Khoa',
-      dataIndex: ['instructor', 'department', 'faculty', 'name'],
+      title: 'Năm học',
+      dataIndex: ['schoolYear', 'name'],
       align: 'left',
-      width: '5%',
-      filterDropdown:
-        isAll &&
-        (() => (
-          <div className="p-3 flex flex-col gap-2 w-[280px]">
-            <Select
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              value={facultyId}
-              options={facultySelection}
-              placeholder="Chọn khoa"
-              onChange={(searchFacultyId) => setFacultyId(searchFacultyId)}
-            />
-            <Space>
-              <ButtonCustom handleClick={() => setFacultyId(null)} size="small" title={'Reset'} />
-            </Space>
-          </div>
-        )),
+      width: '3%',
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[170px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={schoolYearId}
+            options={schoolYearSelection}
+            placeholder="Chọn năm học"
+            onChange={(schoolYearId) => {
+              setPage(1);
+              setSchoolYearId(schoolYearId);
+            }}
+          />
+          <Space>
+            <ButtonCustom handleClick={() => setSchoolYearId(null)} size="small" title={'Reset'} />
+          </Space>
+        </div>
+      ),
       filterIcon: () => (
-        <Tooltip title="Tìm kiếm theo khoa">
-          <SearchOutlined className={`${facultyId ? 'text-blue-500' : undefined} text-base`} />
+        <Tooltip title="Tìm kiếm theo năm học">
+          <SearchOutlined className={`${schoolYearId ? 'text-blue-500' : undefined} text-base`} />
         </Tooltip>
       ),
     },
+    {
+      title: 'HK',
+      dataIndex: 'term',
+      align: 'left',
+      width: '1.5%',
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[150px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={term}
+            options={[
+              {
+                label: 'Học kỳ 1',
+                value: 1,
+              },
+              {
+                label: 'Học kỳ 2',
+                value: 2,
+              },
+              {
+                label: 'Học kỳ 3',
+                value: 3,
+              },
+            ]}
+            placeholder="Chọn học kỳ"
+            onChange={(term) => {
+              setPage(1);
+              setTerm(term);
+            }}
+          />
+          <Space>
+            <ButtonCustom handleClick={() => setTerm(null)} size="small" title={'Reset'} />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo học kỳ">
+          <SearchOutlined className={`${term ? 'text-blue-500' : undefined} text-base`} />
+        </Tooltip>
+      ),
+    },
+    // {
+    //   title: 'Khoa',
+    //   dataIndex: ['instructor', 'department', 'faculty', 'name'],
+    //   align: 'left',
+    //   width: '5%',
+    //   filterDropdown:
+    //     isAll &&
+    //     (() => (
+    //       <div className="p-3 flex flex-col gap-2 w-[280px]">
+    //         <Select
+    //           showSearch
+    //           filterOption={(input, option) =>
+    //             (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+    //           }
+    //           value={facultyId}
+    //           options={facultySelection}
+    //           placeholder="Chọn khoa"
+    //           onChange={(searchFacultyId) => setFacultyId(searchFacultyId)}
+    //         />
+    //         <Space>
+    //           <ButtonCustom handleClick={() => setFacultyId(null)} size="small" title={'Reset'} />
+    //         </Space>
+    //       </div>
+    //     )),
+    //   filterIcon: () => (
+    //     <Tooltip title="Tìm kiếm theo khoa">
+    //       <SearchOutlined className={`${facultyId ? 'text-blue-500' : undefined} text-base`} />
+    //     </Tooltip>
+    //   ),
+    // },
     {
       title: 'Bộ môn',
       dataIndex: ['instructor', 'department', 'name'],
@@ -384,7 +460,10 @@ function ManageIntern() {
               value={departmentId}
               options={departmentSelection}
               placeholder="Chọn bộ môn"
-              onChange={(departmentId) => setDepartmentId(departmentId)}
+              onChange={(departmentId) => {
+                setPage(1);
+                setDepartmentId(departmentId);
+              }}
             />
             <Space>
               <ButtonCustom
@@ -402,27 +481,106 @@ function ManageIntern() {
       ),
     },
     {
-      title: 'Năm học',
-      dataIndex: ['schoolYear', 'name'],
+      title: 'Tên đề tài thực tập',
+      dataIndex: 'name',
       align: 'left',
-      width: '3%',
+      fixed: 'left',
+      width: '7%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập tên'}
+            value={valueSearchName}
+            onChange={(e) => setValueSearchName(e.target.value)}
+            className="w-[280px] mb-2 block"
+            onPressEnter={(e) => {
+              setPage(1);
+              setSearchName(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setSearchName(null);
+                setValueSearchName(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo tên">
+          <SearchOutlined
+            className={`${searchName ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Loại đề tài',
+      dataIndex: ['type', 'name'],
+      align: 'left',
+      width: '4%',
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[250px]">
+          <Select
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            value={typeId}
+            options={internTypeSelection}
+            placeholder="Chọn loại đề tài"
+            onChange={(typeId) => {
+              setPage(1);
+              setTypeId(typeId);
+            }}
+          />
+          <Space>
+            <ButtonCustom handleClick={() => setTypeId(null)} size="small" title={'Reset'} />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo loại đề tài">
+          <SearchOutlined className={`${typeId ? 'text-blue-500' : undefined} text-base`} />
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Giáo viên hướng dẫn',
+      render: (e, record, index) => (
+        <>
+          <p>
+            {record?.instructor?.id} - {record?.instructor?.firstName}{' '}
+            {record?.instructor?.lastName}
+          </p>
+        </>
+      ),
+      align: 'left',
+      width: '6%',
       filterDropdown:
         isAll &&
         (() => (
-          <div className="p-3 flex flex-col gap-2 w-[170px]">
+          <div className="p-3 flex flex-col gap-2 w-[300px]">
             <Select
               showSearch
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
-              value={schoolYearId}
-              options={schoolYearSelection}
-              placeholder="Chọn năm học"
-              onChange={(schoolYearId) => setSchoolYearId(schoolYearId)}
+              value={instructorId}
+              options={instructorSelection}
+              placeholder="Tìm giảng viên"
+              onChange={(instructorId) => {
+                setPage(1);
+                setInstructorId(instructorId);
+              }}
             />
             <Space>
               <ButtonCustom
-                handleClick={() => setSchoolYearId(null)}
+                handleClick={() => setInstructorId(null)}
                 size="small"
                 title={'Reset'}
               />
@@ -430,51 +588,8 @@ function ManageIntern() {
           </div>
         )),
       filterIcon: () => (
-        <Tooltip title="Tìm kiếm theo năm học">
-          <SearchOutlined className={`${schoolYearId ? 'text-blue-500' : undefined} text-base`} />
-        </Tooltip>
-      ),
-    },
-    {
-      title: 'HK',
-      dataIndex: 'term',
-      align: 'left',
-      width: '1.5%',
-      filterDropdown:
-        isAll &&
-        (() => (
-          <div className="p-3 flex flex-col gap-2 w-[150px]">
-            <Select
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              value={term}
-              options={[
-                {
-                  label: 'Học kỳ 1',
-                  value: 1,
-                },
-                {
-                  label: 'Học kỳ 2',
-                  value: 2,
-                },
-                {
-                  label: 'Học kỳ 3',
-                  value: 3,
-                },
-              ]}
-              placeholder="Chọn học kỳ"
-              onChange={(term) => setTerm(term)}
-            />
-            <Space>
-              <ButtonCustom handleClick={() => setTerm(null)} size="small" title={'Reset'} />
-            </Space>
-          </div>
-        )),
-      filterIcon: () => (
-        <Tooltip title="Tìm kiếm theo học kỳ">
-          <SearchOutlined className={`${term ? 'text-blue-500' : undefined} text-base`} />
+        <Tooltip title="Tìm kiếm theo GV hướng dẫn">
+          <SearchOutlined className={`${instructorId ? 'text-blue-500' : undefined} text-base`} />
         </Tooltip>
       ),
     },
@@ -482,7 +597,6 @@ function ManageIntern() {
       title: 'MSV',
       dataIndex: 'studentId',
       align: 'left',
-      fixed: 'left',
       width: '2.5%',
       filterDropdown: () => (
         <div className="p-3">
@@ -492,6 +606,7 @@ function ManageIntern() {
             onChange={(e) => setSearchStudentId(e.target.value)}
             className="w-[120px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setStudentId(e.target.value);
             }}
           />
@@ -528,6 +643,7 @@ function ManageIntern() {
             onChange={(e) => setSearchStudentName(e.target.value)}
             className="w-[260px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setStudentName(e.target.value);
             }}
           />
@@ -564,6 +680,7 @@ function ManageIntern() {
             onChange={(e) => setSearchClassId(e.target.value)}
             className="w-[150px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setClassId(e.target.value);
             }}
           />
@@ -606,6 +723,7 @@ function ManageIntern() {
             onChange={(e) => setSearchCompany(e.target.value)}
             className="w-[260px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setCompany(e.target.value);
             }}
           />
@@ -626,112 +744,6 @@ function ManageIntern() {
           <SearchOutlined
             className={`${company ? 'text-blue-500' : undefined} text-md p-1 text-base`}
           />
-        </Tooltip>
-      ),
-    },
-    {
-      title: 'Tên đề tài thực tập',
-      dataIndex: 'name',
-      align: 'left',
-      fixed: 'left',
-      width: '7%',
-      filterDropdown: () => (
-        <div className="p-3">
-          <Input
-            placeholder={'Nhập tên'}
-            value={valueSearchName}
-            onChange={(e) => setValueSearchName(e.target.value)}
-            className="w-[280px] mb-2 block"
-            onPressEnter={(e) => {
-              setSearchName(e.target.value);
-            }}
-          />
-          <Space>
-            <ButtonCustom
-              handleClick={() => {
-                setSearchName(null);
-                setValueSearchName(null);
-              }}
-              size="small"
-              title={'Reset'}
-            />
-          </Space>
-        </div>
-      ),
-      filterIcon: () => (
-        <Tooltip title="Tìm kiếm theo tên">
-          <SearchOutlined
-            className={`${searchName ? 'text-blue-500' : undefined} text-md p-1 text-base`}
-          />
-        </Tooltip>
-      ),
-    },
-    {
-      title: 'Loại đề tài',
-      dataIndex: ['type', 'name'],
-      align: 'left',
-      width: '4%',
-      filterDropdown: () => (
-        <div className="p-3 flex flex-col gap-2 w-[250px]">
-          <Select
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            value={typeId}
-            options={internTypeSelection}
-            placeholder="Chọn loại đề tài"
-            onChange={(typeId) => setTypeId(typeId)}
-          />
-          <Space>
-            <ButtonCustom handleClick={() => setTypeId(null)} size="small" title={'Reset'} />
-          </Space>
-        </div>
-      ),
-      filterIcon: () => (
-        <Tooltip title="Tìm kiếm theo loại đề tài">
-          <SearchOutlined className={`${typeId ? 'text-blue-500' : undefined} text-base`} />
-        </Tooltip>
-      ),
-    },
-    {
-      title: 'Giáo viên hướng dẫn',
-      render: (e, record, index) => (
-        <>
-          <p>
-            {record?.instructor?.id} - {record?.instructor?.firstName}{' '}
-            {record?.instructor?.lastName}
-          </p>
-        </>
-      ),
-      align: 'left',
-      width: '6%',
-      filterDropdown:
-        isAll &&
-        (() => (
-          <div className="p-3 flex flex-col gap-2 w-[300px]">
-            <Select
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              value={instructorId}
-              options={instructorSelection}
-              placeholder="Tìm giảng viên"
-              onChange={(instructorId) => setInstructorId(instructorId)}
-            />
-            <Space>
-              <ButtonCustom
-                handleClick={() => setInstructorId(null)}
-                size="small"
-                title={'Reset'}
-              />
-            </Space>
-          </div>
-        )),
-      filterIcon: () => (
-        <Tooltip title="Tìm kiếm theo GV hướng dẫn">
-          <SearchOutlined className={`${instructorId ? 'text-blue-500' : undefined} text-base`} />
         </Tooltip>
       ),
     },
@@ -795,7 +807,10 @@ function ManageIntern() {
               },
             ]}
             placeholder="Chọn trạng thái"
-            onChange={(status) => setStatus(status)}
+            onChange={(status) => {
+              setPage(1);
+              setStatus(status);
+            }}
           />
           <Space>
             <ButtonCustom handleClick={() => setStatus(null)} size="small" title={'Reset'} />
@@ -855,7 +870,7 @@ function ManageIntern() {
       title: isAll & (roleId === 'LECTURER') ? '' : 'Tùy chọn',
       align: 'center',
       fixed: 'right',
-      width: isAll & (roleId === 'LECTURER') ? '0' : '4.5%',
+      width: isAll & (roleId === 'LECTURER') ? '0' : '2.5%',
       render:
         (!isAll || roleId !== 'LECTURER') &&
         ((e, record, index) => (
@@ -881,7 +896,6 @@ function ManageIntern() {
               />
             )}
             <ButtonCustom
-              title={'Sửa'}
               icon={<EditOutlined />}
               handleClick={() => handleClickEdit(record)}
               size="small"
@@ -899,9 +913,7 @@ function ManageIntern() {
                 icon={<DeleteOutlined />}
                 size="small"
                 danger
-              >
-                Xóa
-              </Button>
+              ></Button>
             </Popconfirm>
           </Button.Group>
         )),
@@ -964,7 +976,6 @@ function ManageIntern() {
       <ModalFormIntern
         isCreate={formCreate}
         onSuccess={() => {
-          setIsAll(true);
           handleGetInternList();
           setOpenModalFormIntern(false);
         }}

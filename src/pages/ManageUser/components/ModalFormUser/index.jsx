@@ -1,4 +1,10 @@
-import { ModalForm, ProForm, ProFormSelect, ProFormText } from '@ant-design/pro-components';
+import {
+  ModalForm,
+  ProForm,
+  ProFormSelect,
+  ProFormText,
+  ProFormTextArea,
+} from '@ant-design/pro-components';
 import { notification, message, Input, Button, Popconfirm } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {
@@ -281,7 +287,7 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
               isCreate ? "Nếu để trống sẽ mặc định là '123'" : 'Nếu để trống mật khẩu sẽ giữ nguyên'
             }
           />
-          <ProFormText
+          <ProFormTextArea
             rules={[{ required: false, message: 'Không được để trống' }]}
             width="xl"
             name="note"

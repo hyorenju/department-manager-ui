@@ -5,10 +5,14 @@ import {
   FileDoneOutlined,
   LockFilled,
   LockOutlined,
+  MutedFilled,
+  MutedOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   SaveOutlined,
   SearchOutlined,
+  SoundFilled,
+  SoundOutlined,
   SwapOutlined,
   UnlockOutlined,
   UploadOutlined,
@@ -36,6 +40,7 @@ import {
   getTeachingList,
   getUserSelection,
   lockTeaching,
+  warnTeaching,
 } from '../../api/axios';
 import { excelApi } from '../../api/excelApi';
 import { promiseApi } from '../../api/promiseApi';
@@ -121,6 +126,20 @@ function ManageTeaching() {
   const handleLockTeaching = (id) => {
     setLoadingTable(true);
     lockTeaching(id)
+      .then((res) => {
+        if (res.data?.success) {
+          message.success('Thành công');
+          handleGetTeachingList();
+        } else {
+          message.error(res.data?.error?.message);
+        }
+      })
+      .finally(() => setLoadingTable(false));
+  };
+
+  const handleWarnTeaching = (id) => {
+    setLoadingTable(true);
+    warnTeaching(id)
       .then((res) => {
         if (res.data?.success) {
           message.success('Thành công');
@@ -251,6 +270,7 @@ function ManageTeaching() {
     },
     onSuccess: (res) => {
       if (res && res.success === true) {
+        setIsAll(true);
         notificationSuccess('Upload file thành công');
         handleGetTeachingList();
       } else if (res && res.success === false) {
@@ -266,7 +286,7 @@ function ManageTeaching() {
           window.open(res.error?.message);
           messageErrorToSever(
             null,
-            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn. (Hãy chắc chắn rằng trình duyệt của bạn không chặn tự động mở tab mới)',
           );
         }
       }
@@ -340,7 +360,10 @@ function ManageTeaching() {
             value={schoolYearId}
             options={schoolYearSelection}
             placeholder="Chọn năm học"
-            onChange={(schoolYearId) => setSchoolYearId(schoolYearId)}
+            onChange={(schoolYearId) => {
+              setPage(1);
+              setSchoolYearId(schoolYearId);
+            }}
           />
           <Space>
             <ButtonCustom handleClick={() => setSchoolYearId(null)} size="small" title={'Reset'} />
@@ -381,7 +404,10 @@ function ManageTeaching() {
               },
             ]}
             placeholder="Chọn học kỳ"
-            onChange={(term) => setTerm(term)}
+            onChange={(term) => {
+              setPage(1);
+              setTerm(term);
+            }}
           />
           <Space>
             <ButtonCustom handleClick={() => setTerm(null)} size="small" title={'Reset'} />
@@ -394,43 +420,43 @@ function ManageTeaching() {
         </Tooltip>
       ),
     },
-    {
-      title: 'Khoa',
-      dataIndex: ['teacher', 'department', 'faculty', 'name'],
-      align: 'left',
-      width: '8.5%',
-      filterDropdown:
-        isAll &&
-        (() => (
-          <div className="p-3 flex flex-col gap-2 w-[280px]">
-            <Select
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              value={facultyId}
-              options={facultySelection}
-              placeholder="Chọn khoa"
-              onChange={(searchFacultyId) => setFacultyId(searchFacultyId)}
-            />
-            <Space>
-              <ButtonCustom
-                handleClick={() => {
-                  setFacultyId(null);
-                  // setSearchFacultyId(null);
-                }}
-                size="small"
-                title={'Reset'}
-              />
-            </Space>
-          </div>
-        )),
-      filterIcon: () => (
-        <Tooltip title="Tìm kiếm theo khoa">
-          <SearchOutlined className={`${facultyId ? 'text-blue-500' : undefined} text-base`} />
-        </Tooltip>
-      ),
-    },
+    // {
+    //   title: 'Khoa',
+    //   dataIndex: ['teacher', 'department', 'faculty', 'name'],
+    //   align: 'left',
+    //   width: '8.5%',
+    //   filterDropdown:
+    //     isAll &&
+    //     (() => (
+    //       <div className="p-3 flex flex-col gap-2 w-[280px]">
+    //         <Select
+    //           showSearch
+    //           filterOption={(input, option) =>
+    //             (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+    //           }
+    //           value={facultyId}
+    //           options={facultySelection}
+    //           placeholder="Chọn khoa"
+    //           onChange={(searchFacultyId) => setFacultyId(searchFacultyId)}
+    //         />
+    //         <Space>
+    //           <ButtonCustom
+    //             handleClick={() => {
+    //               setFacultyId(null);
+    //               // setSearchFacultyId(null);
+    //             }}
+    //             size="small"
+    //             title={'Reset'}
+    //           />
+    //         </Space>
+    //       </div>
+    //     )),
+    //   filterIcon: () => (
+    //     <Tooltip title="Tìm kiếm theo khoa">
+    //       <SearchOutlined className={`${facultyId ? 'text-blue-500' : undefined} text-base`} />
+    //     </Tooltip>
+    //   ),
+    // },
     {
       title: 'Bộ môn',
       dataIndex: ['teacher', 'department', 'name'],
@@ -448,7 +474,10 @@ function ManageTeaching() {
               value={departmentId}
               options={departmentSelection}
               placeholder="Chọn bộ môn"
-              onChange={(departmentId) => setDepartmentId(departmentId)}
+              onChange={(departmentId) => {
+                setPage(1);
+                setDepartmentId(departmentId);
+              }}
             />
             <Space>
               <ButtonCustom
@@ -478,6 +507,7 @@ function ManageTeaching() {
             onChange={(e) => setSearchSubjectId(e.target.value)}
             className="w-[170px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setSubjectId(e.target.value);
             }}
           />
@@ -515,6 +545,7 @@ function ManageTeaching() {
             onChange={(e) => setSearchSubjectName(e.target.value)}
             className="w-[230px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setSubjectName(e.target.value);
             }}
           />
@@ -562,7 +593,10 @@ function ManageTeaching() {
               value={teacherId}
               options={teacherSelection}
               placeholder="Tìm giảng viên"
-              onChange={(teacherId) => setTeacherId(teacherId)}
+              onChange={(teacherId) => {
+                setPage(1);
+                setTeacherId(teacherId);
+              }}
             />
             <Space>
               <ButtonCustom handleClick={() => setTeacherId(null)} size="small" title={'Reset'} />
@@ -635,7 +669,10 @@ function ManageTeaching() {
               },
             ]}
             placeholder="Chọn trạng thái"
-            onChange={(status) => setStatus(status)}
+            onChange={(status) => {
+              setPage(1);
+              setStatus(status);
+            }}
           />
           <Space>
             <ButtonCustom handleClick={() => setStatus(null)} size="small" title={'Reset'} />
@@ -647,6 +684,12 @@ function ManageTeaching() {
           <SearchOutlined className={`${status ? 'text-blue-500' : undefined} text-base`} />
         </Tooltip>
       ),
+    },
+    {
+      title: 'Hạn nộp điểm',
+      dataIndex: 'deadline',
+      align: 'left',
+      width: '4%',
     },
     {
       title: 'Ngày tạo',
@@ -697,11 +740,25 @@ function ManageTeaching() {
       align: 'center',
       fixed: 'right',
       // width: roleId !== 'LECTURER' ? '5%' : '0',
-      width: isAll & (roleId === 'LECTURER') ? '0' : '5%',
+      width: isAll & (roleId === 'LECTURER') ? '0' : '2.5%',
       render:
         (!isAll || roleId !== 'LECTURER') &&
         ((e, record, index) => (
           <Button.Group key={index}>
+            {/* <Button
+              icon={
+                record.isWarning === true ? (
+                  <SoundFilled className="text-green-800" />
+                ) : (
+                  <MutedFilled className="text-rose-700" />
+                )
+              }
+              onClick={() => {
+                handleWarnTeaching(record.id);
+              }}
+              size="small"
+              className={record.isWarning === true ? 'bg-green-50' : 'bg-yellow-100'}
+            /> */}
             <Button
               icon={
                 record.isLock === null ? (
@@ -721,7 +778,6 @@ function ManageTeaching() {
               }
             />
             <ButtonCustom
-              title={'Sửa'}
               icon={<EditOutlined />}
               handleClick={() => handleClickEdit(record)}
               size="small"
@@ -739,9 +795,7 @@ function ManageTeaching() {
                 icon={<DeleteOutlined />}
                 size="small"
                 danger
-              >
-                Xóa
-              </Button>
+              ></Button>
             </Popconfirm>
           </Button.Group>
         )),

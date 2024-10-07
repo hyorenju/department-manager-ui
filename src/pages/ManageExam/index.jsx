@@ -11,6 +11,8 @@ import {
   TableOutlined,
   SwapOutlined,
   SnippetsOutlined,
+  SoundFilled,
+  MutedFilled,
 } from '@ant-design/icons';
 import { ProFormSelect, editableRowByKey } from '@ant-design/pro-components';
 import {
@@ -39,6 +41,7 @@ import {
   getUserSelection,
   getFacultySelection,
   getDepartmentSelection,
+  warnExam,
 } from '../../api/axios';
 import { ButtonCustom } from '../../components/ButtonCustom';
 import { ModalFormExam } from './components/ModalFormExam';
@@ -228,6 +231,20 @@ function ManageExam() {
     });
   }, []);
 
+  const handleWarnExam = (id) => {
+    setLoadingTable(true);
+    warnExam(id)
+      .then((res) => {
+        if (res.data?.success) {
+          message.success('Thành công');
+          handleGetExamList();
+        } else {
+          message.error(res.data?.error?.message);
+        }
+      })
+      .finally(() => setLoadingTable(false));
+  };
+
   // Export exam list to excel
   const exportExamToExcel = useMutation({
     mutationKey: ['exportExamList'],
@@ -263,8 +280,9 @@ function ManageExam() {
     },
     onSuccess: (res) => {
       if (res && res.success === true) {
-        notificationSuccess('Upload file thành công');
+        setIsAll(true);
         setPage(1);
+        notificationSuccess('Upload file thành công');
         handleGetExamList();
       } else if (res && res.success === false) {
         setOpenModalError(true);
@@ -279,7 +297,7 @@ function ManageExam() {
           window.open(res.error?.message);
           messageErrorToSever(
             null,
-            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn. (Hãy chắc chắn rằng trình duyệt của bạn không chặn tự động mở tab mới)',
           );
         }
       }
@@ -645,34 +663,34 @@ function ManageExam() {
       align: 'left',
       width: '1.3%',
     },
-    {
-      title: 'Khoa',
-      dataIndex: ['subject', 'department', 'faculty', 'name'],
-      align: 'left',
-      width: '4.5%',
-      filterDropdown: () => (
-        <div className="p-3 flex flex-col gap-2 w-[280px]">
-          <Select
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            value={facultyId}
-            options={facultySelection}
-            placeholder="Chọn khoa"
-            onChange={(searchFacultyId) => setFacultyId(searchFacultyId)}
-          />
-          <Space>
-            <ButtonCustom handleClick={() => setFacultyId(null)} size="small" title={'Reset'} />
-          </Space>
-        </div>
-      ),
-      filterIcon: () => (
-        <Tooltip title="Tìm kiếm theo khoa">
-          <SearchOutlined className={`${facultyId ? 'text-blue-500' : undefined} text-base`} />
-        </Tooltip>
-      ),
-    },
+    // {
+    //   title: 'Khoa',
+    //   dataIndex: ['subject', 'department', 'faculty', 'name'],
+    //   align: 'left',
+    //   width: '4.5%',
+    //   filterDropdown: () => (
+    //     <div className="p-3 flex flex-col gap-2 w-[280px]">
+    //       <Select
+    //         showSearch
+    //         filterOption={(input, option) =>
+    //           (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+    //         }
+    //         value={facultyId}
+    //         options={facultySelection}
+    //         placeholder="Chọn khoa"
+    //         onChange={(searchFacultyId) => setFacultyId(searchFacultyId)}
+    //       />
+    //       <Space>
+    //         <ButtonCustom handleClick={() => setFacultyId(null)} size="small" title={'Reset'} />
+    //       </Space>
+    //     </div>
+    //   ),
+    //   filterIcon: () => (
+    //     <Tooltip title="Tìm kiếm theo khoa">
+    //       <SearchOutlined className={`${facultyId ? 'text-blue-500' : undefined} text-base`} />
+    //     </Tooltip>
+    //   ),
+    // },
     {
       title: 'Bộ môn',
       dataIndex: ['subject', 'department', 'name'],
@@ -840,6 +858,12 @@ function ManageExam() {
       width: '4%',
     },
     {
+      title: 'Hạn nộp điểm',
+      dataIndex: 'deadline',
+      align: 'left',
+      width: '1.7%',
+    },
+    {
       title: 'Chấm thi 1',
       render: (e, record, index) => (
         <>
@@ -991,7 +1015,7 @@ function ManageExam() {
       title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
       align: 'center',
       fixed: 'right',
-      width: roleId !== 'LECTURER' ? '2%' : '0',
+      width: roleId !== 'LECTURER' ? '1.8%' : '0',
       render:
         roleId !== 'LECTURER' &&
         ((e, record, index) =>
@@ -999,6 +1023,20 @@ function ManageExam() {
           userData.department?.id === record.subject?.department?.id &&
           roleId !== 'PRINCIPAL' && (
             <Button.Group key={index}>
+              <Button
+                icon={
+                  record.isWarning === true ? (
+                    <SoundFilled className="text-green-800" />
+                  ) : (
+                    <MutedFilled className="text-rose-700" />
+                  )
+                }
+                onClick={() => {
+                  handleWarnExam(record.id);
+                }}
+                size="small"
+                className={record.isWarning === true ? 'bg-green-50' : 'bg-yellow-100'}
+              />
               <Button
                 content="Phân công"
                 title="Phân công"
@@ -1008,7 +1046,7 @@ function ManageExam() {
                 icon={<SnippetsOutlined />}
               ></Button>
               <ButtonCustom
-                title={'Sửa'}
+                icon={<EditOutlined />}
                 handleClick={() => handleClickEdit(record)}
                 size="small"
               />
@@ -1023,10 +1061,9 @@ function ManageExam() {
                 <Button
                   className="flex justify-center items-center text-md shadow-md"
                   size="small"
+                  icon={<DeleteOutlined />}
                   danger
-                >
-                  Xóa
-                </Button>
+                ></Button>
               </Popconfirm>
             </Button.Group>
             // )
@@ -1085,7 +1122,6 @@ function ManageExam() {
       <ModalFormExam
         isCreate={formCreate}
         onSuccess={() => {
-          setPage(1);
           handleGetExamList();
           setOpenModalFormExam(false);
         }}

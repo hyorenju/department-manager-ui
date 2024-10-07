@@ -4,6 +4,7 @@ import {
   ProFormText,
   ProFormUploadButton,
   ProFormSelect,
+  ProFormTextArea,
 } from '@ant-design/pro-components';
 import { Button, message, notification, Popconfirm, Select, Table } from 'antd';
 import React, { useEffect, useState } from 'react';
@@ -352,7 +353,7 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
         </ProForm.Group>
 
         <ProForm.Group>
-          <ProFormText width="xl" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
+          <ProFormTextArea width="xl" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
         </ProForm.Group>
 
         <ProForm.Group>

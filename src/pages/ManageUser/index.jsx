@@ -10,6 +10,7 @@ import {
   LockOutlined,
   UploadOutlined,
   QuestionCircleOutlined,
+  MoreOutlined,
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
 import {
@@ -18,6 +19,7 @@ import {
   Input,
   message,
   Popconfirm,
+  Popover,
   Select,
   Space,
   Table,
@@ -236,7 +238,7 @@ function ManageUser() {
           window.open(res.error?.message);
           messageErrorToSever(
             null,
-            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn. (Hãy chắc chắn rằng trình duyệt của bạn không chặn tự động mở tab mới)',
           );
         }
       }
@@ -270,7 +272,7 @@ function ManageUser() {
       dataIndex: 'id',
       align: 'left',
       fixed: 'left',
-      width: '5%',
+      width: '5.5%',
       filterDropdown: () => (
         <div className="p-3">
           <Input
@@ -279,6 +281,7 @@ function ManageUser() {
             onChange={(e) => setValueSearchId(e.target.value)}
             className="w-[180px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setSearchId(e.target.value);
             }}
           />
@@ -306,7 +309,7 @@ function ManageUser() {
       title: 'Họ đệm',
       dataIndex: 'firstName',
       align: 'left',
-      width: '8%',
+      width: '8.5%',
       filterDropdown: () => (
         <div className="p-3">
           <Input
@@ -315,6 +318,7 @@ function ManageUser() {
             onChange={(e) => setValueSearchFirstName(e.target.value)}
             className="w-[180px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setSearchFirstName(e.target.value);
             }}
           />
@@ -342,7 +346,7 @@ function ManageUser() {
       title: 'Tên',
       dataIndex: 'lastName',
       align: 'left',
-      width: '5%',
+      width: '5.5%',
       filterDropdown: () => (
         <div className="p-3">
           <Input
@@ -351,6 +355,7 @@ function ManageUser() {
             onChange={(e) => setValueSearchLastName(e.target.value)}
             className="w-[180px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setSearchLastName(e.target.value);
             }}
           />
@@ -378,7 +383,7 @@ function ManageUser() {
       title: 'Khoa',
       dataIndex: ['department', 'faculty', 'name'],
       align: 'left',
-      width: '11%',
+      width: '11.5%',
       filterDropdown: () => (
         <div className="p-3 flex flex-col gap-2 w-[280px]">
           <Select
@@ -389,7 +394,10 @@ function ManageUser() {
             value={searchFacultyId}
             options={facultySelection}
             placeholder="Chọn khoa"
-            onChange={(searchFacultyId) => setSearchFacultyId(searchFacultyId)}
+            onChange={(searchFacultyId) => {
+              setPage(1);
+              setSearchFacultyId(searchFacultyId);
+            }}
           />
           <Space>
             <ButtonCustom
@@ -412,7 +420,7 @@ function ManageUser() {
       title: 'Bộ môn',
       dataIndex: ['department', 'name'],
       align: 'left',
-      width: '9%',
+      width: '9.5%',
       filterDropdown: () => (
         <div className="p-3 flex flex-col gap-2 w-[280px]">
           <Select
@@ -423,7 +431,10 @@ function ManageUser() {
             value={searchDepartmentId}
             options={departmentSelection}
             placeholder="Chọn bộ môn"
-            onChange={(searchDepartmentId) => setSearchDepartmentId(searchDepartmentId)}
+            onChange={(searchDepartmentId) => {
+              setPage(1);
+              setSearchDepartmentId(searchDepartmentId);
+            }}
           />
           <Space>
             <ButtonCustom
@@ -446,7 +457,7 @@ function ManageUser() {
       title: 'Trình độ',
       dataIndex: ['degree', 'name'],
       align: 'left',
-      width: '6%',
+      width: '6.5%',
       filterDropdown: () => (
         <div className="p-3 flex flex-col gap-2 w-[230px]">
           <Select
@@ -457,7 +468,10 @@ function ManageUser() {
             value={searchDegreeId}
             options={degreeSelection}
             placeholder="Chọn trình độ"
-            onChange={(searchDegreeId) => setSearchDegreeId(searchDegreeId)}
+            onChange={(searchDegreeId) => {
+              setPage(1);
+              setSearchDegreeId(searchDegreeId);
+            }}
           />
           <Space>
             <ButtonCustom
@@ -478,19 +492,19 @@ function ManageUser() {
       title: 'Email',
       dataIndex: 'email',
       align: 'left',
-      width: '10%',
+      width: '10.5%',
     },
     {
       title: 'Số điện thoại',
       dataIndex: 'phoneNumber',
       align: 'left',
-      width: '6%',
+      width: '6.5%',
     },
     {
       title: 'Vai trò',
       dataIndex: ['role', 'name'],
       align: 'left',
-      width: '10%',
+      width: '10.5%',
       filterDropdown: () => (
         <div className="p-3 flex flex-col gap-2 w-[230px]">
           <Select
@@ -501,7 +515,10 @@ function ManageUser() {
             value={searchRoleId}
             options={roleSelection}
             placeholder="Chọn vai trò"
-            onChange={(searchRoleId) => setSearchRoleId(searchRoleId)}
+            onChange={(searchRoleId) => {
+              setPage(1);
+              setSearchRoleId(searchRoleId);
+            }}
           />
           <Space>
             <ButtonCustom handleClick={() => setSearchRoleId(null)} size="small" title={'Reset'} />
@@ -524,56 +541,53 @@ function ManageUser() {
       // title: 'Tùy chọn',
       align: 'center',
       fixed: 'right',
-      width: roleId !== 'LECTURER' ? '8%' : '0',
+      width: roleId !== 'LECTURER' ? '4.5%' : '0',
       // width: '7.5%',
       render:
         roleId !== 'LECTURER' &&
         ((e, record, index) =>
           (roleId === 'MANAGER' || roleId === 'DEPUTY') &&
           userInfo.department?.id === record.department?.id && (
-            <Button.Group key={index}>
-              <Button
-                icon={
-                  record.isLock === null ? (
-                    <UnlockOutlined />
-                  ) : record.isLock === false ? (
-                    <UnlockOutlined />
-                  ) : (
-                    <LockOutlined />
-                  )
-                }
-                onClick={() => handleLockAccount(record.id)}
-                size="small"
-                style={
-                  record.isLock === true
-                    ? { backgroundColor: '#ffd2e5' }
-                    : { backgroundColor: '#d7e6fa' }
-                }
-              />
-              <ButtonCustom
-                title={'Sửa'}
-                icon={<EditOutlined />}
-                handleClick={() => handleClickEdit(record)}
-                size="small"
-              />
-              <Popconfirm
-                placement="topRight"
-                title="Bạn có chắc chắn muốn xóa người dùng này?"
-                icon={<DeleteOutlined />}
-                okText="Xóa"
-                okType="danger"
-                onConfirm={() => handleConfirmDeleteUser(record.id)}
-              >
+            <Space>
+              <Button.Group key={index}>
                 <Button
-                  className="flex justify-center items-center text-md shadow-md"
-                  icon={<DeleteOutlined />}
+                  icon={
+                    record.isLock === null ? (
+                      <UnlockOutlined />
+                    ) : record.isLock === false ? (
+                      <UnlockOutlined />
+                    ) : (
+                      <LockOutlined />
+                    )
+                  }
+                  onClick={() => handleLockAccount(record.id)}
                   size="small"
-                  danger
+                  style={
+                    record.isLock ? { backgroundColor: '#ffd2e5' } : { backgroundColor: '#d7e6fa' }
+                  }
+                ></Button>
+                <ButtonCustom
+                  icon={<EditOutlined />}
+                  handleClick={() => handleClickEdit(record)}
+                  size="small"
+                />
+                <Popconfirm
+                  placement="topRight"
+                  title="Bạn có chắc chắn muốn xóa người dùng này?"
+                  icon={<DeleteOutlined />}
+                  okText="Xóa"
+                  okType="danger"
+                  onConfirm={() => handleConfirmDeleteUser(record.id)}
                 >
-                  Xóa
-                </Button>
-              </Popconfirm>
-            </Button.Group>
+                  <Button
+                    className="flex justify-center items-center text-md shadow-md"
+                    icon={<DeleteOutlined />}
+                    size="small"
+                    danger
+                  ></Button>
+                </Popconfirm>
+              </Button.Group>
+            </Space>
           )),
     },
   ];
@@ -639,7 +653,7 @@ function ManageUser() {
         <Table
           scroll={{
             y: '64vh',
-            x: 2100,
+            x: 1900,
           }}
           rowKey="id"
           loading={loadingTable}

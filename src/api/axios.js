@@ -237,6 +237,10 @@ export const lockTeaching = (id) => {
   return axios.post(`/teaching/lock/${id}`);
 };
 
+export const warnTeaching = (id) => {
+  return axios.post(`/teaching/warn/${id}`);
+};
+
 export const lockTeachingList = (values) => {
   return axios.post(`/teaching/lock`, values);
 };
@@ -264,6 +268,10 @@ export const createExam = (values) => {
 
 export const updateExam = (id, values) => {
   return axios.post(`/exam/update/${id}`, values);
+};
+
+export const warnExam = (id) => {
+  return axios.post(`/exam/warn/${id}`);
 };
 
 export const deleteExam = (id) => {

@@ -1,75 +1,70 @@
 import {
   DeleteOutlined,
   EditOutlined,
-  SearchOutlined,
-  UserAddOutlined,
-  DownloadOutlined,
-  PlusOutlined,
-  DownOutlined,
-  ExpandOutlined,
-  UpOutlined,
-  CaretUpOutlined,
-  UpCircleOutlined,
-  InfoCircleOutlined,
   FilterOutlined,
+  InfoCircleOutlined,
+  PlusOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
-import { ProFormSelect } from '@ant-design/pro-components';
 import {
   Button,
+  DatePicker,
+  Drawer,
+  Form,
   Input,
   Popconfirm,
+  Popover,
+  Select,
   Space,
   Table,
   Tooltip,
   Typography,
-  message,
-  notification,
-  Select,
-  Dropdown,
-  Badge,
-  Drawer,
 } from 'antd';
-import dayjs from 'dayjs';
-import Highlighter from 'react-highlight-words';
 import React, { useEffect, useState } from 'react';
-import { useDebounce } from 'use-debounce';
 import {
-  getProjectList,
   deleteProject,
-  getTasktList,
   deleteTask,
-  upOrdinalNumber,
+  getMasterDataSelection,
+  getProjectList,
+  getTasktList,
+  getUserSelection,
 } from '../../api/axios';
 import { ButtonCustom } from '../../components/ButtonCustom';
-import { useMutation } from '@tanstack/react-query';
-import { excelApi } from '../../api/excelApi';
 import { notificationError, notificationSuccess } from '../../components/Notification';
-import { messageErrorToSever } from '../../components/Message';
 import { ModalFormProject } from './components/ModalFormProject';
 import { ModalFormTask } from './components/ModalFormTask';
-import { render } from '@testing-library/react';
 import { ManageTaskDetail } from './pages/ManageTaskDetail';
+import { FormFilterProject } from './components/FormFilterProject';
 
 function ManageProject() {
   const userData = JSON.parse(sessionStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
-  const [loadingExpandTable, setLoadingExpandTable] = useState(false);
   const [openModalFormProject, setOpenModalFormProject] = useState(false);
   const [openModalFormTask, setOpenModalFormTask] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [projectData, setProjectData] = useState({});
   const [taskData, setTaskData] = useState({});
-  const [typeValueSearchProject, setTypeValueSearchProject] = useState('');
-  const [valueSearchProject, setValueSearchProject] = useState('');
+  const [typeValueSearch, setTypeValueSearch] = useState('');
+  const [valueSearch, setValueSearch] = useState(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [size, setSize] = useState(10);
   const [projectDataSource, setProjectDataSource] = useState([]);
   const [taskDataSource, setTaskDataSource] = useState([]);
   const [formCreate, setFormCreate] = useState(true);
+  const [userSelection, setUserSelection] = useState();
+  const [statusSelection, setStatusSelection] = useState();
 
   const [project, setProject] = useState({});
+  const [createdBy, setCreatedBy] = useState();
+  const [startDate, setStartDate] = useState();
+  const [startDateSearch, setStartDateSearch] = useState();
+  const [endDate, setEndDate] = useState();
+  const [endDateSearch, setEndDateSearch] = useState();
+  const [memberId, setMemberId] = useState();
+  const [statusId, setStatusId] = useState();
+  const [reset, setReset] = useState(false);
 
   // handle delete project
   const handleConfirmDeleteProject = (id) => {
@@ -100,12 +95,23 @@ function ManageProject() {
   // handle get project list
   const handleGetProjectList = () => {
     setLoadingTable(true);
-    getProjectList({ page: page, size: size, keyword: valueSearchProject })
+    getProjectList({
+      page: page,
+      size: size,
+      keyword: valueSearch,
+      createdById: createdBy,
+      startDate,
+      endDate,
+      memberId,
+      statusId,
+    })
       .then((res) => {
         if (res.data?.success === true) {
           setProjectDataSource(res.data?.data?.items);
           setTotal(res.data?.data?.total);
           setLoadingTable(false);
+        } else if (res.data?.error?.code === 500) {
+          notificationError(res.data?.error?.message);
         } else notificationError('Bạn không có quyền truy cập');
       })
       .finally(() => setLoadingTable(false));
@@ -118,19 +124,6 @@ function ManageProject() {
       .then((res) => {
         if (res.data?.success === true) {
           setTaskDataSource(res.data?.data?.items);
-          setLoadingTable(false);
-        } else notificationError('Bạn không có quyền truy cập');
-      })
-      .finally(() => setLoadingTable(false));
-  };
-
-  const handleUpOrdinalNumber = (id) => {
-    setLoadingTable(true);
-    upOrdinalNumber(id)
-      .then((res) => {
-        if (res.data?.success === true) {
-          notificationSuccess('Nâng độ ưu tiên thành công');
-          handleGetTaskList();
           setLoadingTable(false);
         } else notificationError('Bạn không có quyền truy cập');
       })
@@ -161,7 +154,47 @@ function ManageProject() {
   useEffect(() => {
     return handleGetProjectList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, size, valueSearchProject]);
+  }, [page, size, valueSearch, reset]);
+
+  useEffect(() => {
+    getUserSelection({ departmentId: userData?.department.id, facultyId: null }).then((res) => {
+      if (res.data?.success) {
+        const newArr = [];
+        res.data?.data?.items?.map((item) =>
+          newArr.push({
+            label: `${item?.id} - ${item?.firstName} ${item?.lastName}`,
+            value: item?.id,
+          }),
+        );
+        setUserSelection(newArr);
+      }
+    });
+  }, [userData]);
+
+  useEffect(() => {
+    getMasterDataSelection({ type: 'TASK_STATUS' }).then((res) => {
+      if (res.data?.success) {
+        const newArr = [];
+        res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+        setStatusSelection(newArr);
+      }
+    });
+  }, []);
+
+  const onReset = () => {
+    setCreatedBy(null);
+    setStartDateSearch(null);
+    setStartDate(null);
+    setEndDateSearch(null);
+    setEndDate(null);
+    setMemberId(null);
+    setStatusId(null);
+    if (reset) {
+      setReset(false);
+    } else {
+      setReset(true);
+    }
+  };
 
   const expandedRowRender = () => {
     const columns = [
@@ -227,29 +260,29 @@ function ManageProject() {
               </Button>
 
               {record.project?.createdBy?.id === userData.id && (
-                <div className="flex">
+                <Button
+                  icon={<EditOutlined />}
+                  onClick={() => handleClickEditTask(record)}
+                  size="small"
+                  className="flex border-white justify-center items-center bg-white shadow-lg"
+                ></Button>
+              )}
+              {record.project?.createdBy?.id === userData.id && (
+                <Popconfirm
+                  placement="topRight"
+                  title="Bạn có chắc chắn muốn xóa công việc nhỏ này?"
+                  icon={<DeleteOutlined />}
+                  okText="Xóa"
+                  okType="danger"
+                  onConfirm={() => handleConfirmDeleteTask(record.id)}
+                >
                   <Button
-                    icon={<EditOutlined />}
-                    onClick={() => handleClickEditTask(record)}
-                    size="small"
-                    className="flex border-white justify-center items-center bg-white shadow-lg"
-                  ></Button>
-                  <Popconfirm
-                    placement="topRight"
-                    title="Bạn có chắc chắn muốn xóa công việc nhỏ này?"
+                    className="flex justify-center items-center bg-white text-md shadow-md"
                     icon={<DeleteOutlined />}
-                    okText="Xóa"
-                    okType="danger"
-                    onConfirm={() => handleConfirmDeleteTask(record.id)}
-                  >
-                    <Button
-                      className="flex justify-center items-center bg-white text-md shadow-md"
-                      icon={<DeleteOutlined />}
-                      size="small"
-                      danger
-                    ></Button>
-                  </Popconfirm>
-                </div>
+                    size="small"
+                    danger
+                  ></Button>
+                </Popconfirm>
               )}
             </Button.Group>
             {/* <Button.Group>
@@ -421,38 +454,130 @@ function ManageProject() {
           <Tooltip className="flex" title="Tìm kiếm công việc">
             <Input
               prefix={<SearchOutlined className="opacity-60 mr-1" />}
-              placeholder="Nhập từ khóa"
-              className="shadow-sm w-[230px] h-9 my-auto"
+              placeholder="Tìm theo tên hoặc mô tả"
+              className="shadow-sm w-[230px] h-9 my-auto mr-2"
               onChange={(e) => {
                 if (!e.target.value) {
-                  setValueSearchProject(e.target.value);
+                  setValueSearch(e.target.value);
                 }
-                setTypeValueSearchProject(e.target.value);
+                setTypeValueSearch(e.target.value);
               }}
-              value={typeValueSearchProject}
+              value={typeValueSearch}
               onPressEnter={(e) => {
-                setValueSearchProject(e.target.value);
+                setValueSearch(e.target.value);
               }}
             />
           </Tooltip>
+          <div className="my-auto">
+            <Popover
+              placement="bottom"
+              overlayInnerStyle={{ backgroundColor: '#eef1f3', border: '1px solid #4f8cdd' }}
+              content={
+                <div className="font-semibold ">
+                  <Form className="w-[450px]">
+                    <Form.Item label="Tìm theo người tạo">
+                      <Select
+                        showSearch
+                        filterOption={(input, option) =>
+                          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                        }
+                        options={userSelection}
+                        onChange={setCreatedBy}
+                        value={createdBy}
+                      />
+                    </Form.Item>
+                    <div className="flex">
+                      <Form.Item label="Từ ngày">
+                        <DatePicker
+                          value={startDateSearch}
+                          placeholder="Chọn ngày"
+                          format={'DD/MM/YYYY'}
+                          onChange={(e) => {
+                            if (e) {
+                              setStartDateSearch(e);
+                              setStartDate(`${e.$D}/${e.$M + 1}/${e.$y}`);
+                            } else {
+                              setStartDateSearch(null);
+                              setStartDate(null);
+                            }
+                          }}
+                        />
+                      </Form.Item>
+                      <Form.Item className="ml-2" label="- đến ngày">
+                        <DatePicker
+                          value={endDateSearch}
+                          placeholder="Chọn ngày"
+                          format={'DD/MM/YYYY'}
+                          onChange={(e) => {
+                            if (e) {
+                              setEndDateSearch(e);
+                              setEndDate(`${e.$D}/${e.$M + 1}/${e.$y}`);
+                            } else {
+                              setEndDateSearch(null);
+                              setEndDate(null);
+                            }
+                          }}
+                        />
+                      </Form.Item>
+                    </div>
+                    <Form.Item label="Tìm theo thành viên">
+                      <Select
+                        showSearch
+                        filterOption={(input, option) =>
+                          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                        }
+                        options={userSelection}
+                        onChange={setMemberId}
+                        value={memberId}
+                      />
+                    </Form.Item>
+                    <Form.Item label="Tìm theo trạng thái">
+                      <Select
+                        showSearch
+                        filterOption={(input, option) =>
+                          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                        }
+                        options={statusSelection}
+                        onChange={setStatusId}
+                        value={statusId}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      className="mb-0"
+                      wrapperCol={{
+                        offset: 16,
+                      }}
+                    >
+                      <div className="flex">
+                        <Button
+                          htmlType="button"
+                          onClick={() => {
+                            onReset();
+                          }}
+                        >
+                          Bỏ lọc
+                        </Button>
+                        <Button type="primary" htmlType="submit" onClick={handleGetProjectList}>
+                          Lọc
+                        </Button>
+                      </div>
+                    </Form.Item>
+                  </Form>
+                </div>
+              }
+              trigger={'click'}
+            >
+              <Button
+                icon={<FilterOutlined />}
+                className="justify-center items-center text-md font-medium shadow-md bg-slate-100"
+              >
+                Chọn điều kiện lọc
+              </Button>
+            </Popover>
+          </div>
           <p className="my-auto ml-2">Tổng số kết quả: {total}</p>
         </div>
         <Space>
-          <Popconfirm
-            placement="bottomRight"
-            title="Tính năng này đang được phát triển"
-            icon={false}
-            okText="Lọc"
-            onConfirm={() => {}}
-          >
-            <Button
-              className="flex justify-center items-center bg-white text-md shadow-md"
-              icon={<FilterOutlined />}
-              size="medium"
-            >
-              Chọn điều kiện lọc
-            </Button>
-          </Popconfirm>
           <Button
             icon={<PlusOutlined />}
             onClick={() => {

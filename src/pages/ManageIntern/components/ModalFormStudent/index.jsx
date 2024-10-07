@@ -1,4 +1,10 @@
-import { ModalForm, ProForm, ProFormSelect, ProFormText } from '@ant-design/pro-components';
+import {
+  ModalForm,
+  ProForm,
+  ProFormSelect,
+  ProFormText,
+  ProFormTextArea,
+} from '@ant-design/pro-components';
 import { notification, message, Space } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { createStudent, updateStudent } from '../../../../api/axios';
@@ -158,7 +164,7 @@ export function ModalFormStudent({
             label="Địa điểm thực tập"
             placeholder="Nhập nơi thực tập"
           />
-          <ProFormText width="md" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
+          <ProFormTextArea width="md" name="note" label="Ghi chú" placeholder="Nhập ghi chú" />
           <ProFormText name="intern" hidden />
         </ProForm.Group>
       </ModalForm>

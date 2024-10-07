@@ -1,4 +1,10 @@
-import { ModalForm, ProForm, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
+import {
+  ModalForm,
+  ProForm,
+  ProFormText,
+  ProFormTextArea,
+  ProFormUploadButton,
+} from '@ant-design/pro-components';
 import { message, notification, Select, Spin } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { createSubject, updateSubject, uploadFile } from '../../../../api/axios';
@@ -149,7 +155,7 @@ export function ModalFormSubject({
             label="Số tín chỉ"
             placeholder="Nhập số tín chỉ"
           />
-          <ProFormText
+          <ProFormTextArea
             rules={[{ required: false }]}
             width="md"
             name="note"

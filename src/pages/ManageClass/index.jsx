@@ -146,7 +146,7 @@ function ManageClass() {
           window.open(res.error?.message);
           messageErrorToSever(
             null,
-            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn.',
+            'Upload file thất bại. Hãy làm theo đúng form excel chúng tôi đã gửi cho bạn. (Hãy chắc chắn rằng trình duyệt của bạn không chặn tự động mở tab mới)',
           );
         }
       }
@@ -189,6 +189,7 @@ function ManageClass() {
             onChange={(e) => setClassIdSearch(e.target.value)}
             className="w-[180px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setClassId(e.target.value);
             }}
           />
@@ -225,6 +226,7 @@ function ManageClass() {
             onChange={(e) => setClassNameSearch(e.target.value)}
             className="w-[240px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setClassName(e.target.value);
             }}
           />
@@ -265,7 +267,10 @@ function ManageClass() {
             options={facultySelection}
             placeholder="Chọn khoa"
             optionFilterProp="children"
-            onChange={(searchFacultyId) => setFacultyId(searchFacultyId)}
+            onChange={(searchFacultyId) => {
+              setPage(1);
+              setFacultyId(searchFacultyId);
+            }}
           />
           <Space>
             <ButtonCustom handleClick={() => setFacultyId(null)} size="small" title={'Reset'} />
@@ -291,6 +296,7 @@ function ManageClass() {
             onChange={(e) => setHomeroomTeacherSearch(e.target.value)}
             className="w-[240px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setHomeroomTeacher(e.target.value);
             }}
           />
@@ -327,6 +333,7 @@ function ManageClass() {
             onChange={(e) => setMonitorSearch(e.target.value)}
             className="w-[240px] mb-2 block"
             onPressEnter={(e) => {
+              setPage(1);
               setMonitor(e.target.value);
             }}
           />
@@ -409,13 +416,12 @@ function ManageClass() {
       title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
       align: 'center',
       fixed: 'right',
-      width: roleId !== 'LECTURER' ? '6%' : '0',
+      width: roleId !== 'LECTURER' ? '3.5%' : '0',
       render:
         roleId !== 'LECTURER' &&
         ((e, record, index) => (
           <Button.Group key={index}>
             <ButtonCustom
-              title={'Sửa'}
               icon={<EditOutlined />}
               handleClick={() => handleClickEdit(record)}
               size="small"
@@ -433,9 +439,7 @@ function ManageClass() {
                 icon={<DeleteOutlined />}
                 size="small"
                 danger
-              >
-                Xóa
-              </Button>
+              ></Button>
             </Popconfirm>
           </Button.Group>
         )),

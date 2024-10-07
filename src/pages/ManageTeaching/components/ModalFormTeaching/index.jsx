@@ -4,6 +4,7 @@ import {
   ProFormText,
   ProFormUploadButton,
   ProFormSelect,
+  ProFormTextArea,
 } from '@ant-design/pro-components';
 import { message, notification, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
@@ -136,6 +137,11 @@ export function ModalFormTeaching({
       });
     }
   }, [openForm, facultyId, departmentId]);
+
+  useEffect(() => {
+    setComponentList([]);
+    setSummaryList([]);
+  }, [openForm]);
 
   const handleUploadComponent = useMutation({
     mutationKey: ['uploadFile'],
@@ -313,7 +319,7 @@ export function ModalFormTeaching({
             placeholder="Nhập nhóm môn học"
             disabled={isCreate ? false : true}
           />
-          <ProFormText
+          <ProFormTextArea
             width="md"
             name="note"
             label="Ghi chú"

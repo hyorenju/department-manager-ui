@@ -1,4 +1,10 @@
-import { ModalForm, ProForm, ProFormSelect, ProFormText } from '@ant-design/pro-components';
+import {
+  ModalForm,
+  ProForm,
+  ProFormSelect,
+  ProFormText,
+  ProFormTextArea,
+} from '@ant-design/pro-components';
 import { notification, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { createClass, updateClass, getFacultySelection } from '../../../../api/axios';
@@ -140,7 +146,7 @@ export function ModalFormClass({ isCreate, openForm, onChangeClickOpen, classDat
             label="Giáo viên chủ nhiệm"
             placeholder="Nhập thông tin GVCN"
           />
-          <ProFormText
+          <ProFormTextArea
             rules={[{ required: false }]}
             width="xl"
             name="note"
