@@ -157,7 +157,7 @@ function ManageProject() {
   }, [page, size, valueSearch, reset]);
 
   useEffect(() => {
-    getUserSelection({ departmentId: userData?.department.id, facultyId: null }).then((res) => {
+    getUserSelection({ departmentId: userData.department.id, facultyId: null }).then((res) => {
       if (res.data?.success) {
         const newArr = [];
         res.data?.data?.items?.map((item) =>
@@ -169,7 +169,7 @@ function ManageProject() {
         setUserSelection(newArr);
       }
     });
-  }, [userData]);
+  }, [userData.department.id]);
 
   useEffect(() => {
     getMasterDataSelection({ type: 'TASK_STATUS' }).then((res) => {
