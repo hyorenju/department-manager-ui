@@ -19,8 +19,8 @@ export const getUserSelection = (values) => {
   return axios.post(`/user/selection`, values);
 };
 
-export const getUserOption = () => {
-  return axios.post(`/user/pick`);
+export const getUserOption = (values) => {
+  return axios.post(`/user/pick`, values);
 };
 
 export const createUser = (values) => {

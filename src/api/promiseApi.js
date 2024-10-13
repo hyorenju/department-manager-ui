@@ -10,4 +10,24 @@ export const promiseApi = {
       throw new Error(error);
     }
   },
+
+  createTask: async (values) => {
+    const url = `/task/create`;
+    try {
+      const res = await instane.post(url, values);
+      return res.data;
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+
+  updateParticipant: async (values) => {
+    const url = `/user-task/update`;
+    try {
+      const res = await instane.post(url, values);
+      return res.data;
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
 };

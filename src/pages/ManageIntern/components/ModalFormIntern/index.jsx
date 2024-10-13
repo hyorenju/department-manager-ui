@@ -1,31 +1,31 @@
 import {
-  ModalForm,
-  ProForm,
-  ProFormText,
-  ProFormUploadButton,
-  ProFormSelect,
-  ProFormTextArea,
-} from '@ant-design/pro-components';
-import { Button, message, notification, Popconfirm, Select, Table } from 'antd';
-import React, { useEffect, useState } from 'react';
-import {
-  createIntern,
-  updateIntern,
-  uploadFile,
-  getMasterDataSelection,
-  getStudentList,
-  deleteStudent,
-} from '../../../../api/axios';
-import { useMutation } from '@tanstack/react-query';
-import { notificationSuccess, notificationError } from '../../../../components/Notification';
-import {
   DeleteOutlined,
   EditOutlined,
   LoadingOutlined,
   PlusOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
+import {
+  ModalForm,
+  ProForm,
+  ProFormSelect,
+  ProFormText,
+  ProFormTextArea,
+  ProFormUploadButton,
+} from '@ant-design/pro-components';
+import { useMutation } from '@tanstack/react-query';
+import { Button, message, notification, Popconfirm, Table } from 'antd';
+import React, { useEffect, useState } from 'react';
+import {
+  createIntern,
+  deleteStudent,
+  getMasterDataSelection,
+  getStudentList,
+  updateIntern,
+  uploadFile,
+} from '../../../../api/axios';
 import { ButtonCustom } from '../../../../components/ButtonCustom';
+import { notificationError, notificationSuccess } from '../../../../components/Notification';
 import { ModalFormStudent } from '../ModalFormStudent';
 
 export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internData, onSuccess }) {
@@ -279,12 +279,19 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
           okText:
             !handleUploadFinal.isPending &&
             !handleUploadOutline.isPending &&
-            !handleUploadProgress.isPending
-              ? internData.id
-                ? 'Lưu'
-                : 'Tạo'
-              : 'Vui lòng chờ',
+            !handleUploadProgress.isPending ? (
+              internData.id ? (
+                'Lưu'
+              ) : (
+                'Tạo'
+              )
+            ) : (
+              <Button style={{ border: 'none', color: 'white', marginTop: '-5px' }} disabled={true}>
+                Đang up file, vui lòng chờ...
+              </Button>
+            ),
           cancelText: 'Hủy',
+          okButtonProps: false,
         }}
         open={openForm}
         onFinish={(values) => {

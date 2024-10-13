@@ -5,7 +5,7 @@ import {
   ProFormTextArea,
   ProFormUploadButton,
 } from '@ant-design/pro-components';
-import { message, notification, Select, Spin } from 'antd';
+import { Button, message, notification, Select, Spin } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { createSubject, updateSubject, uploadFile } from '../../../../api/axios';
 import { useMutation } from '@tanstack/react-query';
@@ -111,11 +111,17 @@ export function ModalFormSubject({
           maskClosable: false,
           destroyOnClose: true,
           okText:
-            !handleUploadLecture.isPending && !handleUploadOutline.isPending
-              ? subjectData.id
-                ? 'Lưu'
-                : 'Tạo'
-              : 'Vui lòng chờ',
+            !handleUploadLecture.isPending && !handleUploadOutline.isPending ? (
+              subjectData.id ? (
+                'Lưu'
+              ) : (
+                'Tạo'
+              )
+            ) : (
+              <Button style={{ border: 'none', color: 'white', marginTop: '-5px' }} disabled={true}>
+                Đang up file, vui lòng chờ...
+              </Button>
+            ),
           cancelText: 'Hủy',
         }}
         open={openForm}

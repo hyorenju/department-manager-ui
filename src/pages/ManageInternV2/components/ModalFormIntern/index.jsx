@@ -169,11 +169,17 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
           okText:
             !handleUploadFinal.isPending &&
             !handleUploadOutline.isPending &&
-            !handleUploadProgress.isPending
-              ? internData.id
-                ? 'Lưu'
-                : 'Tạo'
-              : 'Vui lòng chờ',
+            !handleUploadProgress.isPending ? (
+              internData.id ? (
+                'Lưu'
+              ) : (
+                'Tạo'
+              )
+            ) : (
+              <Button style={{ border: 'none', color: 'white', marginTop: '-5px' }} disabled={true}>
+                Đang up file, vui lòng chờ...
+              </Button>
+            ),
           cancelText: 'Hủy',
         }}
         open={openForm}

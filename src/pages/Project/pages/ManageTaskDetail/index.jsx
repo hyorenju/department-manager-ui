@@ -6,11 +6,13 @@ import { Button, Popconfirm, Space, Table } from 'antd';
 import { useEffect, useState } from 'react';
 import { deleteUserTask, getUserTaskList } from '../../../../api/axios';
 import { ModalFormTaskDetail } from '../components/ModalFormTaskDetail';
+import { ModalFormUpdateParticipant } from '../components/ModalFormUpdateParticipant';
 
 export function ManageTaskDetail({ open, taskData, modifier }) {
   const [loadingTable, setLoadingTable] = useState(false);
   const [total, setTotal] = useState();
   const [openModal, setOpenModal] = useState(false);
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [taskDetail, setTaskDetail] = useState({});
   const [taskDetailList, setTaskDetailList] = useState([]);
 
@@ -117,9 +119,18 @@ export function ManageTaskDetail({ open, taskData, modifier }) {
   return (
     <>
       <div>
-        <div className="flex justify-between mb-6">
+        <Space className="flex justify-between mb-6">
           <p className="my-auto">Tổng số kết quả: {total}</p>
-        </div>
+          <Button
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setOpenUpdateModal(true);
+            }}
+            className="flex justify-center items-center text-md font-medium shadow-md bg-slate-100"
+          >
+            Thêm thành viên
+          </Button>
+        </Space>
         <Table
           loading={loadingTable}
           className="w-[95%] mx-auto "
@@ -141,6 +152,21 @@ export function ManageTaskDetail({ open, taskData, modifier }) {
         onSuccess={() => {
           handleGetTaskDetailList();
           setOpenModal(false);
+        }}
+      />
+      <ModalFormUpdateParticipant
+        openForm={openUpdateModal}
+        onChangeClickOpen={(open) => {
+          if (!open) {
+            setTaskDetail({});
+            setOpenUpdateModal(false);
+          }
+        }}
+        task={taskData}
+        modifier={modifier}
+        onSuccess={() => {
+          handleGetTaskDetailList();
+          setOpenUpdateModal(false);
         }}
       />
     </>

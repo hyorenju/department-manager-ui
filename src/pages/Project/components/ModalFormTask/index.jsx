@@ -18,6 +18,8 @@ import {
 } from '../../../../api/axios';
 import { notificationSuccess } from '../../../../components/Notification';
 import TextArea from 'antd/es/input/TextArea';
+import { useMutation } from '@tanstack/react-query';
+import { promiseApi } from '../../../../api/promiseApi';
 
 export function ModalFormTask({
   isCreate,
@@ -28,9 +30,27 @@ export function ModalFormTask({
   projectId,
   modifier,
 }) {
-  const handleCreateTask = (values) => {
-    createTask(values).then((res) => {
-      if (res.data?.success === true) {
+  // const handleCreateTask = (values) => {
+  //   createTask(values).then((res) => {
+  //     if (res.data?.success === true) {
+  //       onSuccess();
+  //       notificationSuccess('Tạo thành công');
+  //     } else if (res.data?.error?.code === 2) {
+  //       // eslint-disable-next-line no-lone-blocks
+  //       {
+  //         res.data?.error?.errorDetailList.forEach((e) => message.error(e.message));
+  //       }
+  //     } else if (res.data?.error?.code === 500) {
+  //       message.error(res.data?.error?.message);
+  //     }
+  //   });
+  // };
+
+  const handleCreateTask = useMutation({
+    mutationKey: ['createTask'],
+    mutationFn: (values) => promiseApi.createTask(values),
+    onSuccess: (res) => {
+      if (res.success === true) {
         onSuccess();
         notificationSuccess('Tạo thành công');
       } else if (res.data?.error?.code === 2) {
@@ -41,8 +61,8 @@ export function ModalFormTask({
       } else if (res.data?.error?.code === 500) {
         message.error(res.data?.error?.message);
       }
-    });
-  };
+    },
+  });
 
   const handleUpdateTask = (id, values) => {
     updateTask(id, values).then((res) => {
@@ -51,25 +71,6 @@ export function ModalFormTask({
         notification.success({
           message: 'Thành công',
           description: 'Sửa thành công',
-          duration: 3,
-        });
-      } else if (res.data?.error?.code === 2) {
-        // eslint-disable-next-line no-lone-blocks
-        {
-          res.data?.error?.errorDetailList?.forEach((e) => message.error(e.message));
-        }
-      } else if (res.data?.error?.code === 500) {
-        message.error(res.data?.error?.message);
-      }
-    });
-  };
-
-  const handleUpdateParticitant = () => {
-    updateParticipant({ taskId: taskData?.id, userIds: userSelected }).then((res) => {
-      if (res.data?.success === true) {
-        notification.success({
-          message: 'Thành công',
-          description: 'Lưu thành công danh sách thành viên',
           duration: 3,
         });
       } else if (res.data?.error?.code === 2) {
@@ -97,7 +98,7 @@ export function ModalFormTask({
           },
         ]);
       } else {
-        getUserOption().then((res) => {
+        getUserOption({ taskId: null, isUpdateParticipant: false }).then((res) => {
           if (res.data?.success) {
             const newArr = [];
             res.data?.data?.items?.map((item) =>
@@ -110,19 +111,19 @@ export function ModalFormTask({
           }
         });
       }
-      getUserTaskList({ taskId: taskData?.id }).then((res) => {
-        if (res.data?.success) {
-          const newArr = [];
-          res.data?.data?.items?.map((item) => {
-            newArr.push({
-              label: `${item?.user?.id} - ${item?.user?.firstName} ${item?.user?.lastName}`,
-              value: item?.user?.id,
-            });
-          });
-          // res.data?.data?.items?.map((item) => anotherNewArr.push(item?.user?.id));
-          setUserSelected(newArr);
-        }
-      });
+      // getUserTaskList({ taskId: taskData?.id }).then((res) => {
+      //   if (res.data?.success) {
+      //     const newArr = [];
+      //     res.data?.data?.items?.map((item) => {
+      //       newArr.push({
+      //         label: `${item?.user?.id} - ${item?.user?.firstName} ${item?.user?.lastName}`,
+      //         value: item?.user?.id,
+      //       });
+      //     });
+      //     // res.data?.data?.items?.map((item) => anotherNewArr.push(item?.user?.id));
+      //     setUserSelected(newArr);
+      //   }
+      // });
     }
   }, [openForm]);
 
@@ -148,7 +149,17 @@ export function ModalFormTask({
         modalProps={{
           maskClosable: false,
           destroyOnClose: true,
-          okText: taskData.id ? 'Lưu' : 'Tạo',
+          okText: !handleCreateTask.isPending ? (
+            taskData.id ? (
+              'Lưu'
+            ) : (
+              'Tạo'
+            )
+          ) : (
+            <Button style={{ border: 'none', color: 'white', marginTop: '-5px' }} disabled={true}>
+              Đang gửi mail thông báo cho từng thành viên, vui lòng chờ...
+            </Button>
+          ),
           cancelText: 'Hủy',
         }}
         open={openForm}
@@ -156,7 +167,7 @@ export function ModalFormTask({
           if (taskData.id) {
             handleUpdateTask(taskData.id, values);
           } else {
-            handleCreateTask(values);
+            handleCreateTask.mutate(values);
           }
         }}
         onOpenChange={onChangeClickOpen}

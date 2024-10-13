@@ -34,7 +34,6 @@ import { notificationError, notificationSuccess } from '../../components/Notific
 import { ModalFormProject } from './components/ModalFormProject';
 import { ModalFormTask } from './components/ModalFormTask';
 import { ManageTaskDetail } from './pages/ManageTaskDetail';
-import { FormFilterProject } from './components/FormFilterProject';
 
 function ManageProject() {
   const userData = JSON.parse(sessionStorage.getItem('user_info'));
@@ -672,6 +671,7 @@ function ManageProject() {
             setOpenDrawer(false);
             handleGetTaskList();
             handleGetProjectList();
+            setTaskData({});
           }}
         >
           <ManageTaskDetail open={openDrawer} taskData={taskData} modifier={userData} />

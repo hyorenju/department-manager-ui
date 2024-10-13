@@ -6,7 +6,7 @@ import {
   ProFormSelect,
   ProFormTextArea,
 } from '@ant-design/pro-components';
-import { message, notification, Select } from 'antd';
+import { Button, message, notification, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {
   createTeaching,
@@ -185,11 +185,17 @@ export function ModalFormTeaching({
           maskClosable: false,
           destroyOnClose: true,
           okText:
-            !handleUploadComponent.isPending && !handleUploadSummary.isPending
-              ? teachingData.id
-                ? 'Lưu'
-                : 'Tạo'
-              : 'Vui lòng chờ',
+            !handleUploadComponent.isPending && !handleUploadSummary.isPending ? (
+              teachingData.id ? (
+                'Lưu'
+              ) : (
+                'Tạo'
+              )
+            ) : (
+              <Button style={{ border: 'none', color: 'white', marginTop: '-5px' }} disabled={true}>
+                Đang up file, vui lòng chờ...
+              </Button>
+            ),
           cancelText: 'Hủy',
         }}
         open={openForm}
