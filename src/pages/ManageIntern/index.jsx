@@ -45,8 +45,8 @@ import { ManageInternType } from './pages/ManageInternType';
 import { ModalErrorImportIntern } from './components/ModalErrorImportIntern';
 
 function ManageIntern() {
-  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
-  const userInfo = JSON.parse(sessionStorage.getItem('user_info'));
+  const roleId = JSON.parse(localStorage.getItem('user_role'));
+  const userInfo = JSON.parse(localStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormIntern, setOpenModalFormIntern] = useState(false);

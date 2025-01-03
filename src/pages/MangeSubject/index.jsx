@@ -39,8 +39,8 @@ import { useMutation } from '@tanstack/react-query';
 import { ModalErrorImportSubject } from './components/ModalErrorImportSubject';
 
 function ManageSubject() {
-  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
-  const userInfo = JSON.parse(sessionStorage.getItem('user_info'));
+  const roleId = JSON.parse(localStorage.getItem('user_role'));
+  const userInfo = JSON.parse(localStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormSubject, setOpenModalFormSubject] = useState(false);
@@ -56,7 +56,7 @@ function ManageSubject() {
   const [searchName, setSearchName] = useState(null);
 
   const [searchFacultyId, setSearchFacultyId] = useState(null);
-  const [searchDepartmentId, setSearchDepartmentId] = useState(null);
+  const [searchDepartmentId, setSearchDepartmentId] = useState(userInfo.department?.id);
   const [id, setId] = useState(null);
   const [name, setName] = useState(null);
 
@@ -428,7 +428,7 @@ function ManageSubject() {
       render:
         roleId !== 'LECTURER' &&
         ((e, record, index) =>
-          (roleId === 'MANAGER' || roleId === 'DEPUTY') &&
+          (roleId === 'MANAGER' || roleId === 'DEPUTY' || roleId === 'PRINCIPAL') &&
           userInfo.department?.id === record.department?.id && (
             <Button.Group key={index}>
               <ButtonCustom

@@ -27,6 +27,8 @@ import {
 import { ButtonCustom } from '../../../../components/ButtonCustom';
 import { notificationError, notificationSuccess } from '../../../../components/Notification';
 import { ModalFormStudent } from '../ModalFormStudent';
+import { Navigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internData, onSuccess }) {
   const [loadingTable, setLoadingTable] = useState(false);
@@ -123,7 +125,13 @@ export function ModalFormIntern({ isCreate, openForm, onChangeClickOpen, internD
       .then((res) => {
         if (res.data?.success === true) {
           setDataSource(res.data?.data?.items);
-        } else notificationError('Bạn không có quyền truy cập');
+        } else {
+          notificationError('Bạn không có quyền truy cập');
+          Cookies.remove('access_token');
+          localStorage.removeItem('user_info');
+          localStorage.removeItem('user_role');
+          Navigate('/');
+        }
       })
       .finally(() => setLoadingTable(false));
   };

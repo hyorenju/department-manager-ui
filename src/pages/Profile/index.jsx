@@ -14,8 +14,8 @@ function Profile() {
   const fileInputRef = useRef(null);
 
   const hanldeSetUserData = () => {
-    if (JSON.parse(sessionStorage.getItem('user_info'))) {
-      setUserData(JSON.parse(sessionStorage.getItem('user_info')));
+    if (JSON.parse(localStorage.getItem('user_info'))) {
+      setUserData(JSON.parse(localStorage.getItem('user_info')));
     }
   };
 
@@ -38,7 +38,7 @@ function Profile() {
     // return data;
 
     updateAvatar(formData).then((res) => {
-      sessionStorage.setItem('user_info', JSON.stringify(res.data?.data));
+      localStorage.setItem('user_info', JSON.stringify(res.data?.data));
       hanldeSetUserData();
     });
   }
@@ -80,7 +80,7 @@ function Profile() {
           <div className="text-center uppercase font-bold text-primary mb-3 text-[30px] ">
             <p>Thông tin cá nhân</p>
           </div>
-          <div className="my-auto text-[20px] ">
+          <div className="my-auto text-[20px] max-w-[400px]">
             <p>
               Mã người dùng: <span className="font-bold">{userData.id ? userData.id : ''}</span>
             </p>

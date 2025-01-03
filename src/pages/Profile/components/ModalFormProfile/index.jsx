@@ -8,7 +8,7 @@ export function ModalFormProfile({ openForm, onChangeClickOpen, userData, onSucc
   const handleUpdateProfile = (id, values) => {
     updateProfile(values).then((res) => {
       if (res.data?.success === true) {
-        sessionStorage.setItem('user_info', JSON.stringify(res.data.data));
+        localStorage.setItem('user_info', JSON.stringify(res.data.data));
         onSuccess();
         notification.success({
           message: 'Thành công',

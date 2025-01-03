@@ -20,7 +20,7 @@ import { useState } from 'react';
 
 const { createBrowserRouter } = require('react-router-dom');
 
-const userData = JSON.parse(sessionStorage.getItem('user_info'));
+const userData = JSON.parse(localStorage.getItem('user_info'));
 
 export const router = createBrowserRouter([
   {

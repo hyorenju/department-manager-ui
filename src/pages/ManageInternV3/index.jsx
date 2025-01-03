@@ -50,8 +50,8 @@ import { ModalErrorImportIntern } from './components/ModalErrorImportIntern';
 import { ModalFormLockInternship } from './components/ModalFormLockInternship';
 
 function ManageIntern() {
-  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
-  const userInfo = JSON.parse(sessionStorage.getItem('user_info'));
+  const roleId = JSON.parse(localStorage.getItem('user_role'));
+  const userInfo = JSON.parse(localStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormIntern, setOpenModalFormIntern] = useState(false);
@@ -83,6 +83,8 @@ function ManageIntern() {
   const [classId, setClassId] = useState();
   const [searchCompany, setSearchCompany] = useState();
   const [company, setCompany] = useState();
+  const [valueSearchNote, setValueSearchNote] = useState();
+  const [searchNote, setSearchNote] = useState();
 
   // handle delete intern
   const handleConfirmDeleteIntern = (id) => {
@@ -116,6 +118,7 @@ function ManageIntern() {
       studentName,
       classId,
       company,
+      note: searchNote,
     })
       .then((res) => {
         if (res.data?.success === true) {
@@ -157,6 +160,7 @@ function ManageIntern() {
     studentName,
     classId,
     company,
+    searchNote,
   ]);
 
   const [schoolYearSelection, setSchoolYearSelection] = useState([]);
@@ -237,6 +241,7 @@ function ManageIntern() {
         studentName,
         classId,
         company,
+        note: searchNote,
       }),
     onSuccess: (res) => {
       if (res && res.success === true) {
@@ -865,6 +870,37 @@ function ManageIntern() {
       title: 'Ghi chú',
       dataIndex: 'note',
       align: 'left',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập ghi chú'}
+            value={valueSearchNote}
+            onChange={(e) => setValueSearchNote(e.target.value)}
+            className="w-[480px] mb-2 block"
+            onPressEnter={(e) => {
+              setPage(1);
+              setSearchNote(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setSearchNote(null);
+                setValueSearchNote(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo ghi chú">
+          <SearchOutlined
+            className={`${searchNote ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
       title: isAll & (roleId === 'LECTURER') ? '' : 'Tùy chọn',
@@ -873,50 +909,53 @@ function ManageIntern() {
       width: isAll & (roleId === 'LECTURER') ? '0' : '2.5%',
       render:
         (!isAll || roleId !== 'LECTURER') &&
-        ((e, record, index) => (
-          <Button.Group key={index}>
-            {roleId !== 'LECTURER' && (
-              <Button
-                icon={
-                  record.isLock === null ? (
-                    <UnlockOutlined />
-                  ) : record.isLock === false ? (
-                    <UnlockOutlined />
-                  ) : (
-                    <LockOutlined />
-                  )
-                }
-                onClick={() => handleLockIntern(record.id)}
+        ((e, record, index) =>
+          userInfo.department?.id === record.instructor?.department?.id && (
+            <Button.Group key={index}>
+              {roleId !== 'LECTURER' && (
+                <Button
+                  icon={
+                    record.isLock === null ? (
+                      <UnlockOutlined />
+                    ) : record.isLock === false ? (
+                      <UnlockOutlined />
+                    ) : (
+                      <LockOutlined />
+                    )
+                  }
+                  onClick={() => handleLockIntern(record.id)}
+                  size="small"
+                  style={
+                    record.isLock === true
+                      ? { backgroundColor: '#ffd2e5' }
+                      : { backgroundColor: '#d7e6fa' }
+                  }
+                />
+              )}
+              <ButtonCustom
+                icon={<EditOutlined />}
+                handleClick={() => handleClickEdit(record)}
                 size="small"
-                style={
-                  record.isLock === true
-                    ? { backgroundColor: '#ffd2e5' }
-                    : { backgroundColor: '#d7e6fa' }
-                }
+                disabled={record.isLock}
               />
-            )}
-            <ButtonCustom
-              icon={<EditOutlined />}
-              handleClick={() => handleClickEdit(record)}
-              size="small"
-            />
-            <Popconfirm
-              placement="topRight"
-              title="Bạn có chắc chắn muốn xóa đề tài này?"
-              icon={<DeleteOutlined />}
-              okText="Xóa"
-              okType="danger"
-              onConfirm={() => handleConfirmDeleteIntern(record.id)}
-            >
-              <Button
-                className="flex justify-center items-center text-md shadow-md"
+              <Popconfirm
+                placement="topRight"
+                title="Bạn có chắc chắn muốn xóa đề tài này?"
                 icon={<DeleteOutlined />}
-                size="small"
-                danger
-              ></Button>
-            </Popconfirm>
-          </Button.Group>
-        )),
+                okText="Xóa"
+                okType="danger"
+                onConfirm={() => handleConfirmDeleteIntern(record.id)}
+              >
+                <Button
+                  className="flex justify-center items-center text-md shadow-md"
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  danger
+                  disabled={record.isLock}
+                ></Button>
+              </Popconfirm>
+            </Button.Group>
+          )),
     },
   ];
 

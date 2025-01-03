@@ -34,9 +34,12 @@ import { notificationError, notificationSuccess } from '../../components/Notific
 import { ModalFormProject } from './components/ModalFormProject';
 import { ModalFormTask } from './components/ModalFormTask';
 import { ManageTaskDetail } from './pages/ManageTaskDetail';
+import { Navigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 function ManageProject() {
-  const userData = JSON.parse(sessionStorage.getItem('user_info'));
+  const userData = JSON.parse(localStorage.getItem('user_info'));
+  const roleId = JSON.parse(localStorage.getItem('user_role'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormProject, setOpenModalFormProject] = useState(false);
@@ -63,6 +66,7 @@ function ManageProject() {
   const [endDateSearch, setEndDateSearch] = useState();
   const [memberId, setMemberId] = useState();
   const [statusId, setStatusId] = useState();
+  const [projectType, setProjectType] = useState(null);
   const [reset, setReset] = useState(false);
 
   // handle delete project
@@ -103,6 +107,7 @@ function ManageProject() {
       endDate,
       memberId,
       statusId,
+      projectType,
     })
       .then((res) => {
         if (res.data?.success === true) {
@@ -111,7 +116,13 @@ function ManageProject() {
           setLoadingTable(false);
         } else if (res.data?.error?.code === 500) {
           notificationError(res.data?.error?.message);
-        } else notificationError('Bạn không có quyền truy cập');
+        } else {
+          notificationError('Bạn không có quyền truy cập');
+          Cookies.remove('access_token');
+          localStorage.removeItem('user_info');
+          localStorage.removeItem('user_role');
+          Navigate('/');
+        }
       })
       .finally(() => setLoadingTable(false));
   };
@@ -124,7 +135,13 @@ function ManageProject() {
         if (res.data?.success === true) {
           setTaskDataSource(res.data?.data?.items);
           setLoadingTable(false);
-        } else notificationError('Bạn không có quyền truy cập');
+        } else {
+          notificationError('Bạn không có quyền truy cập');
+          Cookies.remove('access_token');
+          localStorage.removeItem('user_info');
+          localStorage.removeItem('user_role');
+          Navigate('/');
+        }
       })
       .finally(() => setLoadingTable(false));
   };
@@ -188,6 +205,7 @@ function ManageProject() {
     setEndDate(null);
     setMemberId(null);
     setStatusId(null);
+    setProjectType(null);
     if (reset) {
       setReset(false);
     } else {
@@ -348,7 +366,7 @@ function ManageProject() {
       dataIndex: 'name',
       align: 'left',
       fixed: 'left',
-      width: '17%',
+      width: '16%',
     },
     {
       title: 'Mô tả',
@@ -356,22 +374,38 @@ function ManageProject() {
       align: 'left',
     },
     {
+      title: 'Loại công việc',
+      render: (e, record, index) =>
+        (record.isPrivate && (
+          <>
+            <p>Công việc cá nhân</p>
+          </>
+        )) ||
+        (!record.isPrivate && (
+          <>
+            <p>Công việc chung</p>
+          </>
+        )),
+      align: 'left',
+      width: '8.5%',
+    },
+    {
       title: 'Ngày bắt đầu',
       dataIndex: 'start',
       align: 'left',
-      width: '8%',
+      width: '7.5%',
     },
     {
       title: 'Ngày kết thúc',
       dataIndex: 'deadline',
       align: 'left',
-      width: '8%',
+      width: '7.5%',
     },
     {
       title: 'Tiến độ',
       dataIndex: ['projectStatus', 'name'],
       align: 'left',
-      width: '12%',
+      width: '11.5%',
     },
     {
       title: 'Người tạo',
@@ -384,19 +418,19 @@ function ManageProject() {
         </>
       ),
       align: 'left',
-      width: '14%',
+      width: '13.5%',
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       align: 'left',
-      width: '11%',
+      width: '10.5%',
     },
     {
       title: 'Tùy chọn',
       align: 'center',
       fixed: 'right',
-      width: '10.5%',
+      width: '9%',
       render: (e, record, index) => (
         <Button.Group key={index}>
           {record.createdBy?.id === userData.id && (
@@ -541,6 +575,26 @@ function ManageProject() {
                         value={statusId}
                       />
                     </Form.Item>
+                    <Form.Item label="Tìm theo loại công việc">
+                      <Select
+                        showSearch
+                        filterOption={(input, option) =>
+                          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                        }
+                        options={[
+                          {
+                            label: 'Công việc chung',
+                            value: false,
+                          },
+                          {
+                            label: 'Công việc cá nhân',
+                            value: true,
+                          },
+                        ]}
+                        onChange={setProjectType}
+                        value={projectType}
+                      />
+                    </Form.Item>
                     <Form.Item
                       className="mb-0"
                       wrapperCol={{
@@ -603,6 +657,7 @@ function ManageProject() {
             setOpenModalFormProject(false);
           }
         }}
+        userRole={roleId}
       />
       <ModalFormTask
         isCreate={formCreate}
@@ -610,7 +665,7 @@ function ManageProject() {
           handleGetTaskList();
           setOpenModalFormTask(false);
         }}
-        projectId={project?.id}
+        project={project}
         taskData={taskData}
         openForm={openModalFormTask}
         onChangeClickOpen={(open) => {
@@ -625,7 +680,7 @@ function ManageProject() {
         <Table
           scroll={{
             y: '64vh',
-            x: 1550,
+            x: 1650,
           }}
           rowKey="id"
           loading={loadingTable}

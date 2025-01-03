@@ -1,0 +1,30 @@
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/pipeline/#customization
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+stages:
+  - test
+  - deploy
+sast:
+  stage: test
+include:
+  - template: Security/SAST.gitlab-ci.yml
+
+deploy-prod:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - command -v ssh-agent >/dev/null || ( apk update && apk add openssh-client )
+    - eval $(ssh-agent -s)
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan $SSH_HOSTS >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - (umask  077; echo $SSH_KEY | base64 -d > ~/.ssh/id_rsa)
+  script:
+    - ssh $SSH_USERNAME@$SSH_HOSTS "cd Dept-Mngmt && ./deploy.sh && exit"
+  only:
+    - main

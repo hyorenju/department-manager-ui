@@ -55,8 +55,8 @@ import { ManageExamForm } from './pages/ManageExamForm';
 import { ModalFormAssignment } from './components/ModalFormAssignment';
 
 function ManageExam() {
-  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
-  const userData = JSON.parse(sessionStorage.getItem('user_info'));
+  const roleId = JSON.parse(localStorage.getItem('user_role'));
+  const userData = JSON.parse(localStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormExam, setOpenModalFormExam] = useState(false);
@@ -80,6 +80,7 @@ function ManageExam() {
   const [term, setTerm] = useState();
   const [formId, setFormId] = useState();
   const [testDay, setTestDay] = useState('');
+  const [deadline, setDeadline] = useState('');
   const [proctorId, setProctorId] = useState();
   const [searchClassId, setSearchClassId] = useState();
   const [classId, setClassId] = useState();
@@ -89,7 +90,8 @@ function ManageExam() {
   const [searchCluster, setSearchCluster] = useState(null);
   const [cluster, setCluster] = useState(null);
   const [searchQuantity, setSearchQuantity] = useState(null);
-  const [quantity, setQuantity] = useState(null);
+  const [lessonStart, setLessonStart] = useState(null);
+  const [searchLessonStart, setSearchLessonStart] = useState(null);
 
   // handle delete exam
   const handleConfirmDeleteExam = (id) => {
@@ -123,6 +125,8 @@ function ManageExam() {
       classId: classId,
       examGroup: examGroup,
       cluster: cluster,
+      deadline: deadline,
+      lessonStart: lessonStart,
     })
       .then((res) => {
         if (res.data?.success === true) {
@@ -169,6 +173,8 @@ function ManageExam() {
     classId,
     examGroup,
     cluster,
+    deadline,
+    lessonStart,
   ]);
 
   const [facultySelection, setFacultySelection] = useState([]);
@@ -260,6 +266,8 @@ function ManageExam() {
         testDay: testDay,
         proctorId: proctorId,
         classId: classId,
+        deadline,
+        lessonStart,
       }),
     onSuccess: (res) => {
       if (res && res.success === true) {
@@ -431,8 +439,8 @@ function ManageExam() {
       title: 'Mã',
       dataIndex: ['subject', 'id'],
       align: 'left',
-      fixed: 'left',
-      width: '1.8%',
+      // fixed: 'left',
+      width: '1.5%',
       filterDropdown: () => (
         <div className="p-3">
           <Input
@@ -505,7 +513,7 @@ function ManageExam() {
       title: 'Lớp thi',
       dataIndex: 'classId',
       align: 'left',
-      width: '3%',
+      width: '2%',
       filterDropdown: () => (
         <div className="p-3">
           <Input
@@ -646,6 +654,37 @@ function ManageExam() {
       ),
     },
     {
+      title: 'Hạn nộp điểm',
+      dataIndex: 'deadline',
+      render: (e, record, index) => (
+        <>
+          <p>{dayjs(record?.deadline).format('DD/MM/YYYY')}</p>
+        </>
+      ),
+      align: 'left',
+      width: '2.1%',
+      filterDropdown: () => (
+        <div className="p-3 flex flex-col gap-2 w-[170px]">
+          <Form.Item>
+            <DatePicker
+              placeholder="Chọn hạn nộp"
+              format={'MM/DD/YYYY'}
+              onChange={(value) =>
+                value != null
+                  ? setDeadline(`${value.$D}/${value.$M + 1}/${value.$y}`)
+                  : setDeadline(null)
+              }
+            />
+          </Form.Item>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Chọn hạn nộp thi">
+          <SearchOutlined className={`${deadline ? 'text-blue-500' : undefined} text-base`} />
+        </Tooltip>
+      ),
+    },
+    {
       title: 'Phòng thi',
       dataIndex: 'testRoom',
       align: 'left',
@@ -655,7 +694,37 @@ function ManageExam() {
       title: 'Tiết BĐ',
       dataIndex: 'lessonStart',
       align: 'left',
-      width: '1.3%',
+      width: '1.6%',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Tiết bắt đầu'}
+            value={searchLessonStart}
+            onChange={(e) => setSearchLessonStart(e.target.value)}
+            className="w-[100px] mb-2 block"
+            onPressEnter={(e) => {
+              setLessonStart(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setLessonStart(null);
+                setSearchLessonStart(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo tiết bắt đầu">
+          <SearchOutlined
+            className={`${lessonStart ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
       title: 'Số tiết',
@@ -693,7 +762,7 @@ function ManageExam() {
     // },
     {
       title: 'Bộ môn',
-      dataIndex: ['subject', 'department', 'name'],
+      dataIndex: ['lecturerTeach', 'department', 'name'],
       align: 'left',
       width: '4%',
       filterDropdown: () => (
@@ -858,12 +927,6 @@ function ManageExam() {
       width: '4%',
     },
     {
-      title: 'Hạn nộp điểm',
-      dataIndex: 'deadline',
-      align: 'left',
-      width: '1.7%',
-    },
-    {
       title: 'Chấm thi 1',
       render: (e, record, index) => (
         <>
@@ -1019,9 +1082,7 @@ function ManageExam() {
       render:
         roleId !== 'LECTURER' &&
         ((e, record, index) =>
-          (roleId === 'MANAGER' || roleId === 'DEPUTY') &&
-          userData.department?.id === record.subject?.department?.id &&
-          roleId !== 'PRINCIPAL' && (
+          userData.department?.id === record.lecturerTeach?.department?.id && (
             <Button.Group key={index}>
               <Button
                 icon={

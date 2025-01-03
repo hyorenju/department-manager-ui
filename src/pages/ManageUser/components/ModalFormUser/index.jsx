@@ -22,7 +22,14 @@ import { DeleteOutlined, SyncOutlined } from '@ant-design/icons';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 
-export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData, onSuccess }) {
+export function ModalFormUser({
+  isCreate,
+  openForm,
+  onChangeClickOpen,
+  userData,
+  onSuccess,
+  userInfo,
+}) {
   const navigate = useNavigate();
 
   const handleCreateUser = (values) => {
@@ -80,8 +87,8 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
 
   const handleLogout = () => {
     Cookies.remove('access_token');
-    sessionStorage.removeItem('user_info');
-    sessionStorage.removeItem('user_role');
+    localStorage.removeItem('user_info');
+    localStorage.removeItem('user_role');
     navigate('/');
   };
 
@@ -232,14 +239,16 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
             }
             width="md"
             rules={[
-              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+              userInfo.role?.id === 'PRINCIPAL'
+                ? { required: true, message: 'Không được để trống' }
+                : { required: false },
             ]}
             name={['department', 'faculty', 'id']}
             label="Khoa"
             placeholder="Chọn khoa"
             onChange={handleGetDepartmentSelection}
             options={facultySelection}
-            disabled={isCreate ? false : true}
+            disabled={userInfo.role?.id === 'PRINCIPAL' ? false : true}
           />
           <ProFormSelect
             showSearch
@@ -248,13 +257,15 @@ export function ModalFormUser({ isCreate, openForm, onChangeClickOpen, userData,
             }
             width="md"
             rules={[
-              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+              userInfo.role?.id === 'PRINCIPAL'
+                ? { required: true, message: 'Không được để trống' }
+                : { required: false },
             ]}
             name={['department', 'id']}
             label="Bộ môn"
             placeholder="Chọn bộ môn"
             options={departmentSelection}
-            disabled={isCreate ? false : true}
+            disabled={userInfo.role?.id === 'PRINCIPAL' ? false : true}
           />
           <ProFormSelect
             showSearch

@@ -15,8 +15,8 @@ function LoginSuccess() {
   const { Title } = Typography;
   const navigate = useNavigate();
   const { Header, Sider, Content } = Layout;
-  const userData = JSON.parse(sessionStorage.getItem('user_info'));
-  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
+  const userData = JSON.parse(localStorage.getItem('user_info'));
+  const roleId = JSON.parse(localStorage.getItem('user_role'));
   const [hideLayout, setHideLayout] = useState(false);
 
   const handleClickItemMenu = ({ key }) => {
@@ -25,8 +25,8 @@ function LoginSuccess() {
 
   const handleClickLogout = () => {
     Cookies.remove('access_token');
-    sessionStorage.removeItem('user_info');
-    sessionStorage.removeItem('user_role');
+    localStorage.removeItem('user_info');
+    localStorage.removeItem('user_role');
     navigate('/');
   };
 
@@ -92,7 +92,8 @@ function LoginSuccess() {
           getItem('Quản lý lịch coi thi', `/manage/exam`),
           getItem('Danh sách khoa', `/manage/faculty`),
           getItem('Danh sách bộ môn', `/manage/department`),
-          getItem('Thống kê', `/manage/statistic`),
+          // getItem('Danh sách công việc', `/manage/project`),
+          // getItem('Thống kê', `/manage/statistic`),
         ];
       default:
         return [];

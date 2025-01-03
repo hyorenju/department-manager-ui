@@ -46,8 +46,8 @@ import { ManageDegree } from './pages/ManageDegree';
 import { ModalErrorImportUser } from './components/ModalErrorImportUser';
 
 function ManageUser() {
-  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
-  const userInfo = JSON.parse(sessionStorage.getItem('user_info'));
+  const roleId = JSON.parse(localStorage.getItem('user_role'));
+  const userInfo = JSON.parse(localStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormUser, setOpenModalFormUser] = useState(false);
@@ -546,8 +546,9 @@ function ManageUser() {
       render:
         roleId !== 'LECTURER' &&
         ((e, record, index) =>
-          (roleId === 'MANAGER' || roleId === 'DEPUTY') &&
-          userInfo.department?.id === record.department?.id && (
+          (((roleId === 'MANAGER' || roleId === 'DEPUTY') &&
+            userInfo.department?.id === record.department?.id) ||
+            roleId === 'PRINCIPAL') && (
             <Space>
               <Button.Group key={index}>
                 <Button
@@ -647,6 +648,7 @@ function ManageUser() {
             setOpenModalFormUser(false);
           }
         }}
+        userInfo={userInfo}
       />
 
       <div className="relative">

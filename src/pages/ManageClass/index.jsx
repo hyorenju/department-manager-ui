@@ -16,9 +16,11 @@ import { messageErrorToSever } from '../../components/Message';
 import { notificationError, notificationSuccess } from '../../components/Notification';
 import { ModalErrorImportClass } from './components/ModalErrorImportUser';
 import { ModalFormClass } from './components/ModalFormClass';
+import Cookies from 'js-cookie';
+import { Navigate } from 'react-router-dom';
 
 function ManageClass() {
-  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
+  const roleId = JSON.parse(localStorage.getItem('user_role'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormClass, setOpenModalFormClass] = useState(false);
@@ -74,7 +76,13 @@ function ManageClass() {
           setDataSource(res.data?.data?.items);
           setTotal(res.data?.data?.total);
           setLoadingTable(false);
-        } else notificationError('Bạn không có quyền truy cập');
+        } else {
+          notificationError('Bạn không có quyền truy cập');
+          Cookies.remove('access_token');
+          localStorage.removeItem('user_info');
+          localStorage.removeItem('user_role');
+          Navigate('/');
+        }
       })
       .finally(() => setLoadingTable(false));
   };

@@ -52,7 +52,8 @@ import { ModalFormTeaching } from './components/ModalFormTeaching';
 import { ModalFormLockTeaching } from './components/ModalFormLockTeaching';
 
 function ManageTeaching() {
-  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
+  const roleId = JSON.parse(localStorage.getItem('user_role'));
+  const userInfo = JSON.parse(localStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormTeaching, setOpenModalFormTeaching] = useState(false);
@@ -78,6 +79,8 @@ function ManageTeaching() {
   const [classId, setClassId] = useState();
   const [teacherIdToRead, setTeacherIdToRead] = useState(null);
   const [isAll, setIsAll] = useState(false);
+  const [valueSearchNote, setValueSearchNote] = useState();
+  const [searchNote, setSearchNote] = useState();
 
   // handle delete teaching
   const handleConfirmDeleteTeaching = (id) => {
@@ -110,6 +113,7 @@ function ManageTeaching() {
       teacherId: teacherId,
       classId: classId,
       status: status,
+      note: searchNote,
     })
       .then((res) => {
         if (res.data?.success === true) {
@@ -166,7 +170,7 @@ function ManageTeaching() {
         setTeacherIdToRead(null);
         handleGetTeachingList();
       } else {
-        messageErrorToSever(res, null);
+        notificationError(res.error?.message);
       }
     },
   });
@@ -187,6 +191,7 @@ function ManageTeaching() {
     teacherId,
     classId,
     status,
+    searchNote,
   ]);
 
   const [schoolYearSelection, setSchoolYearSelection] = useState([]);
@@ -250,6 +255,7 @@ function ManageTeaching() {
         departmentId: departmentId,
         subjectName: subjectName,
         status: status,
+        note: searchNote,
       }),
     onSuccess: (res) => {
       if (res && res.success === true) {
@@ -685,12 +691,12 @@ function ManageTeaching() {
         </Tooltip>
       ),
     },
-    {
-      title: 'Hạn nộp điểm',
-      dataIndex: 'deadline',
-      align: 'left',
-      width: '4%',
-    },
+    // {
+    //   title: 'Hạn nộp điểm',
+    //   dataIndex: 'deadline',
+    //   align: 'left',
+    //   width: '4%',
+    // },
     {
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
@@ -733,6 +739,37 @@ function ManageTeaching() {
       title: 'Ghi chú',
       dataIndex: 'note',
       align: 'left',
+      filterDropdown: () => (
+        <div className="p-3">
+          <Input
+            placeholder={'Nhập ghi chú'}
+            value={valueSearchNote}
+            onChange={(e) => setValueSearchNote(e.target.value)}
+            className="w-[580px] mb-2 block"
+            onPressEnter={(e) => {
+              setPage(1);
+              setSearchNote(e.target.value);
+            }}
+          />
+          <Space>
+            <ButtonCustom
+              handleClick={() => {
+                setSearchNote(null);
+                setValueSearchNote(null);
+              }}
+              size="small"
+              title={'Reset'}
+            />
+          </Space>
+        </div>
+      ),
+      filterIcon: () => (
+        <Tooltip title="Tìm kiếm theo ghi chú">
+          <SearchOutlined
+            className={`${searchNote ? 'text-blue-500' : undefined} text-md p-1 text-base`}
+          />
+        </Tooltip>
+      ),
     },
     {
       // title: roleId !== 'LECTURER' ? 'Tùy chọn' : '',
@@ -743,9 +780,10 @@ function ManageTeaching() {
       width: isAll & (roleId === 'LECTURER') ? '0' : '2.5%',
       render:
         (!isAll || roleId !== 'LECTURER') &&
-        ((e, record, index) => (
-          <Button.Group key={index}>
-            {/* <Button
+        ((e, record, index) =>
+          userInfo.department?.id === record.teacher?.department?.id && (
+            <Button.Group key={index}>
+              {/* <Button
               icon={
                 record.isWarning === true ? (
                   <SoundFilled className="text-green-800" />
@@ -759,46 +797,50 @@ function ManageTeaching() {
               size="small"
               className={record.isWarning === true ? 'bg-green-50' : 'bg-yellow-100'}
             /> */}
-            <Button
-              icon={
-                record.isLock === null ? (
-                  <UnlockOutlined />
-                ) : record.isLock === false ? (
-                  <UnlockOutlined />
-                ) : (
-                  <LockOutlined />
-                )
-              }
-              onClick={() => handleLockTeaching(record.id)}
-              size="small"
-              style={
-                record.isLock === true
-                  ? { backgroundColor: '#ffd2e5' }
-                  : { backgroundColor: '#d7e6fa' }
-              }
-            />
-            <ButtonCustom
-              icon={<EditOutlined />}
-              handleClick={() => handleClickEdit(record)}
-              size="small"
-            />
-            <Popconfirm
-              placement="topRight"
-              title="Bạn có chắc chắn muốn xóa bản ghi này?"
-              icon={<DeleteOutlined />}
-              okText="Xóa"
-              okType="danger"
-              onConfirm={() => handleConfirmDeleteTeaching(record.id)}
-            >
-              <Button
-                className="flex justify-center items-center text-md shadow-md"
-                icon={<DeleteOutlined />}
+              {roleId !== 'LECTURER' && (
+                <Button
+                  icon={
+                    record.isLock === null ? (
+                      <UnlockOutlined />
+                    ) : record.isLock === false ? (
+                      <UnlockOutlined />
+                    ) : (
+                      <LockOutlined />
+                    )
+                  }
+                  onClick={() => handleLockTeaching(record.id)}
+                  size="small"
+                  style={
+                    record.isLock === true
+                      ? { backgroundColor: '#ffd2e5' }
+                      : { backgroundColor: '#d7e6fa' }
+                  }
+                />
+              )}
+              <ButtonCustom
+                icon={<EditOutlined />}
+                handleClick={() => handleClickEdit(record)}
                 size="small"
-                danger
-              ></Button>
-            </Popconfirm>
-          </Button.Group>
-        )),
+                disabled={record.isLock}
+              />
+              <Popconfirm
+                placement="topRight"
+                title="Bạn có chắc chắn muốn xóa bản ghi này?"
+                icon={<DeleteOutlined />}
+                okText="Xóa"
+                okType="danger"
+                onConfirm={() => handleConfirmDeleteTeaching(record.id)}
+              >
+                <Button
+                  className="flex justify-center items-center text-md shadow-md"
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  danger
+                  disabled={record.isLock}
+                ></Button>
+              </Popconfirm>
+            </Button.Group>
+          )),
     },
   ];
 
@@ -835,7 +877,8 @@ function ManageTeaching() {
               placement="bottom"
               content={
                 <div className="flex justify-between w-[300px]">
-                  <Input
+                  <p className="font-bold text-red-600 text-lg">Tính năng này đang bảo trì</p>
+                  {/* <Input
                     title="Mã giảng viên"
                     placeholder={'Nhập mã giảng viên'}
                     value={teacherIdToRead}
@@ -854,7 +897,7 @@ function ManageTeaching() {
                     disabled={teacherIdToRead === null}
                   >
                     Tìm và lưu
-                  </Button>
+                  </Button> */}
                 </div>
               }
               trigger={'click'}
@@ -866,11 +909,13 @@ function ManageTeaching() {
                 Đọc từ trang đào tạo
               </Button>
             </Popover>
-            <ButtonCustom
-              title="Tùy chọn lock"
-              handleClick={() => setOpenModalFormLockTeachingList(true)}
-              icon={<LockFilled />}
-            />
+            {roleId !== 'LECTURER' && (
+              <ButtonCustom
+                title="Tùy chọn lock"
+                handleClick={() => setOpenModalFormLockTeachingList(true)}
+                icon={<LockFilled />}
+              />
+            )}
             <Button
               icon={<PlusOutlined />}
               onClick={() => {

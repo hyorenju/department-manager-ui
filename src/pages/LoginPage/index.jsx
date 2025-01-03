@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { Button, Form, Input } from 'antd';
 import Cookies from 'js-cookie';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { visitor } from '../../api/visitor/visitorApi';
 import { notificationError, notificationSuccess } from '../../components/Notification';
@@ -10,6 +10,19 @@ import logovnua from '../../assets/logo/logovnua.png';
 
 function LoginPage() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Kiểm tra trạng thái đăng nhập
+    const userInfo = localStorage.getItem('user_info'); // Hoặc kiểm tra token
+    if (userInfo) {
+      navigate('/manage/project'); // Chuyển hướng đến Dashboard
+    }
+  }, [navigate]);
+
+  // const userInfo = JSON.parse(localStorage.getItem('user_info'));
+  // if (userInfo) {
+  //   navigate(`/manage/project`);
+  // }
 
   const handleLogin = useMutation({
     mutationKey: ['login'],
@@ -30,10 +43,10 @@ function LoginPage() {
           res.data.role?.id === 'LECTURER' ||
           res.data.role?.id === 'DEPUTY'
         ) {
-          sessionStorage.setItem('user_info', JSON.stringify(res.data));
-          sessionStorage.setItem('user_role', JSON.stringify(res.data?.role?.id));
+          localStorage.setItem('user_info', JSON.stringify(res.data));
+          localStorage.setItem('user_role', JSON.stringify(res.data?.role?.id));
           notificationSuccess('Đăng nhập thành công');
-          navigate(`/manage/user`);
+          navigate(`/manage/project`);
         }
       } else if (res && res.success === false && res.error.code === 500) {
         notificationError(res.error.message);
@@ -48,6 +61,8 @@ function LoginPage() {
   const onFinish = (values) => {
     handleLogin.mutate(values);
   };
+
+  const [form] = Form.useForm();
 
   return (
     <div className="h-[80vh] flex absolute right-[50%] bottom-[50%] translate-x-[50%] translate-y-[50%]">
@@ -91,6 +106,7 @@ function LoginPage() {
             }}
             onFinish={onFinish}
             autoComplete="off"
+            form={form}
           >
             <Form.Item
               label="Tài khoản"
@@ -102,7 +118,12 @@ function LoginPage() {
                 },
               ]}
             >
-              <Input />
+              <Input
+                onChange={(item) => {
+                  const value = item.target.value.toUpperCase(); // Chuyển đổi thành chữ hoa
+                  form.setFieldsValue({ id: value }); // Cập nhật giá trị trong form
+                }}
+              />
             </Form.Item>
 
             <Form.Item

@@ -24,6 +24,8 @@ import dayjs from 'dayjs';
 import { notificationError, notificationSuccess } from '../../components/Notification';
 import { ButtonCustom } from '../../components/ButtonCustom';
 import { CheckOutlined, DeleteOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
+import { Navigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 export function Work({ userData }) {
   const { Title } = Typography;
@@ -75,7 +77,13 @@ export function Work({ userData }) {
           setUserTaskList(res?.data?.data?.items);
           setTotal(res.data?.data?.total);
           setLoadingTable(false);
-        } else notificationError('Bạn không có quyền truy cập');
+        } else {
+          notificationError('Bạn không có quyền truy cập');
+          Cookies.remove('access_token');
+          localStorage.removeItem('user_info');
+          localStorage.removeItem('user_role');
+          Navigate('/');
+        }
       })
       .finally(() => setLoadingTable(false));
   };
@@ -89,7 +97,13 @@ export function Work({ userData }) {
       if (res.data?.success) {
         handelGetUserTaskList();
         notificationSuccess('Bạn đã xác nhận hoàn thành công việc.');
-      } else notificationError('Bạn không có quyền truy cập');
+      } else {
+        notificationError('Bạn không có quyền truy cập');
+        Cookies.remove('access_token');
+        localStorage.removeItem('user_info');
+        localStorage.removeItem('user_role');
+        Navigate('/');
+      }
     });
   };
 
@@ -150,10 +164,6 @@ export function Work({ userData }) {
         ))}
       </ul>
     );
-  };
-
-  const onFormVariantChange = ({ variant }) => {
-    setComponentVariant(variant);
   };
 
   const columns = [
@@ -251,7 +261,6 @@ export function Work({ userData }) {
   return (
     <div className="relative">
       <Form
-        onValuesChange={onFormVariantChange}
         variant={componentVariant}
         style={{
           maxWidth: 600,
@@ -260,17 +269,46 @@ export function Work({ userData }) {
           variant: componentVariant,
         }}
       >
-        <Form.Item name="variant">
-          <Segmented size={'large'} options={['Lịch công việc', 'Danh sách công việc']} />
-        </Form.Item>
-        {componentVariant === 'Lịch công việc' && (
-          <Calendar
-            className="p-6 absolute "
-            cellRender={dateCellRender}
-            onPanelChange={(value) => {
-              handleSetDateCalendar(value);
+        <Form.Item className="variant mb-1">
+          <Segmented
+            size={'large'}
+            options={['Lịch công việc', 'Danh sách công việc']}
+            onChange={(value) => {
+              setComponentVariant(value);
             }}
           />
+        </Form.Item>
+        {componentVariant === 'Lịch công việc' && (
+          <>
+            <div className="flex">
+              <div className="w-72">
+                <p className="font-bold text-lg">Chú thích:</p>
+                <div className="flex mb-1 ml-1">
+                  <div className="green-box w-[22px] h-[22px] rounded-full bg-[#52c41a] mr-2"></div>
+                  <p className="m-0">Đã hoàn thành</p>
+                </div>
+                <div className="flex mb-1 ml-1">
+                  <div className="yellow-box w-[22px] h-[22px] rounded-full bg-[#faad14] mr-2"></div>
+                  <p className="m-0">Chưa hoàn thành</p>
+                </div>
+                <div className="flex mb-1 ml-1">
+                  <div className="red-box w-[22px] h-[22px] rounded-full bg-[#ff4d4f] mr-2"></div>
+                  <p className="m-0">Đã quá hạn</p>
+                </div>
+              </div>
+              <div className="w-96">
+                <p className="font-bold text-lg">Lưu ý:</p>
+                <p>Lịch dưới đây chỉ hiện thị công việc nhỏ.</p>
+              </div>
+            </div>
+            <Calendar
+              className="p-6 absolute "
+              cellRender={dateCellRender}
+              onPanelChange={(value) => {
+                handleSetDateCalendar(value);
+              }}
+            />
+          </>
         )}
         {componentVariant === 'Danh sách công việc' && (
           <div className="absolute w-[100%]">

@@ -465,13 +465,12 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
           {!isCreate && (
             <ProFormText
               width="md"
-              placeholder="Chọn hạn nộp điểm"
+              placeholder="Nhập hạn nộp điểm"
               name="deadline"
               label="Hạn nộp điểm"
               fieldProps={{
                 format: 'DD/MM/YYYY',
               }}
-              disabled={true}
             />
           )}
         </ProForm.Group>
@@ -482,7 +481,7 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            // rules={[{ required: true, message: 'Không được để trống' }]}
+            rules={[{ required: true, message: 'Không được để trống' }]}
             name={['proctor1', 'id']}
             label="Giám thị coi thi 1"
             placeholder="Chọn giám thị coi thi 1"
@@ -494,7 +493,7 @@ export function ModalFormExam({ isCreate, openForm, onChangeClickOpen, examData,
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            // rules={[{ required: true, message: 'Không được để trống' }]}
+            rules={[{ required: true, message: 'Không được để trống' }]}
             name={['proctor2', 'id']}
             label="Giám thị coi thi 2"
             placeholder="Chọn giám thị coi thi 2"

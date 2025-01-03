@@ -30,7 +30,7 @@ export function ModalFormTeaching({
   teachingData,
   onSuccess,
 }) {
-  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
+  const roleId = JSON.parse(localStorage.getItem('user_role'));
   const [facultyId, setFacultyId] = useState(null);
   const [departmentId, setDepartmentId] = useState(null);
   const [component, setComponent] = useState('');
@@ -47,6 +47,8 @@ export function ModalFormTeaching({
           description: 'Tạo thành công',
           duration: 3,
         });
+      } else if (res.data?.error?.code === 2) {
+        res.data?.error?.errorDetailList?.forEach((e) => message.error(e.message));
       } else {
         notificationError(res.data?.error?.message);
       }
@@ -100,7 +102,12 @@ export function ModalFormTeaching({
       getSubjectSelection({ facultyId, departmentId }).then((res) => {
         if (res.data?.success) {
           const newArr = [];
-          res.data?.data?.items?.map((item) => newArr.push({ label: item?.name, value: item?.id }));
+          res.data?.data?.items?.map((item) =>
+            newArr.push({
+              label: `${item?.id} - ${item?.name}`,
+              value: item?.id,
+            }),
+          );
           setSubjectSelection(newArr);
         }
       });
@@ -260,13 +267,18 @@ export function ModalFormTeaching({
             }
             width="md"
             rules={[
-              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+              // isCreate ?
+              {
+                required: true,
+                message: 'Không được để trống',
+              },
+              //  : { required: false },
             ]}
             name={['schoolYear', 'id']}
             label="Năm học"
             placeholder="Chọn năm học"
             options={schoolYearSelection}
-            disabled={isCreate ? false : true}
+            // disabled={isCreate ? false : true}
           />
           <ProFormSelect
             showSearch
@@ -275,7 +287,9 @@ export function ModalFormTeaching({
             }
             width="md"
             rules={[
-              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+              // isCreate ?
+              { required: true, message: 'Không được để trống' },
+              //  : { required: false },
             ]}
             name="term"
             label="Học kỳ"
@@ -285,7 +299,7 @@ export function ModalFormTeaching({
               { label: 2, value: 2 },
               { label: 3, value: 3 },
             ]}
-            disabled={isCreate ? false : true}
+            // disabled={isCreate ? false : true}
           />
           <ProFormSelect
             showSearch
@@ -293,10 +307,8 @@ export function ModalFormTeaching({
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             width="md"
-            rules={
-              roleId === 'LECTURER' ? null : [{ required: true, message: 'Không được để trống' }]
-            }
-            disabled={roleId === 'LECTURER' ? true : teachingData?.isLock ? true : false}
+            rules={[{ required: true, message: 'Không được để trống' }]}
+            disabled={teachingData?.isLock ? true : false}
             name={['teacher', 'id']}
             label="Giáo viên giảng dạy"
             placeholder="Chọn giáo viên giảng dạy"
@@ -305,25 +317,28 @@ export function ModalFormTeaching({
         </ProForm.Group>
 
         <ProForm.Group>
-          <ProFormText
-            rules={[
-              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
-            ]}
+          <ProFormTextArea
+            // rules={[
+            //   isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+            // ]}
+            rules={[{ required: true, message: 'Không được để trống' }]}
             width="md"
             name="classId"
             label="Mã lớp"
             placeholder="Nhập mã lớp"
-            disabled={isCreate ? false : true}
+            // disabled={isCreate ? false : true}
           />
           <ProFormText
             rules={[
-              isCreate ? { required: true, message: 'Không được để trống' } : { required: false },
+              // isCreate ?
+              { required: true, message: 'Không được để trống' },
+              //  : { required: false },
             ]}
             width="md"
             name="teachingGroup"
             label="Nhóm môn học"
             placeholder="Nhập nhóm môn học"
-            disabled={isCreate ? false : true}
+            // disabled={isCreate ? false : true}
           />
           <ProFormTextArea
             width="md"

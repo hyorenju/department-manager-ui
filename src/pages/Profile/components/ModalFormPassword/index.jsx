@@ -8,7 +8,7 @@ export function ModalFormPassword({ openForm, onChangeClickOpen, userData, onSuc
   const handleChangePassword = (id, values) => {
     changePassword(values).then((res) => {
       if (res.data?.success === true) {
-        sessionStorage.setItem('user_info', JSON.stringify(res.data.data));
+        localStorage.setItem('user_info', JSON.stringify(res.data.data));
         onSuccess();
         notification.success({
           message: 'Thành công',

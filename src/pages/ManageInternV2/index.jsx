@@ -51,10 +51,12 @@ import { ManageInternType } from './pages/ManageInternType';
 import { ModalErrorImportIntern } from './components/ModalErrorImportIntern';
 import { ModalFormStudent } from './components/ModalFormStudent';
 import { ModalFormLockIntern } from './components/ModalFormLockIntern';
+import { Navigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 function ManageIntern() {
-  const roleId = JSON.parse(sessionStorage.getItem('user_role'));
-  const userInfo = JSON.parse(sessionStorage.getItem('user_info'));
+  const roleId = JSON.parse(localStorage.getItem('user_role'));
+  const userInfo = JSON.parse(localStorage.getItem('user_info'));
   const { Title } = Typography;
   const [loadingTable, setLoadingTable] = useState(false);
   const [openModalFormIntern, setOpenModalFormIntern] = useState(false);
@@ -135,7 +137,13 @@ function ManageIntern() {
         .then((res) => {
           if (res.data?.success === true) {
             setStudentDataSource(res.data?.data?.items);
-          } else notificationError('Bạn không có quyền truy cập');
+          } else {
+            notificationError('Bạn không có quyền truy cập');
+            Cookies.remove('access_token');
+            localStorage.removeItem('user_info');
+            localStorage.removeItem('user_role');
+            Navigate('/');
+          }
         })
         .finally(() => setLoadingTable(false));
     }
@@ -815,12 +823,14 @@ function ManageIntern() {
                   : { backgroundColor: '#d7e6fa' }
               }
             />
-            <ButtonCustom
-              title={'Sửa'}
-              icon={<EditOutlined />}
-              handleClick={() => handleClickEditIntern(record)}
-              size="small"
-            />
+            {record.isLock === false && (
+              <ButtonCustom
+                title={'Sửa'}
+                icon={<EditOutlined />}
+                handleClick={() => handleClickEditIntern(record)}
+                size="small"
+              />
+            )}
             <Popconfirm
               placement="topRight"
               title="Bạn có chắc chắn muốn xóa đề tài này?"

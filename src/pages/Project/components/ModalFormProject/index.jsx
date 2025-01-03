@@ -18,6 +18,7 @@ export function ModalFormProject({
   onChangeClickOpen,
   projectData,
   onSuccess,
+  userRole,
 }) {
   const handleCreateProject = (values) => {
     createProject(values).then((res) => {
@@ -58,7 +59,7 @@ export function ModalFormProject({
   return (
     <div>
       <ModalForm
-        width={550}
+        width={600}
         title={projectData.id ? 'Sửa thông tin công việc' : 'Thêm công việc'}
         initialValues={projectData}
         modalProps={{
@@ -80,7 +81,7 @@ export function ModalFormProject({
         <ProForm.Group>
           <ProFormText
             rules={[{ required: true, message: 'Không được để trống' }]}
-            width="465px"
+            width="515px"
             name="name"
             label="Tên công việc"
             placeholder="Nhập tên công việc"
@@ -89,8 +90,8 @@ export function ModalFormProject({
             <>
               <ProFormDatePicker
                 rules={[{ required: true, message: 'Không được để trống' }]}
-                width="sm"
-                placeholder="Chọn ngày bắt đầu"
+                width="xm"
+                placeholder="Ngày bắt đầu"
                 name="start"
                 label="Ngày bắt đầu"
                 fieldProps={{
@@ -99,13 +100,33 @@ export function ModalFormProject({
               />
               <ProFormDatePicker
                 rules={[{ required: true, message: 'Không được để trống' }]}
-                width="sm"
-                placeholder="Chọn ngày kến thúc"
+                width="xm"
+                placeholder="Ngày kến thúc"
                 name="deadline"
                 label="Ngày kết thúc"
                 fieldProps={{
                   format: 'DD/MM/YYYY',
                 }}
+              />
+              <ProFormSelect
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+                width="xm"
+                rules={[
+                  isCreate
+                    ? { required: true, message: 'Không được để trống' }
+                    : { required: false },
+                ]}
+                name="isPrivate"
+                label="Loại công việc"
+                placeholder="Chọn loại"
+                options={[
+                  userRole !== 'LECTURER' && { label: 'Việc chung', value: false },
+                  { label: 'Việc cá nhân', value: true },
+                ]}
+                disabled={isCreate ? false : true}
               />
             </>
           )}
@@ -121,7 +142,7 @@ export function ModalFormProject({
               <ProFormText
                 rules={[{ required: true, message: 'Không được để trống' }]}
                 width="sm"
-                placeholder="Chọn ngày kết thúc"
+                placeholder="Nhập ngày kết thúc"
                 name="deadline"
                 label="Ngày kết thúc"
                 fieldProps={{
@@ -133,7 +154,7 @@ export function ModalFormProject({
         </ProForm.Group>
         <ProForm.Group>
           <ProFormTextArea
-            width="465px"
+            width="515px"
             name="description"
             label="Mô tả"
             placeholder="Nhập mô tả (không bắt buộc)"

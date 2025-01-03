@@ -29,6 +29,8 @@ import { useMutation } from '@tanstack/react-query';
 import { excelApi } from '../../api/excelApi';
 import { notificationError, notificationSuccess } from '../../components/Notification';
 import { messageErrorToSever } from '../../components/Message';
+import Cookies from 'js-cookie';
+import { Navigate } from 'react-router-dom';
 
 function ManageDepartment() {
   const { Title } = Typography;
@@ -67,7 +69,13 @@ function ManageDepartment() {
           setDataSource(res.data?.data?.items);
           setTotal(res.data?.data?.total);
           setLoadingTable(false);
-        } else notificationError('Bạn không có quyền truy cập');
+        } else {
+          notificationError('Bạn không có quyền truy cập');
+          Cookies.remove('access_token');
+          localStorage.removeItem('user_info');
+          localStorage.removeItem('user_role');
+          Navigate('/');
+        }
       })
       .finally(() => setLoadingTable(false));
   };

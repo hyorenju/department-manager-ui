@@ -16,7 +16,7 @@ import {
   getUserTaskList,
   updateParticipant,
 } from '../../../../api/axios';
-import { notificationSuccess } from '../../../../components/Notification';
+import { notificationError, notificationSuccess } from '../../../../components/Notification';
 import TextArea from 'antd/es/input/TextArea';
 import { useMutation } from '@tanstack/react-query';
 import { promiseApi } from '../../../../api/promiseApi';
@@ -27,7 +27,7 @@ export function ModalFormTask({
   onChangeClickOpen,
   taskData,
   onSuccess,
-  projectId,
+  project,
   modifier,
 }) {
   // const handleCreateTask = (values) => {
@@ -53,13 +53,8 @@ export function ModalFormTask({
       if (res.success === true) {
         onSuccess();
         notificationSuccess('Tạo thành công');
-      } else if (res.data?.error?.code === 2) {
-        // eslint-disable-next-line no-lone-blocks
-        {
-          res.data?.error?.errorDetailList.forEach((e) => message.error(e.message));
-        }
-      } else if (res.data?.error?.code === 500) {
-        message.error(res.data?.error?.message);
+      } else if (res.success === false) {
+        message.error(res.error.message);
       }
     },
   });
@@ -90,7 +85,8 @@ export function ModalFormTask({
   useEffect(() => {
     setUserSelected([]);
     if (openForm) {
-      if (modifier.role?.id === 'LECTURER') {
+      // if (modifier.role?.id === 'LECTURER') {
+      if (project.isPrivate) {
         setUserOption([
           {
             label: `${modifier?.id} - ${modifier?.firstName} ${modifier?.lastName}`,
@@ -143,7 +139,7 @@ export function ModalFormTask({
           description: taskData.id ? taskData.description : null,
           start: taskData.id ? taskData.start : null,
           deadline: taskData.id ? taskData.deadline : null,
-          projectId: projectId,
+          projectId: project?.id,
           userIds: userIds,
         }}
         modalProps={{
@@ -217,12 +213,9 @@ export function ModalFormTask({
               <ProFormText
                 rules={[{ required: true, message: 'Không được để trống' }]}
                 width="sm"
-                placeholder="Chọn ngày kết thúc"
+                placeholder="Nhập ngày kết thúc"
                 name="deadline"
                 label="Ngày kết thúc"
-                fieldProps={{
-                  format: 'DD/MM/YYYY',
-                }}
               />
             </>
           )}
